@@ -194,6 +194,7 @@ def index_session(
     model: str = None,
     version: int = None,
     override_project: str = None,
+    preserve_project: bool = False,
 ) -> Dict[str, Any]:
     """
     Index a conversation session using Ollama.
@@ -333,6 +334,7 @@ def index_session(
     # Validate and prioritize project value
     # Always use the conversation's actual project over Ollama's classification
     # (unless conversation is "general" and Ollama suggests a specific VALID project)
+    # If preserve_project is True, never let Ollama override the conversation's project
     valid_projects = ["THN", "DAAS", "FF", "700B", "general"]
     ollama_project = indexed_data.get("project", "general")
     
@@ -351,21 +353,31 @@ def index_session(
             )
         indexed_data["project"] = project
     else:
-        # Conversation is "general", allow Ollama's classification if it's more specific AND valid
-        if ollama_project != "general" and ollama_project in valid_projects:
-            logger.debug(
-                f"Conversation was 'general', but Ollama classified as '{ollama_project}'. "
-                f"Using Ollama's classification."
-            )
-            indexed_data["project"] = ollama_project
-        else:
-            # Ollama returned invalid project or "general", use conversation's project
-            if ollama_project not in valid_projects:
-                logger.warning(
-                    f"Ollama returned invalid project '{ollama_project}' for general conversation, "
-                    f"using 'general' instead"
+        # Conversation is "general"
+        if preserve_project:
+            # Don't allow Ollama to override - preserve "general"
+            if ollama_project != "general":
+                logger.debug(
+                    f"Conversation is 'general' and preserve_project=True. "
+                    f"Ollama classified as '{ollama_project}', but preserving 'general'."
                 )
-            indexed_data["project"] = project
+            indexed_data["project"] = project  # Keep as "general"
+        else:
+            # Allow Ollama's classification if it's more specific AND valid
+            if ollama_project != "general" and ollama_project in valid_projects:
+                logger.debug(
+                    f"Conversation was 'general', but Ollama classified as '{ollama_project}'. "
+                    f"Using Ollama's classification."
+                )
+                indexed_data["project"] = ollama_project
+            else:
+                # Ollama returned invalid project or "general", use conversation's project
+                if ollama_project not in valid_projects:
+                    logger.warning(
+                        f"Ollama returned invalid project '{ollama_project}' for general conversation, "
+                        f"using 'general' instead"
+                    )
+                indexed_data["project"] = project
     
     # Upsert into conversation_index
     logger.info(f"Saving indexed data to conversation_index: session_id={session_id}, project={indexed_data['project']}")

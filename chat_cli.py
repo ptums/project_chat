@@ -81,6 +81,98 @@ def spinner(stop_event: threading.Event, label: str, color: str):
 # ===== Helpers =====
 
 
+def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve_project: bool = False) -> bool:
+    """
+    Save current conversation by calling indexing function.
+    
+    Args:
+        conv_id: UUID of the conversation to save
+        current_project: Current project context (used as override if conversation is "general")
+        preserve_project: If True, don't allow Ollama to override the conversation's project
+                         (used when saving before project switch to preserve original project)
+    
+    Returns:
+        True if save succeeded, False if failed
+    """
+    # T018: Add logging for auto-save operations
+    logger.info(f"Auto-save triggered for conversation {conv_id} in project {current_project} (preserve_project={preserve_project})")
+    
+    style = get_project_style(current_project)
+    
+    # Run indexing in a thread with spinner
+    stop_spinner = threading.Event()
+    spinner_thread = threading.Thread(
+        target=spinner,
+        args=(stop_spinner, "Indexing conversation...", style["color"]),
+        daemon=True,
+    )
+    spinner_thread.start()
+    
+    indexed_data = None
+    error_occurred = False
+    error_message = None
+    
+    try:
+        # If preserve_project is True, pass preserve_project flag to prevent Ollama from overriding
+        # Otherwise, pass current_project as override when conversation is "general"
+        if preserve_project:
+            indexed_data = index_session(conv_id, override_project=None, preserve_project=True)
+        else:
+            indexed_data = index_session(conv_id, override_project=current_project, preserve_project=False)
+        # Verify it was actually saved
+        from brain_core.conversation_indexer import view_memory
+        saved_memory = view_memory(conv_id)
+        if saved_memory:
+            logger.debug(f"Verified saved to DB - Project: {saved_memory['project']}, Title: {saved_memory['title']}")
+        else:
+            logger.warning("Indexing completed but memory not found in database!")
+    except OllamaError as e:
+        # T014: Error handling for OllamaError
+        error_occurred = True
+        error_message = f"Ollama connection error: {str(e)}"
+        logger.exception("Ollama error during indexing")
+    except ValueError as e:
+        # T014: Error handling for ValueError
+        error_occurred = True
+        error_message = f"Indexing validation error: {str(e)}"
+        logger.exception("Validation error during indexing")
+    except Exception as e:
+        # T014: Error handling for generic Exception
+        error_occurred = True
+        error_message = f"Unexpected error: {str(e)}"
+        logger.exception("Unexpected error during indexing")
+    finally:
+        # Stop spinner
+        stop_spinner.set()
+        spinner_thread.join(timeout=0.5)
+    
+    # Display result
+    if error_occurred:
+        # T014: Display user-friendly warning message
+        print(
+            color_text(
+                f"⚠ Save failed: {error_message}",
+                "orange",
+                bold=True,
+            )
+        )
+        logger.warning(f"Auto-save failed for conversation {conv_id}: {error_message}")
+        return False
+    else:
+        # Show more details about what was indexed
+        indexed_project = indexed_data.get('project', current_project)
+        print(
+            color_text(
+                f"✓ Indexed: {indexed_data.get('title', 'Untitled')} "
+                f"[{indexed_project}]",
+                style["color"],
+                bold=True,
+            )
+        )
+        logger.info(f"Successfully saved conversation {conv_id} for project {indexed_project}")
+        return True
+
+
 def debug_project_context(project: str, conversation_id: uuid.UUID):
     """Print out the current project context (/context)."""
     ctx = get_project_context(project, conversation_id, limit_messages=80)
@@ -372,15 +464,13 @@ def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):
         if not arg:
             return current_project, True, "Usage: /project THN|DAAS|FF|700B|general", None
         new_project = normalize_project_tag(arg)
-        style = get_project_style(new_project)
-        msg = f"Switched active project context to {style['label']} {style['emoji']}"
-        return new_project, True, msg, None
+        # Return special flag "project_switch" to trigger save and title prompt flow
+        return new_project, True, "", "project_switch"
 
     if cmd in ("thn", "daas", "ff", "700b", "general"):
         new_project = normalize_project_tag(cmd)
-        style = get_project_style(new_project)
-        msg = f"Switched active project context to {style['label']} {style['emoji']}"
-        return new_project, True, msg, None
+        # Return special flag "project_switch" to trigger save and title prompt flow
+        return new_project, True, "", "project_switch"
 
     # context
     if cmd in ("context", "ctx"):
@@ -553,27 +643,40 @@ def show_project_memory_blurb(project: str, limit: int = 3):
 
 # ===== Main loop =====
 
+# Module-level variables for signal handler access
+_current_conv_id = None
+_current_project_context = None
+
 
 def _signal_handler(signum, frame):
-    """Handle Ctrl+C to display usage summary before exit."""
+    """Handle Ctrl+C to save conversation and display usage summary before exit."""
     print("\n" + color_text("Exiting.", "grey"))
+    # Save conversation if conv_id and current_project are available
+    # Preserve the conversation's actual project - don't let Ollama reclassify it
+    if _current_conv_id and _current_project_context:
+        try:
+            save_current_conversation(_current_conv_id, _current_project_context, preserve_project=True)
+        except Exception as e:
+            logger.warning(f"Failed to save conversation on exit: {e}")
+            print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
     display_usage_summary()
     sys.exit(0)
 
 
 def main():
-    # Register signal handler for Ctrl+C
-    signal.signal(signal.SIGINT, _signal_handler)
-    
     # Initialize usage tracker and set mock mode flag if applicable
     tracker = get_session_tracker()
     if MOCK_MODE:
         tracker.has_mock_mode = True
     
     print_banner()
-    title = input("Conversation title (blank for default): ").strip()
-    if not title:
-        title = f"Session {datetime.datetime.now().isoformat(timespec='seconds')}"
+    # T010-T011: Make title mandatory
+    while True:
+        title = input("Conversation title (required): ").strip()
+        if not title:
+            print(color_text("A title is required", "orange", bold=True))
+            continue
+        break
 
     initial_project_input = (
         input("Project tag [general/THN/DAAS/FF/700B] (default: general): ")
@@ -590,6 +693,14 @@ def main():
 
     current_project = initial_project
     style = get_project_style(current_project)
+    
+    # Register signal handler for Ctrl+C
+    signal.signal(signal.SIGINT, _signal_handler)
+    
+    # Update module-level variables for signal handler access
+    global _current_conv_id, _current_project_context
+    _current_conv_id = conv_id
+    _current_project_context = current_project
 
     header = f"Started conversation {conv_id} [project={style['label']}] {style['emoji']}"
     print("\n" + color_text(header, style["color"], bold=True))
@@ -600,6 +711,10 @@ def main():
     print_help_line()
 
     while True:
+        # Update module-level variables for signal handler access
+        _current_conv_id = conv_id
+        _current_project_context = current_project
+        
         style = get_project_style(current_project)
         user_label = color_text(
             f"You ({style['label']}) {style['emoji']}:", style["color"], bold=True
@@ -612,11 +727,27 @@ def main():
             user_text = input(f"{user_label} ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\n" + color_text("Exiting.", "grey"))
+            # T009: Save before exit on Ctrl+C (handled by signal handler, but also here for EOFError)
+            # T016: Handle save failures gracefully (warn but continue)
+            # Preserve the conversation's actual project - don't let Ollama reclassify it
+            try:
+                save_current_conversation(conv_id, current_project, preserve_project=True)
+            except Exception as e:
+                logger.warning(f"Failed to save conversation on exit: {e}")
+                print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
             display_usage_summary()
             break
 
         # exit
         if user_text.lower() in ("/exit", "/quit"):
+            # T008: Save before exit
+            # T016: Handle save failures gracefully (warn but continue)
+            # Preserve the conversation's actual project - don't let Ollama reclassify it
+            try:
+                save_current_conversation(conv_id, current_project, preserve_project=True)
+            except Exception as e:
+                logger.warning(f"Failed to save conversation on exit: {e}")
+                print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
             display_usage_summary()
             print(color_text("Bye.", "grey"))
             break
@@ -645,6 +776,50 @@ def main():
         )
 
         if handled:
+            # Handle project switch flow (T003-T007)
+            if special == "project_switch":
+                # STEP 1: Save current conversation
+                # T015: Handle save failures gracefully (warn but continue)
+                # When saving before project switch, preserve the conversation's actual project
+                # Don't pass override_project to prevent Ollama from reclassifying "general" conversations
+                save_success = save_current_conversation(conv_id, current_project, preserve_project=True)
+                if not save_success:
+                    logger.warning("Save failed during project switch, but continuing with switch")
+                
+                # STEP 2: Prompt for new title
+                target_project = new_project  # Target project from handle_command
+                style = get_project_style(target_project)
+                while True:
+                    try:
+                        new_title = input(f"Conversation title for {style['label']} (required): ").strip()
+                        if not new_title:
+                            print(color_text("A title is required", "orange", bold=True))
+                            continue
+                        break
+                    except (EOFError, KeyboardInterrupt):
+                        # T017: Handle cancellation gracefully
+                        print("\n" + color_text("Title input cancelled. Project switch aborted.", "orange", bold=True))
+                        logger.info("Project switch cancelled by user during title input")
+                        continue
+                
+                # STEP 3: Switch to new project context
+                try:
+                    new_conv_id = create_conversation(title=new_title, project=target_project)
+                    conv_id = new_conv_id
+                    current_project = target_project
+                    # Update module-level variables for signal handler
+                    _current_conv_id = conv_id
+                    _current_project_context = current_project
+                    style = get_project_style(current_project)
+                    print(color_text(f"Switched active project context to {style['label']} {style['emoji']}", style["color"], bold=True))
+                except OperationalError as e:
+                    print(color_text(f"DB connection error: {e}", "orange", bold=True))
+                    print(color_text("Project switch failed. Continuing with current conversation.", "orange"))
+                    continue
+                
+                # STEP 4: Continue conversation with new conversation_id
+                continue
+            
             current_project = new_project
             style = get_project_style(current_project)
 
@@ -653,88 +828,8 @@ def main():
             elif special == "search":
                 run_search_command(current_project, msg)
             elif special == "save":
-                # Index the current conversation with spinner
-                style = get_project_style(current_project)
-                
-                # First, check what project the conversation actually has in the database
-                from brain_core.db import get_conn
-                with get_conn() as conn:
-                    with conn.cursor() as cur:
-                        cur.execute(
-                            "SELECT project, title FROM conversations WHERE id = %s",
-                            (str(conv_id),)
-                        )
-                        conv_row = cur.fetchone()
-                        if conv_row:
-                            db_project, db_title = conv_row
-                            print(color_text(f"Conversation in DB has project: {db_project}, title: {db_title}", "grey"))
-                            print(color_text(f"Current CLI project context: {current_project}", "grey"))
-                        else:
-                            print(color_text(f"Conversation {conv_id} not found in database!", "orange"))
-                
-                # Run indexing in a thread with spinner
-                stop_spinner = threading.Event()
-                spinner_thread = threading.Thread(
-                    target=spinner,
-                    args=(stop_spinner, "Indexing conversation...", style["color"]),
-                    daemon=True,
-                )
-                spinner_thread.start()
-                
-                indexed_data = None
-                error_occurred = False
-                error_message = None
-                
-                try:
-                    # Pass current_project as override when conversation is "general"
-                    indexed_data = index_session(conv_id, override_project=current_project)
-                    # Verify it was actually saved
-                    from brain_core.conversation_indexer import view_memory
-                    saved_memory = view_memory(conv_id)
-                    if saved_memory:
-                        print(color_text(f"Verified saved to DB - Project: {saved_memory['project']}, Title: {saved_memory['title']}", "grey"))
-                    else:
-                        print(color_text("WARNING - Indexing completed but memory not found in database!", "orange"))
-                except OllamaError as e:
-                    error_occurred = True
-                    error_message = f"Ollama connection error: {str(e)}"
-                    logger.exception("Ollama error during indexing")
-                except ValueError as e:
-                    error_occurred = True
-                    error_message = f"Indexing validation error: {str(e)}"
-                    logger.exception("Validation error during indexing")
-                except Exception as e:
-                    error_occurred = True
-                    error_message = f"Unexpected error: {str(e)}"
-                    logger.exception("Unexpected error during indexing")
-                finally:
-                    # Stop spinner
-                    stop_spinner.set()
-                    spinner_thread.join(timeout=0.5)
-                
-                # Display result
-                if error_occurred:
-                    print(
-                        color_text(
-                            f"✗ Indexing failed: {error_message}",
-                            "orange",
-                            bold=True,
-                        )
-                    )
-                else:
-                    # Show more details about what was indexed
-                    indexed_project = indexed_data.get('project', current_project)
-                    print(
-                        color_text(
-                            f"✓ Indexed: {indexed_data.get('title', 'Untitled')} "
-                            f"[{indexed_project}]",
-                            style["color"],
-                            bold=True,
-                        )
-                    )
-                    print(color_text(f"  Session ID: {conv_id}", "grey"))
-                    print(color_text(f"  Project: {indexed_project}", "grey"))
-                    print(color_text(f"  Tags: {', '.join(indexed_data.get('tags', []))}", "grey"))
+                # Use the helper function for consistency
+                save_current_conversation(conv_id, current_project)
             elif special == "memory":
                 # Parse memory subcommand
                 parts = msg.split("|")
