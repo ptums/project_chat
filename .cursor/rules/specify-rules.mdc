@@ -1,0 +1,41 @@
+# project_chat Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-24
+
+## Active Technologies
+- Python 3.10+ + Flask, sys.stdin (standard library), existing CLI infrastructure (001-large-text-input)
+- PostgreSQL (text stored in messages.content TEXT field - no size limit) (001-large-text-input)
+- Python 3.10 (repo `.python-version` + venv) + psycopg2, Flask, OpenAI SDK, `requests` (new for Ollama client) (001-ollama-organizer)
+- PostgreSQL (existing conversations + new `conversation_index` table) (001-ollama-organizer)
+- Python 3.10+ (repo `.python-version` + venv) + psycopg2, Flask, OpenAI SDK, `requests` (existing), `pgvector` extension (PostgreSQL), OpenAI embeddings API (002-daas-semantic-retrieval)
+- PostgreSQL (existing `conversation_index` table + new `embedding` column for DAAS entries) (002-daas-semantic-retrieval)
+- Python 3.10+ (existing project standard) + psycopg2, python-dotenv (existing), PostgreSQL, bash (for migration scripts) (003-seamless-setup)
+- PostgreSQL (existing database), SQL migration files, JSON/CSV seed data files (003-seamless-setup)
+- Python 3.10+ (existing project standard) + psycopg2-binary (existing), python-dotenv (existing), PostgreSQL client tools (pg_dump, pg_restore) (001-database-backup)
+- PostgreSQL database backups (SQL dump format), backup metadata files (JSON), local filesystem or network storage (001-database-backup)
+
+- Python 3.10+ + Flask, psycopg2, python-dotenv, openai (Python SDK) (001-dev-environment)
+
+## Project Structure
+
+```text
+src/
+tests/
+```
+
+## Commands
+
+cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] ruff check .
+
+## Code Style
+
+Python 3.10+: Follow standard conventions
+
+## Recent Changes
+- 001-database-backup: Added Python 3.10+ (existing project standard) + psycopg2-binary (existing), python-dotenv (existing), PostgreSQL client tools (pg_dump, pg_restore)
+- 003-seamless-setup: Added Python 3.10+ (existing project standard) + psycopg2, python-dotenv (existing), PostgreSQL, bash (for migration scripts)
+- 002-daas-semantic-retrieval: Added Python 3.10+ (repo `.python-version` + venv) + psycopg2, Flask, OpenAI SDK, `requests` (existing), `pgvector` extension (PostgreSQL), OpenAI embeddings API
+
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

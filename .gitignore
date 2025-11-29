@@ -1,0 +1,23 @@
+imports/*
+.venv
+.env
+.env.local
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local DB backups or exports
+*.dump
+*.bak
+*.zip
+
+# Database backup files (keep directory, ignore backup files)
+db/backups/*.dump
+db/backups/*.metadata.json
+
+# Temporary files
+.DS_Store
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.cursor/rules/snyk_rules.mdc
