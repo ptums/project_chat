@@ -23,6 +23,7 @@ Designed for home-lab and productivity workflows (e.g. THN, DAAS, FF, 700B, etc.
   - Pattern-based semantic search across dreams using vector embeddings
   - Automatic embedding generation for dream entries
 - **Conversation indexing** - Automatic organization and summarization of conversations
+- **Conversation audit tool** - CLI tool for managing and cleaning up conversation history (edit titles/projects, delete conversations)
 - **Shell alias support** for quick startup
 
 ---
@@ -147,6 +148,80 @@ See [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) or [specs/001-database-backup/qui
 - View indexed memories: `/memory list` or `/memory view <session_id>`
 - Search conversations: `/search <query>`
 - Exit: `/exit` (automatically saves current conversation before exiting)
+
+### Conversation Audit Tool
+
+The conversation audit tool (`audit_conversations.py`) helps you manage and clean up your conversation history. Use it to review conversations, fix misclassified projects, update titles, and delete conversations.
+
+**Running the audit tool:**
+
+```bash
+python3 audit_conversations.py
+```
+
+**Main Menu Options:**
+
+1. **List conversations by project** - View all conversations for a specific project (THN, DAAS, FF, 700B, or general)
+2. **View conversation by ID** - Display details for a specific conversation when you know its UUID
+3. **Search conversation by title** - Find conversations by searching for their title (exact or partial match)
+4. **Exit** - Return to command line
+
+**Message Review Mode:**
+
+After viewing a conversation list or details, you can enter message review mode by typing `/messages <conversation_id>` (or `/message <id>`). In message review mode, you can:
+
+- **`/edit-title`** - Update the conversation's title
+- **`/edit-project`** - Change the conversation's project tag (updates both `conversations` and `conversation_index` tables)
+- **`/delete`** - Delete the conversation entirely (with confirmation prompt)
+- **`/back`** - Return to the previous view (main menu or conversation list)
+
+**Example Workflow:**
+
+```bash
+$ python3 audit_conversations.py
+
+Conversation Audit Tool
+==================================================
+1. List conversations by project
+2. View conversation by ID
+3. Search conversation by title
+4. Exit
+
+Select an option (1-4): 1
+
+Enter project name (THN/DAAS/FF/700B/general): DAAS
+
+Conversations for project: DAAS
+============================================================
+ID: abc-123-def-456
+Title: Flying Dream Analysis
+Project: DAAS
+Messages: 12
+
+Enter /messages <id> to review, or press Enter to return to main menu
+/messages abc-123-def-456
+
+Message History for: Flying Dream Analysis (DAAS)
+============================================================
+
+[1] [USER] I had a dream about flying...
+[2] [ASSISTANT] Flying dreams often represent...
+
+Commands: /edit-title, /edit-project, /delete, /back
+Enter command: /edit-project
+
+Enter new project (THN/DAAS/FF/700B/general): general
+Project updated successfully.
+
+Returning to main menu...
+```
+
+**Use Cases:**
+
+- **Clean up misclassified conversations**: Find conversations tagged with the wrong project and fix them
+- **Update unclear titles**: Review message history and update titles to better reflect conversation content
+- **Delete jumbled conversations**: Remove conversations that contain mixed topics and aren't worth fixing
+- **Organize conversation history**: Ensure all conversations are properly categorized by project
 
 ### Conversation Management
 
