@@ -5006,3 +5006,199 @@ The fix ensures that auto-saves (on project switch and on exit) preserve the con
 
 ---
 
+_**User (2025-11-29 15:30Z)**_
+
+Okay this seemed to work, can u update the main read me
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Reading the README to identify updates for the new features:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/README.md</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the README to document the new features:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/README.md</summary>
+
+**Chunk 1**
+Lines added: 5, lines removed: undefined
+
+```diff
+@@ -14,4 +14,9 @@
+  - **/history and project switching** on-the-fly
+  - **Streaming responses** - ChatGPT-like progressive text display
++ - **Automatic conversation saving** - Conversations are automatically saved:
++   - When switching between projects (saves current conversation before switch)
++   - When exiting the program (saves before exit)
++ - **Mandatory conversation titles** - All conversations require a title for better organization
++ - **Project-aware conversation separation** - Switching projects creates a new conversation to keep topics separate
+  - **DAAS Semantic Dream Retrieval** - Advanced dream analysis with:
+    - Single-dream queries by quoted title (e.g., &#96;&quot;My Flying Dream&quot;&#96;)
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/README.md</summary>
+
+**Chunk 1**
+Lines added: 23, lines removed: 2
+
+```diff
+@@ -140,9 +140,30 @@
+  ### Basic Commands
+  
+- - Switch project context with &#96;/project [THN|DAAS|FF|700B]&#96;
++ - Switch project context with &#96;/project [THN|DAAS|FF|700B]&#96; or &#96;/thn&#96;, &#96;/daas&#96;, &#96;/ff&#96;, &#96;/700b&#96;, &#96;/general&#96;
++   - **Auto-save on switch**: Current conversation is automatically saved before switching
++   - **New conversation**: You&#39;ll be prompted for a new title, and a new conversation is created for the new project
+  - View project history: &#96;/history [project]&#96;
+- - Index a conversation: &#96;/save&#96; (organizes and summarizes the conversation)
++ - Index a conversation: &#96;/save&#96; (manually organizes and summarizes the conversation)
+  - View indexed memories: &#96;/memory list&#96; or &#96;/memory view &lt;session_id&gt;&#96;
+  - Search conversations: &#96;/search &lt;query&gt;&#96;
++ - Exit: &#96;/exit&#96; (automatically saves current conversation before exiting)
++ 
++ ### Conversation Management
++ 
++ **Starting a New Conversation:**
++ - When you start the program, you **must** provide a conversation title (cannot skip)
++ - Select a project tag (default: &#96;general&#96;)
++ 
++ **Switching Projects Mid-Conversation:**
++ 1. Type a project switch command (e.g., &#96;/thn&#96;, &#96;/daas&#96;, &#96;/general&#96;)
++ 2. The current conversation is automatically saved
++ 3. You&#39;ll be prompted for a new title for the conversation under the new project
++ 4. A new conversation is created, and you continue with the new project context
++ 5. This keeps conversations properly separated by project
++ 
++ **Exiting:**
++ - Type &#96;/exit&#96; or press Ctrl+C
++ - Current conversation is automatically saved before exit
++ - Usage summary is displayed
+  
+  ### DAAS Dream Analysis
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/README.md</summary>
+
+**Chunk 1**
+Lines added: 20, lines removed: 8
+
+```diff
+@@ -196,14 +196,26 @@
+  &#96;&#96;&#96;bash
+  $ python3 chat_cli.py
+- Welcome! Current project: 🟩 THN
++ Conversation title (required): Web App Deployment
++ Project tag [general/THN/DAAS/FF/700B] (default: general): THN
++ 
++ Started conversation abc-123 [project=THN] 🟢
+  
+- You (THN) 🟩: How do I deploy my web app locally?
+- 🟩 Thinking for THN...
+- AI (THN) 🟩: [Streaming response appears progressively...]
++ You (THN) 🟢: How do I deploy my web app locally?
++ 🟢 Thinking for THN...
++ AI (THN) 🟢: [Streaming response appears progressively...]
+  
+- &gt; /project DAAS
+- You (DAAS) 🟣: What does &quot;My Flying Dream&quot; mean?
+- 🟣 Thinking for DAAS...
+- AI (DAAS) 🟣: [Streaming response with dream analysis...]
++ You (THN) 🟢: /general
++ ✓ Indexed: Web App Deployment [THN]
++ Conversation title for GENERAL (required): The Hobbit Discussion
++ Switched active project context to GENERAL 🔵
++ 
++ You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?
++ 🔵 Thinking for GENERAL...
++ AI (GENERAL) 🔵: [Streaming response...]
++ 
++ You (GENERAL) 🔵: /exit
++ ✓ Indexed: The Hobbit Discussion [general]
++ [Usage summary]
++ Bye.
+  &#96;&#96;&#96;
+  
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the README to document the new features:
+
+**Updates made:**
+
+1. **Features section** — Added:
+   - Automatic conversation saving (on project switch and exit)
+   - Mandatory conversation titles
+   - Project-aware conversation separation
+
+2. **Basic Commands section** — Updated with:
+   - Auto-save behavior on project switch
+   - New conversation creation flow
+   - Auto-save on exit
+
+3. **New "Conversation Management" section** — Explains:
+   - Starting a new conversation (mandatory title)
+   - Switching projects mid-conversation (save → title prompt → new conversation)
+   - Exiting (auto-save)
+
+4. **Example section** — Updated to show:
+   - Mandatory title prompt
+   - Project switch with auto-save
+   - Title prompt for new project
+   - Exit with auto-save
+
+The README now reflects the current behavior: conversations are automatically saved and properly separated by project.
+
+---
+
