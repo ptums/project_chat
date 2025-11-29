@@ -15,6 +15,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-24
 - PostgreSQL database backups (SQL dump format), backup metadata files (JSON), local filesystem or network storage (001-database-backup)
 - Python 3.10+ + psycopg2 (PostgreSQL), OpenAI SDK, Ollama client, python-dotenv (004-fix-conversation-saving)
 - PostgreSQL (conversations, messages, conversation_index tables) (004-fix-conversation-saving)
+- Python 3.10+ + psycopg2 (PostgreSQL), existing `brain_core.db` and `brain_core.config` modules (005-conversation-audit-tool)
 
 - Python 3.10+ + Flask, psycopg2, python-dotenv, openai (Python SDK) (001-dev-environment)
 
@@ -34,9 +35,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.10+: Follow standard conventions
 
 ## Recent Changes
+- 005-conversation-audit-tool: Added Python 3.10+ + psycopg2 (PostgreSQL), existing `brain_core.db` and `brain_core.config` modules
 - 004-fix-conversation-saving: Added Python 3.10+ + psycopg2 (PostgreSQL), OpenAI SDK, Ollama client, python-dotenv
 - 001-database-backup: Added Python 3.10+ (existing project standard) + psycopg2-binary (existing), python-dotenv (existing), PostgreSQL client tools (pg_dump, pg_restore)
-- 003-seamless-setup: Added Python 3.10+ (existing project standard) + psycopg2, python-dotenv (existing), PostgreSQL, bash (for migration scripts)
 
 
 <!-- MANUAL ADDITIONS START -->
