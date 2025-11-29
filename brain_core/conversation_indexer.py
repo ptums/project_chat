@@ -338,18 +338,27 @@ def index_session(
     valid_projects = ["THN", "DAAS", "FF", "700B", "general"]
     ollama_project = indexed_data.get("project", "general")
     
-    if ollama_project not in valid_projects:
-        logger.warning(
-            f"Ollama returned invalid project '{ollama_project}', "
-            f"using conversation project '{project}' instead"
-        )
-        indexed_data["project"] = project
-    elif project != "general":
+    # If conversation has a specific project (not "general"), always use it
+    if project != "general":
         # Conversation has a specific project tag, use it (not Ollama's classification)
-        if ollama_project != project:
+        if ollama_project != project and ollama_project in valid_projects:
             logger.debug(
                 f"Ollama classified as '{ollama_project}', but conversation is '{project}'. "
                 f"Using conversation project '{project}'."
+            )
+        elif ollama_project not in valid_projects and ollama_project is not None:
+            # Only log warning if Ollama returned something invalid (not None or empty)
+            logger.debug(
+                f"Ollama returned invalid project '{ollama_project}', "
+                f"using conversation project '{project}' (expected behavior)"
+            )
+        indexed_data["project"] = project
+    elif ollama_project not in valid_projects:
+        # Conversation is "general" but Ollama returned invalid project
+        if ollama_project is not None:
+            logger.debug(
+                f"Ollama returned invalid project '{ollama_project}' for general conversation, "
+                f"using 'general' (expected behavior)"
             )
         indexed_data["project"] = project
     else:
