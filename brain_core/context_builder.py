@@ -204,6 +204,7 @@ def build_project_context(
                     context += "- willing to say \"I don't know\" if something is unclear."
                     context += "- keep it short and concise."
                     context += "- keep it easy to understand."
+                    context += "- if you think I made a mistake in my prompt, please share don't agree with me"
                     
                     logger.debug(f"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams")
                     return {
@@ -347,6 +348,7 @@ def build_project_context(
     context += "- willing to say \"I don't know\" if something is unclear."
     context += "- keep it short and concise."
     context += "- keep it easy to understand."
+    context += "- if you think I made a mistake in my prompt, please share don't agree with me"
     
     logger.debug(f"Built project context for {project} with {len(top_memories)} memories and {len(knowledge_summaries)} knowledge entries")
     
