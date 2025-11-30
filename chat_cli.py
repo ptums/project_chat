@@ -523,8 +523,14 @@ def print_banner():
 
 def display_usage_summary():
     """Display usage summary for the current session."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     tracker = get_session_tracker()
     summary = tracker.get_summary()
+    
+    # Debug logging to help diagnose usage tracking issues
+    logger.debug(f"Usage summary: api_call_count={summary['api_call_count']}, total_tokens={summary['total_tokens']}, total_cost={summary['total_cost']}")
     
     # Check if mock mode was used
     if MOCK_MODE:
@@ -532,6 +538,8 @@ def display_usage_summary():
     
     # Handle no API calls
     if summary["api_call_count"] == 0:
+        # Debug: Log if we expected API calls but got zero
+        logger.debug("Usage summary shows zero API calls. This may indicate a tracking issue if API calls were actually made.")
         if summary["has_mock_mode"]:
             print(color_text("\nMock mode used - no API calls made.", "grey"))
         else:
@@ -646,24 +654,50 @@ def show_project_memory_blurb(project: str, limit: int = 3):
 # Module-level variables for signal handler access
 _current_conv_id = None
 _current_project_context = None
+_is_streaming = False  # Flag to track if we're currently streaming
+_interrupt_streaming = False  # Flag to signal streaming should be interrupted
 
 
 def _signal_handler(signum, frame):
-    """Handle Ctrl+C to save conversation and display usage summary before exit."""
-    print("\n" + color_text("Exiting.", "grey"))
-    # Save conversation if conv_id and current_project are available
-    # Preserve the conversation's actual project - don't let Ollama reclassify it
-    if _current_conv_id and _current_project_context:
-        try:
-            save_current_conversation(_current_conv_id, _current_project_context, preserve_project=True)
-        except Exception as e:
-            logger.warning(f"Failed to save conversation on exit: {e}")
-            print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
-    display_usage_summary()
-    sys.exit(0)
+    """
+    Handle Ctrl+C: 
+    - If streaming: Set interrupt flag (streaming loop will check and raise KeyboardInterrupt)
+    - If not streaming: Save conversation and exit
+    """
+    global _is_streaming, _interrupt_streaming
+    
+    if _is_streaming:
+        # During streaming, set flag to interrupt
+        # The streaming loop will check this flag and raise KeyboardInterrupt
+        _interrupt_streaming = True
+    else:
+        # Not streaming, so exit the program
+        print("\n" + color_text("Exiting.", "grey"))
+        # Save conversation if conv_id and current_project are available
+        # Preserve the conversation's actual project - don't let Ollama reclassify it
+        if _current_conv_id and _current_project_context:
+            try:
+                save_current_conversation(_current_conv_id, _current_project_context, preserve_project=True)
+            except Exception as e:
+                logger.warning(f"Failed to save conversation on exit: {e}")
+                print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
+        display_usage_summary()
+        
+        # Show model used in exit message
+        tracker = get_session_tracker()
+        summary = tracker.get_summary()
+        if summary["models_used"]:
+            models_str = ", ".join(sorted(summary["models_used"]))
+            print(color_text(f"Bye. (Model: {models_str})", "grey"))
+        else:
+            print(color_text("Bye.", "grey"))
+        sys.exit(0)
 
 
 def main():
+    # Declare global streaming flags for entire function
+    global _is_streaming, _interrupt_streaming
+    
     # Initialize usage tracker and set mock mode flag if applicable
     tracker = get_session_tracker()
     if MOCK_MODE:
@@ -736,9 +770,21 @@ def main():
                 logger.warning(f"Failed to save conversation on exit: {e}")
                 print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
             display_usage_summary()
+            
+            # Show model used in exit message
+            tracker = get_session_tracker()
+            summary = tracker.get_summary()
+            if summary["models_used"]:
+                models_str = ", ".join(sorted(summary["models_used"]))
+                print(color_text(f"Bye. (Model: {models_str})", "grey"))
+            else:
+                print(color_text("Bye.", "grey"))
             break
 
-        # exit
+        if not user_text:
+            continue
+
+        # Check for /exit BEFORE processing commands or sending to API
         if user_text.lower() in ("/exit", "/quit"):
             # T008: Save before exit
             # T016: Handle save failures gracefully (warn but continue)
@@ -749,11 +795,16 @@ def main():
                 logger.warning(f"Failed to save conversation on exit: {e}")
                 print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
             display_usage_summary()
-            print(color_text("Bye.", "grey"))
+            
+            # Show model used in exit message
+            tracker = get_session_tracker()
+            summary = tracker.get_summary()
+            if summary["models_used"]:
+                models_str = ", ".join(sorted(summary["models_used"]))
+                print(color_text(f"Bye. (Model: {models_str})", "grey"))
+            else:
+                print(color_text("Bye.", "grey"))
             break
-
-        if not user_text:
-            continue
 
         # Check if input was truncated (common with large pastes)
         # If input contains newlines or is suspiciously cut off, suggest using /paste
@@ -1009,6 +1060,9 @@ def main():
 
                 spinner_thread.start()
                 try:
+                    # Set streaming flag so signal handler knows we're streaming
+                    _is_streaming = True
+                    
                     # Spinner runs while we wait for API response
                     # Get the generator first (this starts the API call)
                     stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)
@@ -1017,12 +1071,18 @@ def main():
                     first_chunk_received = False
                     reply = ""
                     try:
+                        _interrupt_streaming = False  # Reset interrupt flag
                         import time
                         # More aggressive throttling: slower display for readability
                         min_delay = 0.03  # 30ms minimum delay per character
                         last_write_time = time.time()
                         
                         for chunk in stream_gen:
+                            # Check if user pressed Ctrl+C
+                            if _interrupt_streaming:
+                                _interrupt_streaming = False
+                                raise KeyboardInterrupt("Streaming interrupted by user")
+                            
                             # Stop spinner on first chunk
                             if not first_chunk_received:
                                 stop_event.set()
@@ -1036,6 +1096,11 @@ def main():
                             
                             # Write character by character with delay for natural typing effect
                             for char in chunk:
+                                # Check again before each character (more responsive)
+                                if _interrupt_streaming:
+                                    _interrupt_streaming = False
+                                    raise KeyboardInterrupt("Streaming interrupted by user")
+                                
                                 current_time = time.time()
                                 elapsed = current_time - last_write_time
                                 
@@ -1052,11 +1117,27 @@ def main():
                     except KeyboardInterrupt:
                         stop_event.set()
                         spinner_thread.join()
-                        print(color_text("\n\nStreaming interrupted by user.", "orange", bold=True))
+                        _is_streaming = False  # Reset streaming flag
+                        print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
                         # Save partial response if any was received
                         if reply:
-                            print(color_text(f"Partial response received ({len(reply)} chars).", "grey"))
+                            try:
+                                from brain_core.db import save_message
+                                import datetime
+                                meta = {
+                                    "model": "streaming",
+                                    "created_at": datetime.datetime.utcnow().isoformat() + "Z",
+                                    "interrupted": True,
+                                    "partial": True,
+                                }
+                                save_message(conv_id, "assistant", reply, meta=meta)
+                                print(color_text(f"Partial response saved ({len(reply)} chars).", "grey"))
+                            except Exception as e:
+                                logger.warning(f"Failed to save partial response: {e}")
+                                print(color_text(f"Partial response received ({len(reply)} chars) but not saved.", "grey"))
                         continue
+                    finally:
+                        _is_streaming = False  # Always reset streaming flag when done
                 except KeyboardInterrupt:
                     stop_event.set()
                     spinner_thread.join()
@@ -1123,6 +1204,10 @@ def main():
 
                 spinner_thread.start()
                 try:
+                    # Set streaming flag so signal handler knows we're streaming
+                    _is_streaming = True
+                    _interrupt_streaming = False  # Reset interrupt flag
+                    
                     # Spinner runs while we wait for API response
                     # Get the generator first (this starts the API call)
                     stream_gen = chat_turn(conv_id, file_content, current_project, stream=True)
@@ -1137,6 +1222,11 @@ def main():
                         last_write_time = time.time()
                         
                         for chunk in stream_gen:
+                            # Check if user pressed Ctrl+C
+                            if _interrupt_streaming:
+                                _interrupt_streaming = False
+                                raise KeyboardInterrupt("Streaming interrupted by user")
+                            
                             # Stop spinner on first chunk
                             if not first_chunk_received:
                                 stop_event.set()
@@ -1150,6 +1240,11 @@ def main():
                             
                             # Write character by character with delay for natural typing effect
                             for char in chunk:
+                                # Check again before each character (more responsive)
+                                if _interrupt_streaming:
+                                    _interrupt_streaming = False
+                                    raise KeyboardInterrupt("Streaming interrupted by user")
+                                
                                 current_time = time.time()
                                 elapsed = current_time - last_write_time
                                 
@@ -1166,11 +1261,27 @@ def main():
                     except KeyboardInterrupt:
                         stop_event.set()
                         spinner_thread.join()
-                        print(color_text("\n\nStreaming interrupted by user.", "orange", bold=True))
+                        _is_streaming = False  # Reset streaming flag
+                        print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
                         # Save partial response if any was received
                         if reply:
-                            print(color_text(f"Partial response received ({len(reply)} chars).", "grey"))
+                            try:
+                                from brain_core.db import save_message
+                                import datetime
+                                meta = {
+                                    "model": "streaming",
+                                    "created_at": datetime.datetime.utcnow().isoformat() + "Z",
+                                    "interrupted": True,
+                                    "partial": True,
+                                }
+                                save_message(conv_id, "assistant", reply, meta=meta)
+                                print(color_text(f"Partial response saved ({len(reply)} chars).", "grey"))
+                            except Exception as e:
+                                logger.warning(f"Failed to save partial response: {e}")
+                                print(color_text(f"Partial response received ({len(reply)} chars) but not saved.", "grey"))
                         continue
+                    finally:
+                        _is_streaming = False  # Always reset streaming flag when done
                 except KeyboardInterrupt:
                     stop_event.set()
                     spinner_thread.join()
@@ -1216,9 +1327,16 @@ def main():
 
         spinner_thread.start()
         try:
+            # Set streaming flag so signal handler knows we're streaming
+            _is_streaming = True
+            
             # Spinner runs while we wait for API response
             # Get the generator first (this starts the API call)
             stream_gen = chat_turn(conv_id, user_text, current_project, stream=True)
+            
+            # Set streaming flag so signal handler knows we're streaming
+            _is_streaming = True
+            _interrupt_streaming = False  # Reset interrupt flag
             
             # Stop spinner and clear it when we get first chunk
             first_chunk_received = False
@@ -1230,6 +1348,11 @@ def main():
                 last_write_time = time.time()
                 
                 for chunk in stream_gen:
+                    # Check if user pressed Ctrl+C
+                    if _interrupt_streaming:
+                        _interrupt_streaming = False
+                        raise KeyboardInterrupt("Streaming interrupted by user")
+                    
                     # Stop spinner on first chunk
                     if not first_chunk_received:
                         stop_event.set()
@@ -1243,6 +1366,11 @@ def main():
                     
                     # Write character by character with delay for natural typing effect
                     for char in chunk:
+                        # Check again before each character (more responsive)
+                        if _interrupt_streaming:
+                            _interrupt_streaming = False
+                            raise KeyboardInterrupt("Streaming interrupted by user")
+                        
                         current_time = time.time()
                         elapsed = current_time - last_write_time
                         
@@ -1259,9 +1387,27 @@ def main():
             except KeyboardInterrupt:
                 stop_event.set()
                 spinner_thread.join()
-                print(color_text("\n\nStreaming interrupted by user.", "orange", bold=True))
-                # Partial response is already saved by chat_turn
+                _is_streaming = False  # Reset streaming flag
+                print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
+                # Save partial response if any was received
+                if reply:
+                    try:
+                        from brain_core.db import save_message
+                        import datetime
+                        meta = {
+                            "model": "streaming",
+                            "created_at": datetime.datetime.utcnow().isoformat() + "Z",
+                            "interrupted": True,
+                            "partial": True,
+                        }
+                        save_message(conv_id, "assistant", reply, meta=meta)
+                        print(color_text(f"Partial response saved ({len(reply)} chars).", "grey"))
+                    except Exception as e:
+                        logger.warning(f"Failed to save partial response: {e}")
+                        print(color_text(f"Partial response received ({len(reply)} chars) but not saved.", "grey"))
                 continue
+            finally:
+                _is_streaming = False  # Always reset streaming flag when done
         except Exception as e:
             stop_event.set()
             spinner_thread.join()
