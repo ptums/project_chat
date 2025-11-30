@@ -232,7 +232,71 @@ def build_project_context(
             logger.error(f"DAAS retrieval failed, falling back to default keyword search: {e}")
             # Fall through to default behavior (keyword-based search)
     
-    # Default behavior for non-DAAS projects or DAAS fallback
+    # THN-specific retrieval: code RAG pipeline
+    if project == 'THN':
+        try:
+            from .thn_code_retrieval import get_thn_code_context
+            
+            # Retrieve relevant code chunks
+            code_context = get_thn_code_context(user_message, top_k=5)
+            
+            if code_context:
+                # Build context with code and project knowledge
+                context_parts = []
+                notes = []
+                
+                # Add project knowledge if available
+                knowledge_summaries = fetch_project_knowledge(project)
+                if knowledge_summaries:
+                    project_summary = "\n\n".join(knowledge_summaries)
+                    context_parts.append(f"Here is a general summary of the THN project:\n{project_summary}")
+                    notes.extend([f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries])
+                
+                # Add code context
+                context_parts.append(f"Here is relevant code from the THN codebase:\n\n{code_context}")
+                notes.append("THN code retrieval: Retrieved relevant code snippets")
+                
+                # Also include conversation memories (fallback to default behavior for memories)
+                # But prioritize code context
+                context = "\n\n".join(context_parts)
+                context += "\n\nUse this information to answer my question. Focus on the actual code when providing technical guidance."
+                context += "\n\nWhen explaining technical concepts:"
+                context += "\n- Use the actual code examples from the codebase"
+                context += "\n- Explain how the code works, not just what it does"
+                context += "\n- Identify patterns and best practices visible in the code"
+                context += "\n- If asked for learning projects, suggest practical exercises based on the codebase patterns"
+                context += "\n- If asked for lesson plans, structure them around the actual code examples"
+                context += "\n\nKeep responses:\n"
+                context += "- short and concise\n"
+                context += "- easy to understand\n"
+                context += "- based on the actual codebase when possible\n"
+                context += "- educational and helpful for learning\n"
+                context += "- willing to say \"I don't know\" if something is unclear"
+                
+                logger.debug(f"Built THN context with code retrieval")
+                return {
+                    "context": context,
+                    "notes": notes[:10]
+                }
+            else:
+                # No code found, but still include project knowledge if available
+                knowledge_summaries = fetch_project_knowledge(project)
+                if knowledge_summaries:
+                    project_summary = "\n\n".join(knowledge_summaries)
+                    context = f"Here is a general summary of the THN project:\n{project_summary}"
+                    return {
+                        "context": context,
+                        "notes": [f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries[:5]]
+                    }
+                else:
+                    # No code or knowledge, fall through to default
+                    logger.debug("No THN code or knowledge found, using default context")
+                    
+        except Exception as e:
+            logger.error(f"THN code retrieval failed, falling back to default keyword search: {e}")
+            # Fall through to default behavior (keyword-based search)
+    
+    # Default behavior for non-DAAS/THN projects or fallback
     # Fetch project_knowledge summaries (stable overview) - FIRST
     knowledge_summaries = fetch_project_knowledge(project)
     
