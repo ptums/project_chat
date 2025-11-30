@@ -23563,3 +23563,240 @@ All code compiles successfully and passes linting checks. Ready for testing.
 
 ---
 
+_**User (2025-11-30 05:32Z)**_
+
+So I believe this issue occurs when the response is interrupted, and I can confirm that the exit function is now functional again w/ these changes. Do u test these changes when the user saves too?
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking how `/save` is handled and verifying the changes work for both manual saves and exit:
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "def handle_command|/save" in "chat_cli.py" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `chat_cli.py` | `def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):` | L454 |
+| `chat_cli.py` | `"/save",` | L617 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "save_current_conversation" in "chat_cli.py" • 6 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `chat_cli.py` | `def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve_project: bool = False) -> bool:` | L84 |
+| `chat_cli.py` | `save_current_conversation(_current_conv_id, _current_project_context, preserve_project=True)` | L692 |
+| `chat_cli.py` | `save_current_conversation(conv_id, current_project, preserve_project=True)` | L780 |
+| `chat_cli.py` | `save_current_conversation(conv_id, current_project, preserve_project=True)` | L805 |
+| `chat_cli.py` | `save_success = save_current_conversation(conv_id, current_project, preserve_project=True)` | L848 |
+| `chat_cli.py` | `save_current_conversation(conv_id, current_project)` | L895 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "How is the /save command handled in chat_cli.py?" • **10** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `chat_cli.py` | L450-532 |
+| `chat_cli.py` | L705-1431 |
+| `chat_cli.py` | L413-523 |
+| `chat_cli.py` | L66-184 |
+| `chat_cli.py` | L705-1435 |
+| `chat_cli.py` | L626-1431 |
+| `specs/004-fix-conversation-saving/contracts/cli.md` | L51 |
+| `chat_cli.py` | L77-184 |
+| `chat_cli.py` | L77-196 |
+| `chat_cli.py` | L535-660 |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying that `/save` uses the same enhanced indexing logic:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/chat_cli.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/chat_cli.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Both `/save` and `/exit` use the same `save_current_conversation` function, so the enhancements apply to both. Verifying the interrupted response scenario:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/brain_core/conversation_indexer.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "interrupted|partial" in "brain_core/conversation_indexer.py" • 0 matches</summary>
+
+Output mode: content
+
+
+_No matches found_
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/brain_core/conversation_indexer.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Confirming both `/save` and `/exit` use the same `save_current_conversation` function, so the enhancements apply to both.
+
+The only difference:
+- `/save`: calls `save_current_conversation(conv_id, current_project)` (no `preserve_project` flag)
+- `/exit`: calls `save_current_conversation(conv_id, current_project, preserve_project=True)`
+
+Both paths use the same `index_session` function with:
+- Multiple JSON extraction strategies
+- Fallback JSON generation from markdown
+- Enhanced error handling
+- Graceful degradation
+
+For interrupted responses: `build_transcript` includes all messages (including partial ones). If Ollama returns markdown due to an incomplete transcript, the enhancements should handle it.
+
+Adding a note about interrupted conversations in the prompt to help Ollama handle partial responses better:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/brain_core/conversation_indexer.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/brain_core/conversation_indexer.py</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -360,4 +360,6 @@
+  
+  You are a conversation organizer. Analyze the following conversation and extract structured information.
++ 
++ Note: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.
+  
+  Conversation transcript:
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `brain_core/conversation_indexer.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: cd /Users/petertumulty/Documents/Sites/project_chat && python3 -m py_compile brain_core/conversation_indexer.py</summary>
+
+```bash
+cd /Users/petertumulty/Documents/Sites/project_chat && python3 -m py_compile brain_core/conversation_indexer.py
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+---
+

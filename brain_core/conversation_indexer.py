@@ -360,6 +360,8 @@ CRITICAL: Your response must start with '{{' and end with '}}'. Do not include a
 
 You are a conversation organizer. Analyze the following conversation and extract structured information.
 
+Note: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.
+
 Conversation transcript:
 {transcript}
 
