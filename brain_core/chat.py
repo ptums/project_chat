@@ -91,18 +91,48 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
                     full_response += content
                     yield content
                 
-                # Accumulate usage data if available
-                if hasattr(chunk, 'usage') and chunk.usage:
-                    prompt_tokens = getattr(chunk.usage, 'prompt_tokens', prompt_tokens)
-                    completion_tokens = getattr(chunk.usage, 'completion_tokens', completion_tokens)
-                    total_tokens = getattr(chunk.usage, 'total_tokens', total_tokens)
+                # Check if this is the final chunk (has finish_reason)
+                # OpenAI sends usage data in the final chunk when streaming completes
+                is_final_chunk = (
+                    chunk.choices and 
+                    len(chunk.choices) > 0 and 
+                    hasattr(chunk.choices[0], 'finish_reason') and 
+                    chunk.choices[0].finish_reason is not None
+                )
                 
-                # Track model from response
+                # Accumulate usage data if available
+                # OpenAI streaming API sends usage in the final chunk (may not have content)
+                # The usage object is directly on the chunk
+                if hasattr(chunk, 'usage') and chunk.usage is not None:
+                    # Extract usage data from chunk
+                    usage_obj = chunk.usage
+                    if hasattr(usage_obj, 'prompt_tokens') and usage_obj.prompt_tokens is not None:
+                        prompt_tokens = usage_obj.prompt_tokens
+                    if hasattr(usage_obj, 'completion_tokens') and usage_obj.completion_tokens is not None:
+                        completion_tokens = usage_obj.completion_tokens
+                    if hasattr(usage_obj, 'total_tokens') and usage_obj.total_tokens is not None:
+                        total_tokens = usage_obj.total_tokens
+                    logger.debug(f"Usage data received in chunk: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, is_final={is_final_chunk}")
+                elif is_final_chunk:
+                    # Log if final chunk but no usage data (this might indicate an issue)
+                    logger.debug(f"Final chunk detected (finish_reason={chunk.choices[0].finish_reason}) but no usage data found")
+                
+                # Track model from response (may be in any chunk)
                 if hasattr(chunk, 'model') and chunk.model:
                     model = chunk.model
             
             # Track usage after streaming completes
-            if not MOCK_MODE and total_tokens > 0:
+            # Log if usage tracking will happen
+            if not MOCK_MODE:
+                if total_tokens > 0:
+                    logger.debug(f"Recording usage: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}, model={model}")
+                else:
+                    # This is expected in some cases - OpenAI may not always send usage in streaming mode
+                    # Log at debug level instead of warning to avoid noise
+                    logger.debug("Streaming completed but no usage data was captured. This may be normal for some API configurations.")
+            
+            # Record usage if we have valid token data
+            if not MOCK_MODE and total_tokens > 0 and prompt_tokens > 0:
                 try:
                     cost = calculate_cost(prompt_tokens, completion_tokens, model)
                     tracker = get_session_tracker()
@@ -115,6 +145,7 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
                     )
                 except Exception as e:
                     logger.warning(f"Failed to track streaming usage: {e}")
+                    logger.debug(f"Usage tracking error details: prompt_tokens={prompt_tokens}, completion_tokens={completion_tokens}, total_tokens={total_tokens}, model={model}", exc_info=True)
             
             # Save complete response after streaming
             meta = {
@@ -129,6 +160,21 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
             
         except Exception as e:
             logger.error(f"Streaming error: {e}")
+            # Try to record usage even if streaming was interrupted
+            if not MOCK_MODE and total_tokens > 0:
+                try:
+                    cost = calculate_cost(prompt_tokens, completion_tokens, model)
+                    tracker = get_session_tracker()
+                    tracker.record_usage(
+                        prompt_tokens=prompt_tokens,
+                        completion_tokens=completion_tokens,
+                        total_tokens=total_tokens,
+                        model=model,
+                        cost=cost,
+                    )
+                    logger.debug(f"Recorded usage after streaming error: prompt={prompt_tokens}, completion={completion_tokens}, total={total_tokens}")
+                except Exception as usage_error:
+                    logger.warning(f"Failed to track usage after streaming error: {usage_error}")
             # Save partial response if any was accumulated
             if full_response:
                 meta = {

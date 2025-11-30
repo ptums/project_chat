@@ -147,7 +147,7 @@ See [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) or [specs/001-database-backup/qui
 - Index a conversation: `/save` (manually organizes and summarizes the conversation)
 - View indexed memories: `/memory list` or `/memory view <session_id>`
 - Search conversations: `/search <query>`
-- Exit: `/exit` (automatically saves current conversation before exiting)
+- Exit: `/exit` (automatically saves current conversation before exiting and displays API usage summary)
 
 ### Conversation Audit Tool
 
@@ -226,10 +226,12 @@ Returning to main menu...
 ### Conversation Management
 
 **Starting a New Conversation:**
+
 - When you start the program, you **must** provide a conversation title (cannot skip)
 - Select a project tag (default: `general`)
 
 **Switching Projects Mid-Conversation:**
+
 1. Type a project switch command (e.g., `/thn`, `/daas`, `/general`)
 2. The current conversation is automatically saved
 3. You'll be prompted for a new title for the conversation under the new project
@@ -237,6 +239,7 @@ Returning to main menu...
 5. This keeps conversations properly separated by project
 
 **Exiting:**
+
 - Type `/exit` or press Ctrl+C
 - Current conversation is automatically saved before exit
 - Usage summary is displayed
