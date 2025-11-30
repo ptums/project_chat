@@ -77,6 +77,14 @@ def generate_with_ollama(
         "stream": False,
     }
     
+    # Attempt to use format parameter for structured JSON output
+    # Note: This is experimental - Ollama may not support this yet
+    # If not supported, the API will ignore it and we'll rely on prompt engineering
+    # Some Ollama versions support "json" format parameter for structured output
+    # This is a best-effort attempt - if it fails, we fall back to prompt-only approach
+    payload["format"] = "json"
+    logger.debug("Attempting to use format=json parameter (may not be supported by all Ollama versions)")
+    
     try:
         logger.debug(f"Calling Ollama API: {api_url} with model={model}")
         response = requests.post(api_url, json=payload, timeout=timeout)

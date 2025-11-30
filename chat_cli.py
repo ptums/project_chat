@@ -119,13 +119,21 @@ def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve
             indexed_data = index_session(conv_id, override_project=None, preserve_project=True)
         else:
             indexed_data = index_session(conv_id, override_project=current_project, preserve_project=False)
-        # Verify it was actually saved
-        from brain_core.conversation_indexer import view_memory
-        saved_memory = view_memory(conv_id)
-        if saved_memory:
-            logger.debug(f"Verified saved to DB - Project: {saved_memory['project']}, Title: {saved_memory['title']}")
+        
+        # Handle case where indexing failed but conversation should still be saved
+        if indexed_data is None:
+            error_occurred = True
+            error_message = "Indexing failed, but conversation saved"
+            logger.warning(f"Indexing failed for conversation {conv_id}, but conversation is still saved")
+            print(color_text("⚠ Indexing failed, but conversation saved.", "orange"))
         else:
-            logger.warning("Indexing completed but memory not found in database!")
+            # Verify it was actually saved
+            from brain_core.conversation_indexer import view_memory
+            saved_memory = view_memory(conv_id)
+            if saved_memory:
+                logger.debug(f"Verified saved to DB - Project: {saved_memory['project']}, Title: {saved_memory['title']}")
+            else:
+                logger.warning("Indexing completed but memory not found in database!")
     except OllamaError as e:
         # T014: Error handling for OllamaError
         error_occurred = True
@@ -158,6 +166,10 @@ def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve
         )
         logger.warning(f"Auto-save failed for conversation {conv_id}: {error_message}")
         return False
+    elif indexed_data is None:
+        # Indexing failed but conversation is still saved
+        logger.warning(f"Indexing failed for conversation {conv_id}, but conversation is still saved")
+        return True  # Conversation is saved, just not indexed
     else:
         # Show more details about what was indexed
         indexed_project = indexed_data.get('project', current_project)

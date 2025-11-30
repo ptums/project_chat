@@ -4,6 +4,7 @@ Uses Ollama to generate structured summaries, tags, and memory snippets.
 """
 import json
 import logging
+import re
 import uuid
 from typing import List, Dict, Any, Optional
 
@@ -37,23 +38,48 @@ def build_transcript(messages: List[Dict[str, str]]) -> str:
 
 def extract_json_from_text(text: str) -> str:
     """
-    Extract JSON object from text that may contain explanatory text.
+    Extract JSON object from text that may contain explanatory text or markdown.
     
-    Looks for the first '{' and finds the matching closing '}' to extract
-    the JSON object, handling nested objects properly. Also removes JSON comments.
+    Uses multiple extraction strategies:
+    1. Search for JSON in markdown code blocks (```json ... ```)
+    2. Search for JSON in generic code blocks (``` ... ```)
+    3. Search entire text for '{' character (not just at start)
+    
+    Handles nested objects properly and removes JSON comments.
     
     Args:
-        text: Text that may contain JSON mixed with other text
+        text: Text that may contain JSON mixed with other text or markdown
     
     Returns:
         Extracted JSON string with comments removed
     
     Raises:
-        ValueError: If no valid JSON object is found
+        ValueError: If no valid JSON object is found after all strategies
     """
     text = text.strip()
+    original_text = text
     
-    # Remove markdown code blocks if present
+    # Strategy 1: Look for JSON code blocks (```json ... ```)
+    json_code_block_pattern = r"```json\s*\n(.*?)\n```"
+    json_match = re.search(json_code_block_pattern, text, re.DOTALL)
+    if json_match:
+        logger.debug("Found JSON in ```json code block")
+        text = json_match.group(1).strip()
+        # Continue to extraction logic below
+    
+    # Strategy 2: Look for generic code blocks (``` ... ```) that might contain JSON
+    if text == original_text:  # Only if Strategy 1 didn't find anything
+        code_block_pattern = r"```[a-z]*\s*\n(.*?)\n```"
+        code_match = re.search(code_block_pattern, text, re.DOTALL)
+        if code_match:
+            potential_json = code_match.group(1).strip()
+            # Check if it looks like JSON (starts with { or [)
+            if potential_json.startswith("{") or potential_json.startswith("["):
+                logger.debug("Found JSON-like content in generic code block")
+                text = potential_json
+                # Continue to extraction logic below
+    
+    # Strategy 3: Remove markdown code blocks if present (legacy handling)
     if text.startswith("```"):
         lines = text.split("\n")
         if len(lines) > 2:
@@ -63,10 +89,22 @@ def extract_json_from_text(text: str) -> str:
         if len(lines) > 2:
             text = "\n".join(lines[1:-1])
     
-    # Find the first '{' character
+    # Strategy 4: Search entire text for '{' character (not just at start)
+    # This handles cases where JSON appears after markdown text
     start_idx = text.find("{")
     if start_idx == -1:
-        raise ValueError("No JSON object found in response (no opening brace)")
+        # Try searching for array start as well
+        start_idx = text.find("[")
+        if start_idx == -1:
+            logger.debug("No JSON object or array found in response after all strategies")
+            raise ValueError("No JSON object found in response (no opening brace)")
+        else:
+            logger.debug("Found JSON array, but expecting object - will fail validation")
+            # Still raise error since we need an object, not an array
+            raise ValueError("No JSON object found in response (found array instead)")
+    
+    if start_idx > 0:
+        logger.debug(f"Found JSON starting at position {start_idx} (after {start_idx} characters of text)")
     
     # Find the matching closing '}' by counting braces
     brace_count = 0
@@ -153,9 +191,162 @@ def extract_json_from_text(text: str) -> str:
     return json_text.strip()
 
 
+def generate_json_from_markdown(markdown_text: str, conversation_metadata: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Generate valid JSON from markdown-formatted Ollama response when extraction fails.
+    
+    Parses markdown structure to extract key fields and generates a valid JSON object
+    with all required fields. Uses conversation metadata as fallback values.
+    
+    Args:
+        markdown_text: Markdown-formatted response from Ollama
+        conversation_metadata: Dict with 'title' and 'project' keys from conversation
+    
+    Returns:
+        Valid JSON object (dict) with all required fields for indexing
+    """
+    logger.info("Generating JSON from markdown using fallback method")
+    
+    # Initialize result with defaults
+    result = {
+        "title": conversation_metadata.get("title", "Untitled Conversation"),
+        "project": conversation_metadata.get("project", "general"),
+        "tags": [],
+        "summary_short": "Conversation indexed (fallback generation)",
+        "summary_detailed": "Full details unavailable due to indexing format issue. See conversation for details.",
+        "key_entities": {
+            "people": [],
+            "domains": [],
+            "assets": []
+        },
+        "key_topics": [],
+        "memory_snippet": "See conversation for details"
+    }
+    
+    # Parse markdown to extract fields
+    lines = markdown_text.split("\n")
+    
+    # Extract title
+    for i, line in enumerate(lines):
+        # Look for **Title:**, * Title:, or Title: patterns
+        if re.search(r"\*\*Title:\*\*|\* Title:|Title:", line, re.IGNORECASE):
+            # Extract text after colon
+            match = re.search(r":\s*(.+)", line)
+            if match:
+                result["title"] = match.group(1).strip().strip("*").strip()
+                logger.debug(f"Extracted title from markdown: {result['title']}")
+            break
+    
+    # Extract project
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Project:\*\*|\* Project:|Project:", line, re.IGNORECASE):
+            match = re.search(r":\s*(.+)", line)
+            if match:
+                project_text = match.group(1).strip().strip("*").strip()
+                # Normalize project tag
+                from .chat import normalize_project_tag
+                result["project"] = normalize_project_tag(project_text)
+                logger.debug(f"Extracted project from markdown: {result['project']}")
+            break
+    
+    # Extract tags
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Tags:\*\*|\* Tags:|Tags:", line, re.IGNORECASE):
+            # Look for array format [tag1, tag2] or list format
+            match = re.search(r"\[([^\]]+)\]", line)
+            if match:
+                tags_str = match.group(1)
+                # Split by comma and clean
+                tags = [tag.strip().strip('"').strip("'") for tag in tags_str.split(",")]
+                result["tags"] = [tag for tag in tags if tag]
+                logger.debug(f"Extracted tags from markdown: {result['tags']}")
+            break
+    
+    # Extract summary_short and summary_detailed
+    summary_lines = []
+    in_summary = False
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Summary[^:]*:\*\*|\* Summary[^:]*:|Summary[^:]*:", line, re.IGNORECASE):
+            in_summary = True
+            # Get text after colon if present
+            match = re.search(r":\s*(.+)", line)
+            if match:
+                summary_lines.append(match.group(1).strip())
+            continue
+        if in_summary:
+            # Stop at next header or empty line followed by header
+            if re.match(r"^\*\*|^\* |^#", line):
+                break
+            if line.strip():
+                summary_lines.append(line.strip())
+    
+    if summary_lines:
+        summary_text = " ".join(summary_lines)
+        # Use first sentence for short, all for detailed
+        sentences = re.split(r"[.!?]\s+", summary_text)
+        if sentences:
+            result["summary_short"] = sentences[0] + ("." if not sentences[0].endswith(".") else "")
+            result["summary_detailed"] = summary_text
+            logger.debug(f"Extracted summary from markdown (length: {len(summary_text)} chars)")
+    
+    # Extract key_entities (simplified - look for patterns)
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Key Entities:\*\*|\* Key Entities:|Key Entities:", line, re.IGNORECASE):
+            # Try to extract people, domains, assets from following lines
+            for j in range(i + 1, min(i + 10, len(lines))):
+                entity_line = lines[j]
+                if "people" in entity_line.lower():
+                    people_match = re.search(r"\[([^\]]+)\]", entity_line)
+                    if people_match:
+                        people_str = people_match.group(1)
+                        result["key_entities"]["people"] = [p.strip().strip('"').strip("'") for p in people_str.split(",") if p.strip()]
+                if "domains" in entity_line.lower():
+                    domains_match = re.search(r"\[([^\]]+)\]", entity_line)
+                    if domains_match:
+                        domains_str = domains_match.group(1)
+                        result["key_entities"]["domains"] = [d.strip().strip('"').strip("'") for d in domains_str.split(",") if d.strip()]
+                if "assets" in entity_line.lower():
+                    assets_match = re.search(r"\[([^\]]+)\]", entity_line)
+                    if assets_match:
+                        assets_str = assets_match.group(1)
+                        result["key_entities"]["assets"] = [a.strip().strip('"').strip("'") for a in assets_str.split(",") if a.strip()]
+            break
+    
+    # Extract key_topics
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Key Topics:\*\*|\* Key Topics:|Key Topics:", line, re.IGNORECASE):
+            match = re.search(r"\[([^\]]+)\]", line)
+            if match:
+                topics_str = match.group(1)
+                result["key_topics"] = [t.strip().strip('"').strip("'") for t in topics_str.split(",") if t.strip()]
+                logger.debug(f"Extracted key_topics from markdown: {result['key_topics']}")
+            break
+    
+    # Extract memory_snippet
+    for i, line in enumerate(lines):
+        if re.search(r"\*\*Memory[^:]*:\*\*|\* Memory[^:]*:|Memory[^:]*:", line, re.IGNORECASE):
+            snippet_lines = []
+            for j in range(i + 1, min(i + 5, len(lines))):
+                snippet_line = lines[j].strip()
+                if snippet_line and not re.match(r"^\*\*|^\* |^#", snippet_line):
+                    snippet_lines.append(snippet_line)
+                elif snippet_lines:
+                    break
+            if snippet_lines:
+                result["memory_snippet"] = " ".join(snippet_lines)
+                logger.debug(f"Extracted memory_snippet from markdown (length: {len(result['memory_snippet'])} chars)")
+            break
+    
+    logger.info(f"Generated JSON from markdown: title='{result['title']}', project='{result['project']}', tags={len(result['tags'])}")
+    return result
+
+
 def build_index_prompt(transcript: str) -> str:
     """
     Build the prompt for Ollama to organize a conversation.
+    
+    Enhanced with explicit JSON format requirements and multiple emphasis points
+    to improve compliance with JSON-only output.
     
     Args:
         transcript: Full conversation transcript from build_transcript()
@@ -163,7 +354,11 @@ def build_index_prompt(transcript: str) -> str:
     Returns:
         Prompt string instructing Ollama to return structured JSON
     """
-    prompt = f"""You are a conversation organizer. Analyze the following conversation and extract structured information.
+    prompt = f"""You MUST return ONLY valid JSON. No markdown, no explanatory text, no additional formatting.
+
+CRITICAL: Your response must start with '{{' and end with '}}'. Do not include any text before or after the JSON object.
+
+You are a conversation organizer. Analyze the following conversation and extract structured information.
 
 Conversation transcript:
 {transcript}
@@ -184,7 +379,7 @@ Please return a JSON object with the following structure:
   "memory_snippet": "A concise memory blurb (2-3 sentences) that would help future conversations understand the context and decisions made here"
 }}
 
-Return ONLY valid JSON, no additional text or markdown formatting.
+IMPORTANT: Return ONLY valid JSON. No markdown formatting, no explanatory text, no code blocks. Just the JSON object starting with '{{' and ending with '}}'.
 """
     return prompt
 
@@ -195,24 +390,30 @@ def index_session(
     version: int = None,
     override_project: str = None,
     preserve_project: bool = False,
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """
     Index a conversation session using Ollama.
     
     Loads all messages for the session, builds a transcript, sends to Ollama
     for organization, parses the response, and upserts into conversation_index.
     
+    Uses multiple strategies to extract JSON:
+    1. Primary extraction from response
+    2. Fallback generation from markdown if extraction fails
+    
     Args:
         session_id: UUID of the conversation session
         model: Ollama model to use (defaults to OLLAMA_MODEL from config)
         version: Index version number (defaults to CONVERSATION_INDEX_VERSION)
+        override_project: Override project classification (if conversation is "general")
+        preserve_project: If True, don't let Ollama override conversation's project
     
     Returns:
-        Dict with indexed data (title, project, tags, etc.)
+        Dict with indexed data (title, project, tags, etc.) or None if indexing fails completely
     
     Raises:
-        OllamaError: If Ollama API call fails
-        ValueError: If JSON parsing fails or required fields are missing
+        OllamaError: If Ollama API call fails (network, timeout, etc.)
+        ValueError: If conversation not found or no messages
     """
     if model is None:
         model = OLLAMA_MODEL
@@ -286,6 +487,7 @@ def index_session(
     
     # Build prompt
     prompt = build_index_prompt(transcript)
+    logger.debug(f"Generated prompt for indexing session {session_id} (length: {len(prompt)} chars)")
     
     # Check Ollama health before starting long operation
     if not check_ollama_health(OLLAMA_BASE_URL):
@@ -307,17 +509,81 @@ def index_session(
     # Parse JSON response
     try:
         # Extract JSON from response (may have explanatory text before/after)
+        logger.debug(f"Attempting to extract JSON from Ollama response (length: {len(response_text)} chars)")
         json_text = extract_json_from_text(response_text)
         indexed_data = json.loads(json_text)
+        logger.debug("Successfully extracted and parsed JSON from Ollama response")
     except ValueError as e:
-        # extract_json_from_text raised an error
+        # extract_json_from_text raised an error - log full response for debugging
+        response_preview = response_text[:1000] if len(response_text) > 1000 else response_text
         logger.error(f"Failed to extract JSON from Ollama response: {e}")
-        logger.error(f"Response text: {response_text[:500]}")
-        raise ValueError(f"Invalid JSON response from Ollama: {e}")
+        logger.error(f"Response text (first 1000 chars): {response_preview}")
+        if len(response_text) > 1000:
+            logger.error(f"Response text truncated (total length: {len(response_text)} chars)")
+        # Try fallback generation before raising error
+        logger.info("Attempting fallback JSON generation from markdown...")
+        try:
+            # Get conversation metadata for fallback
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT project, title FROM conversations WHERE id = %s",
+                        (str(session_id),)
+                    )
+                    conv_row = cur.fetchone()
+                    if conv_row:
+                        conv_project, conv_title = conv_row
+                        conversation_metadata = {
+                            "title": conv_title or "Untitled Conversation",
+                            "project": conv_project or "general"
+                        }
+                    else:
+                        conversation_metadata = {"title": "Unknown", "project": "general"}
+            
+            # Try fallback generation
+            indexed_data = generate_json_from_markdown(response_text, conversation_metadata)
+            logger.info("Successfully generated JSON from markdown using fallback method")
+        except Exception as fallback_error:
+            logger.error(f"Fallback JSON generation also failed: {fallback_error}")
+            # Log what was received vs. expected
+            logger.error(f"Expected: Valid JSON object starting with '{{'")
+            logger.error(f"Received: {response_preview[:200]}...")
+            # Return None instead of raising - graceful degradation
+            logger.warning(f"Indexing failed for session {session_id}, but conversation will still be saved")
+            return None
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse extracted JSON: {e}")
-        logger.error(f"Extracted JSON text: {response_text[:500]}")
-        raise ValueError(f"Invalid JSON response from Ollama: {e}")
+        logger.error(f"Extracted JSON text (first 500 chars): {response_text[:500]}")
+        # Try fallback generation
+        logger.info("Attempting fallback JSON generation from markdown...")
+        try:
+            with get_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT project, title FROM conversations WHERE id = %s",
+                        (str(session_id),)
+                    )
+                    conv_row = cur.fetchone()
+                    if conv_row:
+                        conv_project, conv_title = conv_row
+                        conversation_metadata = {
+                            "title": conv_title or "Untitled Conversation",
+                            "project": conv_project or "general"
+                        }
+                    else:
+                        conversation_metadata = {"title": "Unknown", "project": "general"}
+            
+            indexed_data = generate_json_from_markdown(response_text, conversation_metadata)
+            logger.info("Successfully generated JSON from markdown using fallback method")
+        except Exception as fallback_error:
+            logger.error(f"Fallback JSON generation also failed: {fallback_error}")
+            logger.warning(f"Indexing failed for session {session_id}, but conversation will still be saved")
+            return None
+    
+    # Check if indexing failed (None returned from fallback)
+    if indexed_data is None:
+        logger.warning(f"Indexing failed for session {session_id} - all extraction methods failed")
+        return None
     
     # Validate required fields
     required_fields = [
@@ -326,10 +592,18 @@ def index_session(
     ]
     missing_fields = [f for f in required_fields if f not in indexed_data]
     if missing_fields:
-        raise ValueError(
-            f"Ollama response missing required fields: {missing_fields}. "
-            f"Response: {indexed_data}"
-        )
+        logger.error(f"Generated/extracted JSON missing required fields: {missing_fields}")
+        # Try to fill in missing fields with defaults
+        for field in missing_fields:
+            if field == "tags":
+                indexed_data["tags"] = []
+            elif field == "key_entities":
+                indexed_data["key_entities"] = {"people": [], "domains": [], "assets": []}
+            elif field == "key_topics":
+                indexed_data["key_topics"] = []
+            else:
+                indexed_data[field] = f"Missing {field}"
+        logger.warning(f"Filled missing fields with defaults, continuing with indexing")
     
     # Validate and prioritize project value
     # Always use the conversation's actual project over Ollama's classification
