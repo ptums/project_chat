@@ -30,10 +30,10 @@ from .embedding_service import generate_embedding
 logger = logging.getLogger(__name__)
 
 # Repository metadata storage path
-METADATA_DIR = Path("repos/.metadata")
+METADATA_DIR = Path("../repos/.metadata")
 
 
-def clone_repository(repository_url: str, repository_name: str, target_dir: str = "repos") -> str:
+def clone_repository(repository_url: str, repository_name: str, target_dir: str = "../repos") -> str:
     """
     Clone a Git repository into the repos directory.
     

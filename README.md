@@ -98,7 +98,7 @@ Designed for home-lab and productivity workflows (e.g. THN, DAAS, FF, 700B, etc.
 5. **Configure your database and environment**
 
    - Copy `.env.example` to `.env` or `.env.local` and fill in your values
-   - Set up PostgreSQL database (see `setup_dev.py` for development)
+   - Set up PostgreSQL database (see `scripts/setup_dev.py` for development)
    - Ensure `OPENAI_API_KEY` is set for embedding generation (DAAS feature)
    - See `config.py` for all available settings
 
@@ -111,7 +111,7 @@ Designed for home-lab and productivity workflows (e.g. THN, DAAS, FF, 700B, etc.
    - Run migration SQL: `psql -d your_database -f db/migrations/002_daas_embeddings.sql`
    - Generate embeddings for existing DAAS entries:
      ```bash
-     python3 backfill_embeddings.py
+     python3 scripts/backfill_embeddings.py
      ```
 
 ---
@@ -124,16 +124,16 @@ Backup your development or production database:
 
 ```bash
 # Backup development database
-python3 backup_db.py --env dev
+python3 scripts/backup_db.py --env dev
 
 # Backup production database
-python3 backup_db.py --env prod
+python3 scripts/backup_db.py --env prod
 
 # Verify a backup file
-python3 backup_db.py --verify db/backups/project_chat_dev_2025-01-27T14-30-00Z.dump
+python3 scripts/backup_db.py --verify db/backups/project_chat_dev_2025-01-27T14-30-00Z.dump
 
 # List all backups
-python3 backup_db.py --list
+python3 scripts/backup_db.py --list
 ```
 
 See [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) or [specs/001-database-backup/quickstart.md](specs/001-database-backup/quickstart.md) for detailed backup documentation.
@@ -151,12 +151,12 @@ See [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) or [specs/001-database-backup/qui
 
 ### Conversation Audit Tool
 
-The conversation audit tool (`audit_conversations.py`) helps you manage and clean up your conversation history. Use it to review conversations, fix misclassified projects, update titles, and delete conversations.
+The conversation audit tool (`tools/audit_conversations.py`) helps you manage and clean up your conversation history. Use it to review conversations, fix misclassified projects, update titles, and delete conversations.
 
 **Running the audit tool:**
 
 ```bash
-python3 audit_conversations.py
+python3 tools/audit_conversations.py
 ```
 
 **Main Menu Options:**
@@ -178,7 +178,7 @@ After viewing a conversation list or details, you can enter message review mode 
 **Example Workflow:**
 
 ```bash
-$ python3 audit_conversations.py
+$ python3 tools/audit_conversations.py
 
 Conversation Audit Tool
 ==================================================
@@ -222,6 +222,55 @@ Returning to main menu...
 - **Update unclear titles**: Review message history and update titles to better reflect conversation content
 - **Delete jumbled conversations**: Remove conversations that contain mixed topics and aren't worth fixing
 - **Organize conversation history**: Ensure all conversations are properly categorized by project
+
+### THN Code RAG Pipeline
+
+The THN Code RAG (Retrieval-Augmented Generation) pipeline indexes code from THN-related repositories to enable context-aware debugging and technical consultation. The system parses code files, generates embeddings, and stores them for semantic search during THN conversations.
+
+**Indexing a Repository:**
+
+```bash
+# Index a single repository
+python3 scripts/index_thn_code.py --repository ../repos/thn-automation --name thn-automation
+
+# Index with production targets (for environment-specific filtering)
+python3 scripts/index_thn_code.py --repository ../repos/thn-automation --name thn-automation --production-targets tumultymedia,tumultymedia2
+
+# Incremental update (only index changed files)
+python3 scripts/index_thn_code.py --repository ../repos/thn-automation --name thn-automation --incremental
+```
+
+**How It Works:**
+
+1. **Code Parsing**: Automatically detects and parses Python, shell scripts, and config files (YAML, JSON, TOML)
+2. **Chunking**: Extracts functions, classes, and code sections with metadata
+3. **Embedding Generation**: Creates vector embeddings for semantic search
+4. **Storage**: Stores code chunks and embeddings in PostgreSQL `code_index` table
+5. **Retrieval**: During THN conversations, relevant code snippets are automatically retrieved and included in context
+
+**Supported File Types:**
+
+- Python (`.py`) - Functions and classes extracted via AST
+- Shell scripts (`.sh`, `.bash`, `.zsh`) - Functions extracted
+- Config files (`.yaml`, `.yml`, `.json`, `.toml`, `.conf`, `.cfg`)
+
+**Repository Location:**
+
+Repositories should be located in `../repos/` (one level up from the project root). The script will:
+- Scan all code files in the repository
+- Generate embeddings with file path and function context
+- Store metadata including commit hash for incremental updates
+
+**Example Output:**
+
+```
+Indexing complete:
+  Files processed: 45
+  Chunks created: 127
+  Embeddings generated: 127
+```
+
+**Note**: The `--all` flag to index all repositories in `../repos/` is planned but not yet implemented.
 
 ### Conversation Management
 
