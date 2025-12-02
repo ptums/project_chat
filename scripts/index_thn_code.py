@@ -41,7 +41,7 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Index all repositories in repos/ directory"
+        help="Index all repositories in ../repos/ directory"
     )
     args = parser.parse_args()
     
