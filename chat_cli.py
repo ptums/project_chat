@@ -520,6 +520,10 @@ def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):
         subarg = " ".join(arg.split()[1:]) if len(arg.split()) > 1 else ""
         return current_project, True, f"{subcmd}|{subarg}", "memory"
 
+    # MCP commands
+    if cmd == "mcp":
+        return current_project, True, arg, "mcp"
+
     # unknown command
     return current_project, True, f"Unknown command: {cmd}", None
 
@@ -616,12 +620,264 @@ def print_help_line():
         "/readfile <file>",
         "/save",
         "/memory [list|view <id>|refresh <id>|delete <id>]",
+        "/mcp [status|list [server]|read <uri>|search <server> <query>|sync [server]]",
         "/exit",
     ]
     print(color_text("Commands:", "grey"))
     for cmd in commands:
         print(color_text(f"  {cmd}", "grey"))
     print()
+
+
+def _handle_mcp_command(args: str, current_project: str):
+    """
+    Handle /mcp command with subcommands.
+    
+    Commands:
+    - /mcp status - Show status of all MCP servers
+    - /mcp list [server] - List resources from server(s)
+    - /mcp read <uri> - Read a specific resource
+    - /mcp search <server> <query> [limit] - Search resources
+    - /mcp sync [server] - Sync repository
+    """
+    if not args:
+        print(color_text("Usage: /mcp [status|list [server]|read <uri>|search <server> <query>|sync [server]]", "orange"))
+        return
+    
+    parts = args.split()
+    subcmd = parts[0].lower() if parts else ""
+    
+    try:
+        from brain_core.mcp_config import get_mcp_config
+        from brain_core.mcp_client import MCPClient
+        from brain_core.context_builder import _get_mcp_client
+        
+        mcp_config = get_mcp_config()
+        
+        if subcmd == "status":
+            # Show status of all configured servers
+            servers = mcp_config.get_all_servers()
+            if not servers:
+                print(color_text("No MCP servers configured.", "grey"))
+                return
+            
+            print(color_text("MCP Server Status:", "cyan", bold=True))
+            print(color_text("=" * 60, "grey"))
+            
+            for server_name in servers:
+                server_config = mcp_config.get_server_config(server_name)
+                if not server_config:
+                    continue
+                
+                try:
+                    client = _get_mcp_client(server_name, server_config)
+                    if client and client._is_process_alive():
+                        # Count cached resources
+                        cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0
+                        print(f"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)")
+                    else:
+                        error_msg = client.last_error[1] if client and client.last_error else "Process not found"
+                        print(f"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})")
+                except Exception as e:
+                    print(f"{server_name}: {color_text('✗ Error', 'orange')} ({e})")
+            
+            print(color_text("=" * 60, "grey"))
+        
+        elif subcmd == "list":
+            # List resources from server(s)
+            server_name = parts[1] if len(parts) > 1 else None
+            
+            if server_name:
+                # List from specific server
+                server_config = mcp_config.get_server_config(server_name)
+                if not server_config:
+                    print(color_text(f"Error: MCP server '{server_name}' not configured.", "orange"))
+                    print(color_text("Use /mcp status to see available servers.", "grey"))
+                    return
+                
+                try:
+                    client = _get_mcp_client(server_name, server_config)
+                    if not client:
+                        print(color_text(f"Error: MCP server '{server_name}' is not available.", "orange"))
+                        return
+                    
+                    resources = client.list_resources()
+                    if not resources:
+                        print(color_text(f"No resources found for '{server_name}'.", "grey"))
+                        return
+                    
+                    print(color_text(f"MCP Resources ({server_name}):", "cyan", bold=True))
+                    for resource in resources:
+                        uri = resource.get("uri", "")
+                        name = resource.get("name", uri)
+                        print(f"  {uri} - {name}")
+                except Exception as e:
+                    print(color_text(f"Error listing resources: {e}", "orange"))
+            else:
+                # List from all servers
+                servers = mcp_config.get_all_servers()
+                if not servers:
+                    print(color_text("No MCP servers configured.", "grey"))
+                    return
+                
+                for server_name in servers:
+                    server_config = mcp_config.get_server_config(server_name)
+                    if not server_config:
+                        continue
+                    
+                    try:
+                        client = _get_mcp_client(server_name, server_config)
+                        if not client:
+                            continue
+                        
+                        resources = client.list_resources()
+                        if resources:
+                            print(color_text(f"MCP Resources ({server_name}):", "cyan", bold=True))
+                            for resource in resources:
+                                uri = resource.get("uri", "")
+                                name = resource.get("name", uri)
+                                print(f"  {uri} - {name}")
+                            print()
+                    except Exception as e:
+                        logger.warning(f"Error listing resources from '{server_name}': {e}")
+        
+        elif subcmd == "read":
+            if len(parts) < 2:
+                print(color_text("Usage: /mcp read <uri>", "orange"))
+                return
+            
+            uri = parts[1]
+            
+            # Find which server has this resource
+            servers = mcp_config.get_all_servers()
+            resource_content = None
+            
+            for server_name in servers:
+                try:
+                    server_config = mcp_config.get_server_config(server_name)
+                    if not server_config:
+                        continue
+                    
+                    client = _get_mcp_client(server_name, server_config)
+                    if not client:
+                        continue
+                    
+                    # Try to read from this server
+                    content = client.read_resource(uri)
+                    if content:
+                        resource_content = content
+                        break
+                except Exception:
+                    continue
+            
+            if not resource_content:
+                print(color_text(f"Error: Resource '{uri}' not found.", "orange"))
+                return
+            
+            print(color_text(f"Resource: {uri}", "cyan", bold=True))
+            print(color_text("=" * 60, "grey"))
+            print(resource_content)
+            print(color_text("=" * 60, "grey"))
+        
+        elif subcmd == "search":
+            if len(parts) < 3:
+                print(color_text("Usage: /mcp search <server> <query> [limit]", "orange"))
+                return
+            
+            server_name = parts[1]
+            query = parts[2]
+            limit = int(parts[3]) if len(parts) > 3 else 10
+            
+            server_config = mcp_config.get_server_config(server_name)
+            if not server_config:
+                print(color_text(f"Error: MCP server '{server_name}' not configured.", "orange"))
+                return
+            
+            try:
+                client = _get_mcp_client(server_name, server_config)
+                if not client:
+                    print(color_text(f"Error: MCP server '{server_name}' is not available.", "orange"))
+                    return
+                
+                result = client.call_tool("search_notes", {"query": query, "limit": limit})
+                if result and "content" in result:
+                    for content_item in result["content"]:
+                        if content_item.get("type") == "text":
+                            print(color_text(f"Search Results ({server_name}): \"{query}\"", "cyan", bold=True))
+                            print(color_text("=" * 60, "grey"))
+                            print(content_item.get("text", ""))
+                            print(color_text("=" * 60, "grey"))
+                else:
+                    print(color_text(f"No results found for '{query}'.", "grey"))
+            except Exception as e:
+                print(color_text(f"Error searching: {e}", "orange"))
+        
+        elif subcmd == "sync":
+            server_name = parts[1] if len(parts) > 1 else None
+            
+            if server_name:
+                # Sync specific server
+                server_config = mcp_config.get_server_config(server_name)
+                if not server_config:
+                    print(color_text(f"Error: MCP server '{server_name}' not configured.", "orange"))
+                    return
+                
+                try:
+                    client = _get_mcp_client(server_name, server_config)
+                    if not client:
+                        print(color_text(f"Error: MCP server '{server_name}' is not available.", "orange"))
+                        return
+                    
+                    print(color_text(f"Syncing {server_name}...", "grey"))
+                    result = client.call_tool("sync_repository", {})
+                    if result and "content" in result:
+                        for content_item in result["content"]:
+                            if content_item.get("type") == "text":
+                                print(content_item.get("text", ""))
+                        # Invalidate cache after sync
+                        client.invalidate_cache()
+                        print(color_text("✓ Sync complete", "green"))
+                    else:
+                        print(color_text("Sync completed (no output)", "grey"))
+                except Exception as e:
+                    print(color_text(f"Error syncing: {e}", "orange"))
+            else:
+                # Sync all servers
+                servers = mcp_config.get_all_servers()
+                if not servers:
+                    print(color_text("No MCP servers configured.", "grey"))
+                    return
+                
+                for server_name in servers:
+                    server_config = mcp_config.get_server_config(server_name)
+                    if not server_config:
+                        continue
+                    
+                    try:
+                        client = _get_mcp_client(server_name, server_config)
+                        if not client:
+                            continue
+                        
+                        print(color_text(f"Syncing {server_name}...", "grey"))
+                        result = client.call_tool("sync_repository", {})
+                        if result and "content" in result:
+                            for content_item in result["content"]:
+                                if content_item.get("type") == "text":
+                                    print(content_item.get("text", ""))
+                            client.invalidate_cache()
+                            print(color_text(f"✓ {server_name} sync complete", "green"))
+                    except Exception as e:
+                        print(color_text(f"Error syncing {server_name}: {e}", "orange"))
+        
+        else:
+            print(color_text(f"Unknown MCP command: {subcmd}", "orange"))
+            print(color_text("Usage: /mcp [status|list [server]|read <uri>|search <server> <query>|sync [server]]", "grey"))
+    
+    except ImportError as e:
+        print(color_text(f"MCP integration not available: {e}", "orange"))
+    except Exception as e:
+        print(color_text(f"Error executing MCP command: {e}", "orange"))
+        logger.exception("MCP command error")
 
 
 def show_project_memory_blurb(project: str, limit: int = 3):
@@ -693,6 +949,17 @@ def _signal_handler(signum, frame):
             except Exception as e:
                 logger.warning(f"Failed to save conversation on exit: {e}")
                 print(color_text("⚠ Save failed during exit, but continuing...", "orange"))
+        # Shutdown MCP clients
+        try:
+            from brain_core.context_builder import _mcp_clients
+            for client in _mcp_clients.values():
+                try:
+                    client.shutdown()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        
         display_usage_summary()
         
         # Show model used in exit message
@@ -1170,6 +1437,8 @@ def main():
                     spinner_thread.join()
                     if reply:
                         print()  # Ensure newline after response
+            elif special == "mcp":
+                _handle_mcp_command(msg, current_project)
             elif special == "readfile":
                 # Read file and process content
                 filepath = msg.strip()
