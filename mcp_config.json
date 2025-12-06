@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "meditation-notes": {
+      "command": "python",
+      "args": ["-m", "src.mcp.server"],
+      "env": {
+        "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
+      }
+    }
+  }
+}
