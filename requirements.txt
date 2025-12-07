@@ -3,4 +3,6 @@ python-dotenv
 openai
 requests
 gitpython
+python-frontmatter
+markdown
 

@@ -8,7 +8,6 @@ For DAAS project, uses custom retrieval rules:
 """
 import logging
 import os
-import threading
 from typing import Dict, List, Optional, Any
 
 from .db import get_conn
@@ -16,9 +15,6 @@ from .memory import fetch_project_knowledge
 
 logger = logging.getLogger(__name__)
 
-# MCP client manager (lazy initialization)
-_mcp_clients: Dict[str, Any] = {}
-_mcp_clients_lock = threading.Lock()
 
 
 def extract_json_from_text(text: str) -> str:
@@ -139,166 +135,6 @@ def extract_json_from_text(text: str) -> str:
     return json_text.strip()
 
 
-def _get_mcp_client(server_name: str, server_config: Dict[str, Any]):
-    """
-    Get or create MCP client for a server (thread-safe).
-    
-    Args:
-        server_name: Name of the MCP server
-        server_config: Server configuration dict
-        
-    Returns:
-        MCPClient instance or None if error
-    """
-    global _mcp_clients
-    
-    with _mcp_clients_lock:
-        if server_name in _mcp_clients:
-            client = _mcp_clients[server_name]
-            # Check if client is still valid
-            if hasattr(client, '_is_process_alive') and client._is_process_alive():
-                return client
-            # Remove dead client
-            del _mcp_clients[server_name]
-        
-        # Create new client
-        try:
-            from .mcp_client import MCPClient
-            client = MCPClient(
-                server_name=server_name,
-                command=server_config["command"],
-                args=server_config.get("args", []),
-                env=server_config.get("env", {}),
-                cwd=server_config.get("cwd")
-            )
-            
-            # Initialize client
-            if client.initialize():
-                _mcp_clients[server_name] = client
-                return client
-            else:
-                logger.warning(f"Failed to initialize MCP client for '{server_name}'")
-                return None
-        except Exception as e:
-            logger.error(f"Error creating MCP client for '{server_name}': {e}")
-            return None
-
-
-def _get_mcp_resources_for_project(project: str, user_message: str) -> List[Dict[str, Any]]:
-    """
-    Get relevant MCP resources for a project.
-    
-    Args:
-        project: Project tag
-        user_message: User message for keyword matching
-        
-    Returns:
-        List of relevant resource dicts
-    """
-    try:
-        from .mcp_config import get_mcp_config
-        
-        mcp_config = get_mcp_config()
-        server_names = mcp_config.get_servers_for_project(project)
-        
-        if not server_names:
-            return []
-        
-        relevant_resources = []
-        user_words = set(user_message.lower().split())
-        
-        for server_name in server_names:
-            try:
-                server_config = mcp_config.get_server_config(server_name)
-                if not server_config:
-                    continue
-                
-                client = _get_mcp_client(server_name, server_config)
-                if not client:
-                    continue
-                
-                # List resources
-                resources = client.list_resources()
-                
-                # Match resources by keywords
-                for resource in resources:
-                    resource_name = resource.get("name", "").lower()
-                    resource_desc = resource.get("description", "").lower()
-                    
-                    # Simple keyword matching
-                    resource_text = f"{resource_name} {resource_desc}"
-                    matches = sum(1 for word in user_words if word in resource_text)
-                    
-                    if matches > 0:
-                        relevant_resources.append({
-                            "server": server_name,
-                            "resource": resource,
-                            "score": matches
-                        })
-            except Exception as e:
-                logger.warning(f"Error getting MCP resources from '{server_name}': {e}")
-                continue
-        
-        # Sort by relevance score and return top 5
-        relevant_resources.sort(key=lambda x: x["score"], reverse=True)
-        return relevant_resources[:5]
-        
-    except Exception as e:
-        logger.warning(f"Error getting MCP resources for project '{project}': {e}")
-        return []
-
-
-def _get_mcp_context_for_project(project: str, user_message: str) -> Optional[str]:
-    """
-    Get MCP context string for a project.
-    
-    Args:
-        project: Project tag
-        user_message: User message
-        
-    Returns:
-        Context string with MCP resources, or None
-    """
-    resources = _get_mcp_resources_for_project(project, user_message)
-    
-    if not resources:
-        return None
-    
-    try:
-        from .mcp_config import get_mcp_config
-        
-        mcp_config = get_mcp_config()
-        context_parts = []
-        
-        for item in resources:
-            server_name = item["server"]
-            resource = item["resource"]
-            uri = resource.get("uri")
-            
-            if not uri:
-                continue
-            
-            server_config = mcp_config.get_server_config(server_name)
-            if not server_config:
-                continue
-            
-            client = _get_mcp_client(server_name, server_config)
-            if not client:
-                continue
-            
-            # Read resource content
-            content = client.read_resource(uri)
-            if content:
-                resource_name = resource.get("name", uri)
-                context_parts.append(f"From {resource_name}:\n{content[:1000]}...")  # Limit content length
-        
-        if context_parts:
-            return "\n\n---\n\n".join(context_parts)
-        
-    except Exception as e:
-        logger.warning(f"Error building MCP context for project '{project}': {e}")
-    
-    return None
 
 
 def build_project_context(
@@ -341,23 +177,11 @@ def build_project_context(
             
             daas_result = retrieve_daas_context(user_message, top_k=top_k)
             
-            # Get MCP resources for DAAS (e.g., meditation notes)
-            mcp_context = None
-            try:
-                mcp_context = _get_mcp_context_for_project(project, user_message)
-            except Exception as e:
-                logger.warning(f"MCP context integration failed for DAAS: {e}")
-            
             # If we have dreams from DAAS retrieval, use them
             if daas_result.get('dreams'):
                 # Build context from DAAS retrieval result
                 context_parts = []
                 notes = []
-                
-                # Add MCP resources if available
-                if mcp_context:
-                    context_parts.append(f"Here are relevant resources:\n\n{mcp_context}")
-                    notes.append("MCP resources: Retrieved relevant external resources")
                 
                 # Add project knowledge if available
                 knowledge_summaries = fetch_project_knowledge(project)
@@ -419,22 +243,10 @@ def build_project_context(
             # Retrieve relevant code chunks
             code_context = get_thn_code_context(user_message, top_k=5)
             
-            # Get MCP resources for THN
-            mcp_context = None
-            try:
-                mcp_context = _get_mcp_context_for_project(project, user_message)
-            except Exception as e:
-                logger.warning(f"MCP context integration failed for THN: {e}")
-            
             if code_context:
                 # Build context with code and project knowledge
                 context_parts = []
                 notes = []
-                
-                # Add MCP resources if available
-                if mcp_context:
-                    context_parts.append(f"Here are relevant resources:\n\n{mcp_context}")
-                    notes.append("MCP resources: Retrieved relevant external resources")
                 
                 # Add project knowledge if available
                 knowledge_summaries = fetch_project_knowledge(project)
@@ -486,13 +298,6 @@ def build_project_context(
         except Exception as e:
             logger.error(f"THN code retrieval failed, falling back to default keyword search: {e}")
             # Fall through to default behavior (keyword-based search)
-    
-    # MCP resource integration for project-specific servers
-    mcp_context = None
-    try:
-        mcp_context = _get_mcp_context_for_project(project, user_message)
-    except Exception as e:
-        logger.warning(f"MCP context integration failed for project '{project}': {e}")
     
     # Default behavior for non-DAAS/THN projects or fallback
     # Fetch project_knowledge summaries (stable overview) - FIRST
@@ -559,11 +364,6 @@ def build_project_context(
     # Build context directly from project_knowledge and selected memories
     context_parts = []
     notes = []
-    
-    # Add MCP resources if available
-    if mcp_context:
-        context_parts.append(f"Here are relevant resources from external sources:\n\n{mcp_context}")
-        notes.append("MCP resources: Retrieved relevant external resources")
     
     # Add project_knowledge overview (stable foundation) - uses summary column
     if knowledge_summaries:
