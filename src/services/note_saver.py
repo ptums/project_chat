@@ -231,6 +231,13 @@ class NoteSaver:
             
             repo = Repo(self.repository.local_path)
             
+            # Configure pull strategy to merge (handles divergent branches)
+            # This avoids the "Need to specify how to reconcile divergent branches" error
+            try:
+                repo.config_writer().set_value('pull', 'rebase', 'false').release()
+            except Exception as e:
+                logger.debug(f"Could not set pull.rebase config: {e}")
+            
             # Temporarily configure credentials in remote URL if provided
             original_url = None
             if gitlab_username and gitlab_password:
@@ -276,6 +283,7 @@ class NoteSaver:
                 if local_sha != remote_sha:
                     logger.info("Repository out of sync, pulling latest changes...")
                     try:
+                        # Pull with merge strategy (already configured above)
                         repo.git.pull('origin', self.repository.branch)
                     except GitCommandError as e:
                         # Handle merge conflicts - abort and report
