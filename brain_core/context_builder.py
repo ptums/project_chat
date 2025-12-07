@@ -168,7 +168,8 @@ def _get_mcp_client(server_name: str, server_config: Dict[str, Any]):
                 server_name=server_name,
                 command=server_config["command"],
                 args=server_config.get("args", []),
-                env=server_config.get("env", {})
+                env=server_config.get("env", {}),
+                cwd=server_config.get("cwd")
             )
             
             # Initialize client

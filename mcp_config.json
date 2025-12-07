@@ -1,8 +1,9 @@
 {
   "mcpServers": {
     "meditation-notes": {
-      "command": "python",
+      "command": "/Users/tumultymedia/project_chat/meditation-mcp/.venv/bin/python",
       "args": ["-m", "src.mcp.server"],
+      "cwd": "/Users/tumultymedia/project_chat/meditation-mcp",
       "env": {
         "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
       }

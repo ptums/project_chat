@@ -119,6 +119,10 @@ def validate_server_config(server_name: str, config: Dict[str, Any]) -> bool:
         logger.error(f"MCP server '{server_name}' 'env' must be a dictionary")
         return False
     
+    if "cwd" in config and not isinstance(config["cwd"], str):
+        logger.error(f"MCP server '{server_name}' 'cwd' must be a string (directory path)")
+        return False
+    
     return True
 
 
