@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
 # Timeout constants (in seconds)
-INITIALIZE_TIMEOUT = 10.0  # Increased to allow for server startup/sync
+INITIALIZE_TIMEOUT = 30.0  # Increased to allow for server startup/sync/index building
 RESOURCE_TIMEOUT = 0.5
 TOOL_TIMEOUT = 1.0
 
@@ -80,6 +80,11 @@ class MCPClient:
             env = os.environ.copy()
             env.update(self.env)
             
+            # Ensure Python subprocesses output immediately (unbuffered)
+            # This is critical for MCP servers that need to communicate via stdio
+            if "python" in self.command.lower() or self.command.endswith("python"):
+                env["PYTHONUNBUFFERED"] = "1"
+            
             logger.debug(f"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}")
             if self.cwd:
                 logger.debug(f"Working directory: {self.cwd}")
@@ -92,7 +97,7 @@ class MCPClient:
                 env=env,
                 cwd=self.cwd,
                 text=True,
-                bufsize=1
+                bufsize=1  # Line buffered for text mode
             )
             
             # Give the process a moment to start and check if it's still alive
@@ -307,6 +312,28 @@ class MCPClient:
                 else:
                     # Process is alive but not responding - might be stuck
                     logger.warning(f"MCP server '{self.server_name}' process is alive but not responding")
+                    # Try to read stderr in non-blocking way to see what server is doing
+                    if self.process and self.process.stderr:
+                        try:
+                            import select
+                            if hasattr(select, 'select'):
+                                ready, _, _ = select.select([self.process.stderr], [], [], 0.1)
+                                if ready:
+                                    stderr_content = self.process.stderr.read(4096)
+                                    if stderr_content:
+                                        logger.error(f"Stderr output from stuck server: {stderr_content}")
+                        except (ImportError, OSError, Exception):
+                            # select not available or error reading - try blocking read with small timeout
+                            try:
+                                import select
+                                if hasattr(select, 'select'):
+                                    ready, _, _ = select.select([self.process.stderr], [], [], 0.5)
+                                    if ready:
+                                        stderr_content = self.process.stderr.read(4096)
+                                        if stderr_content:
+                                            logger.error(f"Stderr output from stuck server: {stderr_content}")
+                            except Exception:
+                                pass
                 return None
             
             if response_error:
@@ -382,6 +409,19 @@ class MCPClient:
         logger.debug(f"Waiting for MCP server '{self.server_name}' to be ready...")
         time.sleep(1.0)  # Additional wait for server initialization
         
+        # Check for any initial stderr output that might indicate startup issues
+        if self.process and self.process.stderr:
+            try:
+                import select
+                if hasattr(select, 'select'):
+                    ready, _, _ = select.select([self.process.stderr], [], [], 0.5)
+                    if ready:
+                        initial_stderr = self.process.stderr.read(4096)
+                        if initial_stderr:
+                            logger.debug(f"Initial stderr from '{self.server_name}': {initial_stderr[:500]}")
+            except (ImportError, OSError):
+                pass
+        
         params = {
             "protocolVersion": MCP_PROTOCOL_VERSION,
             "capabilities": {},
@@ -391,6 +431,7 @@ class MCPClient:
             }
         }
         
+        logger.debug(f"Sending initialize request to '{self.server_name}'...")
         result = self._send_request("initialize", params, timeout=INITIALIZE_TIMEOUT)
         
         if result:
@@ -400,7 +441,21 @@ class MCPClient:
             logger.info(f"MCP server '{self.server_name}' initialized successfully")
             return True
         else:
-            logger.error(f"Failed to initialize MCP server '{self.server_name}'")
+            # On failure, try to capture stderr output for diagnostics
+            error_details = ""
+            if self.process and self.process.stderr:
+                try:
+                    import select
+                    if hasattr(select, 'select'):
+                        ready, _, _ = select.select([self.process.stderr], [], [], 1.0)
+                        if ready:
+                            stderr_content = self.process.stderr.read(8192)
+                            if stderr_content:
+                                error_details = f"\nServer stderr: {stderr_content[:1000]}"
+                except (ImportError, OSError, Exception):
+                    pass
+            
+            logger.error(f"Failed to initialize MCP server '{self.server_name}'{error_details}")
             return False
     
     def shutdown(self):

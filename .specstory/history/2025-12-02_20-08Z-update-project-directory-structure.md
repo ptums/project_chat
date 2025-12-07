@@ -10156,3 +10156,203 @@ If it still times out, the improved error messages will show stderr output to he
 
 ---
 
+_**User (2025-12-06 16:55Z)**_
+
+Also I am now seeing this error when I run /exit 
+
+
+
+ Validation error during indexing
+
+Traceback (most recent call last):
+
+  File "/Users/tumultymedia/project_chat/project_chat/chat_cli.py", line 119, in save_current_conversation
+
+    indexed_data = index_session(conv_id, override_project=None, preserve_project=True)
+
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "/Users/tumultymedia/project_chat/project_chat/brain_core/conversation_indexer.py", line 484, in index_session
+
+    raise ValueError(f"No messages found for conversation {session_id}")
+
+ValueError: No messages found for conversation 8943ed5b-53a9-462a-abcc-145f71feeaf8
+
+⚠ Save failed: Indexing validation error: No messages found for conversation 8943ed5b-53a9-462a-abcc-145f71feeaf8
+
+Auto-save failed for conversation 8943ed5b-53a9-462a-abcc-145f71feeaf8: Indexing validation error: No messages found for conversation 8943ed5b-53a9-462a-abcc-145f71feeaf8
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+The error occurs when indexing a conversation with no messages. Checking the save/indexing logic to handle this case:
+
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "def save_current_conversation" in "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py" • 1 match</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `chat_cli.py` | `def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve_project: bool = False) -> bool:` | L84 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "def index_session" in "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/conversation_indexer.py" • 1 match</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `brain_core/conversation_indexer.py` | `def index_session(` | L389 |
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/conversation_indexer.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+Handling conversations with no messages: skip indexing instead of raising an error.
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/conversation_indexer.py</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 1
+
+```diff
+@@ -482,5 +482,6 @@
+      
+      if not rows:
+-         raise ValueError(f"No messages found for conversation {session_id}")
++         logger.info(f"No messages found for conversation {session_id} - skipping indexing")
++         return None
+      
+      # Build transcript
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py</summary>
+
+**Chunk 1**
+Lines added: 9, lines removed: 3
+
+```diff
+@@ -142,7 +142,13 @@
+      except ValueError as e:
+          # T014: Error handling for ValueError
+-         error_occurred = True
+-         error_message = f"Indexing validation error: {str(e)}"
+-         logger.exception("Validation error during indexing")
++         # Check if this is the "no messages" case - that's not really an error
++         if "No messages found" in str(e):
++             logger.info(f"Conversation {conv_id} has no messages - skipping indexing (this is normal)")
++             error_occurred = False  # Not really an error
++             error_message = None
++         else:
++             error_occurred = True
++             error_message = f"Indexing validation error: {str(e)}"
++             logger.exception("Validation error during indexing")
+      except Exception as e:
+          # T014: Error handling for generic Exception
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 2 files</summary>
+      
+Lint paths:
+
+- `brain_core/conversation_indexer.py`
+- `chat_cli.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+Fixed the issue. When a conversation has no messages:
+
+1. **`index_session`** returns `None` instead of raising a `ValueError` (no messages is expected, not an error)
+2. **`save_current_conversation`** handles `None` as "indexing skipped" (conversation is still saved, just not indexed)
+
+Exiting a conversation with no messages will no longer show an error. The conversation is saved, and indexing is skipped since there's nothing to index.
+
+This can happen if:
+- You create a conversation but exit before sending any messages
+- You run `/mcp status` or other commands without sending chat messages
+
+The fix ensures this scenario is handled gracefully.
+
+---
+
