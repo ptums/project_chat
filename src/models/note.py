@@ -24,6 +24,26 @@ class Note:
         """Generate MCP resource URI for this note."""
         return f"meditation://note/{self.slug}"
     
+    @property
+    def project_directory(self) -> str:
+        """
+        Extract project directory from file_path.
+        
+        Returns:
+            Project directory name (e.g., "daas" from "daas/morning-meditation.md")
+            Returns empty string if file_path doesn't contain a directory
+        """
+        if not self.file_path:
+            return ""
+        
+        # Split path and get first component (directory)
+        parts = self.file_path.split("/")
+        if len(parts) > 1:
+            return parts[0]
+        
+        # If no directory separator, return empty string
+        return ""
+    
     def to_dict(self) -> Dict[str, Any]:
         """Convert note to dictionary for JSON serialization."""
         return {

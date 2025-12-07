@@ -28,14 +28,27 @@ class ResourcesHandler:
         Handle resources/list request.
         
         Args:
-            params: Request parameters (unused)
+            params: Request parameters (optional 'project' filter)
             
         Returns:
             Resources list response
         """
         resources = []
         
-        for note in self.index.all_notes():
+        # Check if project filter is provided
+        project = params.get("project")
+        
+        if project:
+            # Filter by project directory
+            from ..services.project_filter import ProjectDirectoryMapper
+            mapper = ProjectDirectoryMapper()
+            directory = mapper.get_directory(project)
+            notes = self.index.get_by_project(directory)
+        else:
+            # Return all notes
+            notes = self.index.all_notes()
+        
+        for note in notes:
             resources.append({
                 "uri": note.uri,
                 "name": note.title,
@@ -43,7 +56,7 @@ class ResourcesHandler:
                 "mimeType": "text/markdown"
             })
         
-        logger.debug(f"Listed {len(resources)} resources")
+        logger.debug(f"Listed {len(resources)} resources" + (f" for project {project}" if project else ""))
         return {
             "resources": resources
         }

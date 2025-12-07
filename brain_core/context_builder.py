@@ -177,11 +177,31 @@ def build_project_context(
             
             daas_result = retrieve_daas_context(user_message, top_k=top_k)
             
+            # Get project-scoped meditation notes for DAAS
+            mcp_notes_context = None
+            try:
+                from src.mcp.api import get_mcp_api
+                api = get_mcp_api()
+                project_notes = api.get_project_notes(project, user_message, limit=5)
+                if project_notes:
+                    notes_parts = []
+                    for note in project_notes:
+                        notes_parts.append(f"From {note['title']} ({note['uri']}):\n{note['content_snippet']}")
+                    if notes_parts:
+                        mcp_notes_context = "\n\n---\n\n".join(notes_parts)
+            except Exception as e:
+                logger.debug(f"MCP notes not available for DAAS: {e}")
+            
             # If we have dreams from DAAS retrieval, use them
             if daas_result.get('dreams'):
                 # Build context from DAAS retrieval result
                 context_parts = []
                 notes = []
+                
+                # Add MCP meditation notes if available
+                if mcp_notes_context:
+                    context_parts.append(f"Here are relevant meditation notes from this project:\n\n{mcp_notes_context}")
+                    notes.append("MCP notes: Retrieved relevant project-scoped meditation notes")
                 
                 # Add project knowledge if available
                 knowledge_summaries = fetch_project_knowledge(project)
@@ -201,13 +221,11 @@ def build_project_context(
                 
                 if context_parts:
                     context = "\n\n".join(context_parts)
-                    context += "\n\nUse this information to answer my new question in a way that is:\n"
-                    context += "- consistent with the project goals and constraints\n"
-                    context += "- consistent with prior decisions where appropriate\n"
-                    context += "- willing to say \"I don't know\" if something is unclear."
-                    context += "- keep it short and concise."
-                    context += "- keep it easy to understand."
-                    context += "- if you think I made a mistake in my prompt, please share don't agree with me"
+                    context += "\n\nUse this information naturally in our conversation. Recall and reference "
+                    context += "relevant details from these notes and dreams as we discuss topics. "
+                    context += "Be conversational, honest, direct, and thoughtful. Think deeply, "
+                    context += "inspire new ideas, reason logically, and show empathy. "
+                    context += "If something is unclear, say so. Keep responses natural and engaging."
                     
                     logger.debug(f"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams")
                     return {
@@ -243,10 +261,30 @@ def build_project_context(
             # Retrieve relevant code chunks
             code_context = get_thn_code_context(user_message, top_k=5)
             
+            # Get project-scoped meditation notes for THN
+            mcp_notes_context = None
+            try:
+                from src.mcp.api import get_mcp_api
+                api = get_mcp_api()
+                project_notes = api.get_project_notes(project, user_message, limit=5)
+                if project_notes:
+                    notes_parts = []
+                    for note in project_notes:
+                        notes_parts.append(f"From {note['title']} ({note['uri']}):\n{note['content_snippet']}")
+                    if notes_parts:
+                        mcp_notes_context = "\n\n---\n\n".join(notes_parts)
+            except Exception as e:
+                logger.debug(f"MCP notes not available for THN: {e}")
+            
             if code_context:
                 # Build context with code and project knowledge
                 context_parts = []
                 notes = []
+                
+                # Add MCP meditation notes if available
+                if mcp_notes_context:
+                    context_parts.append(f"Here are relevant meditation notes from this project:\n\n{mcp_notes_context}")
+                    notes.append("MCP notes: Retrieved relevant project-scoped meditation notes")
                 
                 # Add project knowledge if available
                 knowledge_summaries = fetch_project_knowledge(project)
@@ -262,19 +300,13 @@ def build_project_context(
                 # Also include conversation memories (fallback to default behavior for memories)
                 # But prioritize code context
                 context = "\n\n".join(context_parts)
-                context += "\n\nUse this information to answer my question. Focus on the actual code when providing technical guidance."
-                context += "\n\nWhen explaining technical concepts:"
-                context += "\n- Use the actual code examples from the codebase"
-                context += "\n- Explain how the code works, not just what it does"
-                context += "\n- Identify patterns and best practices visible in the code"
-                context += "\n- If asked for learning projects, suggest practical exercises based on the codebase patterns"
-                context += "\n- If asked for lesson plans, structure them around the actual code examples"
-                context += "\n\nKeep responses:\n"
-                context += "- short and concise\n"
-                context += "- easy to understand\n"
-                context += "- based on the actual codebase when possible\n"
-                context += "- educational and helpful for learning\n"
-                context += "- willing to say \"I don't know\" if something is unclear"
+                context += "\n\nUse this information naturally in our conversation. Recall and reference "
+                context += "relevant code and notes as we discuss topics. Focus on actual code when "
+                context += "providing technical guidance. Be conversational, honest, direct, and thoughtful. "
+                context += "Think deeply about technical concepts, inspire new ideas, reason logically, "
+                context += "and show empathy for the learning process. Use actual code examples, explain "
+                context += "how code works, identify patterns, and suggest practical exercises. "
+                context += "Keep responses natural, educational, and engaging - not robotic or overly formal."
                 
                 logger.debug(f"Built THN context with code retrieval")
                 return {
@@ -298,6 +330,23 @@ def build_project_context(
         except Exception as e:
             logger.error(f"THN code retrieval failed, falling back to default keyword search: {e}")
             # Fall through to default behavior (keyword-based search)
+    
+    # Get project-scoped meditation notes (if MCP available)
+    mcp_notes_context = None
+    try:
+        from src.mcp.api import get_mcp_api
+        api = get_mcp_api()
+        # Get relevant notes for this project
+        project_notes = api.get_project_notes(project, user_message, limit=5)
+        if project_notes:
+            # Format notes for context
+            notes_parts = []
+            for note in project_notes:
+                notes_parts.append(f"From {note['title']} ({note['uri']}):\n{note['content_snippet']}")
+            if notes_parts:
+                mcp_notes_context = "\n\n---\n\n".join(notes_parts)
+    except Exception as e:
+        logger.debug(f"MCP notes not available for project {project}: {e}")
     
     # Default behavior for non-DAAS/THN projects or fallback
     # Fetch project_knowledge summaries (stable overview) - FIRST
@@ -365,6 +414,11 @@ def build_project_context(
     context_parts = []
     notes = []
     
+    # Add MCP meditation notes if available
+    if mcp_notes_context:
+        context_parts.append(f"Here are relevant meditation notes from this project:\n\n{mcp_notes_context}")
+        notes.append("MCP notes: Retrieved relevant project-scoped meditation notes")
+    
     # Add project_knowledge overview (stable foundation) - uses summary column
     if knowledge_summaries:
         # Combine all summaries into a single project overview
@@ -409,13 +463,12 @@ def build_project_context(
     context = "\n\n".join(context_parts)
     
     # Add instruction text about how to use this information
-    context += "\n\nUse this information to answer my new question in a way that is:\n"
-    context += "- consistent with the project goals and constraints\n"
-    context += "- consistent with prior decisions where appropriate\n"
-    context += "- willing to say \"I don't know\" if something is unclear."
-    context += "- keep it short and concise."
-    context += "- keep it easy to understand."
-    context += "- if you think I made a mistake in my prompt, please share don't agree with me"
+    context += "\n\nUse this information in our conversation. This is a natural dialogue - "
+    context += "recall and reference relevant information from these notes and prior conversations "
+    context += "as topics come up. Be conversational, honest, direct, and thoughtful. "
+    context += "Think deeply, inspire new ideas, reason logically, and show empathy. "
+    context += "If something is unclear, say so. If you think I made a mistake, share your perspective. "
+    context += "Keep responses natural and engaging, not robotic or overly formal."
     
     logger.debug(f"Built project context for {project} with {len(top_memories)} memories and {len(knowledge_summaries)} knowledge entries")
     
