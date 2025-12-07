@@ -9,6 +9,7 @@ from typing import Dict, Any
 from ..models.index import NoteIndex
 from ..services.index_builder import IndexBuilder
 from ..models.repository import Repository
+from ..services.note_saver import ConversationNote, NoteSaver
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class ToolsHandler:
         """
         self.index = index
         self.repository = repository
+        self.note_saver = NoteSaver(repository, index)
     
     def search_notes(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -105,6 +107,101 @@ class ToolsHandler:
             }
         else:
             error_message = f"Sync failed: {error}"
+            logger.error(error_message)
+            return {
+                "content": [{
+                    "type": "text",
+                    "text": error_message
+                }],
+                "isError": True
+            }
+    
+    def save_conversation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Handle save_conversation tool invocation.
+        
+        Args:
+            params: Tool parameters with 'project', 'messages', optional 'title'
+            
+        Returns:
+            Save result response
+        """
+        project = params.get("project")
+        messages = params.get("messages", [])
+        title = params.get("title")
+        
+        if not project:
+            return {
+                "content": [{
+                    "type": "text",
+                    "text": "Missing 'project' parameter"
+                }],
+                "isError": True
+            }
+        
+        if not messages:
+            return {
+                "content": [{
+                    "type": "text",
+                    "text": "No messages to save"
+                }],
+                "isError": True
+            }
+        
+        # Generate title if not provided
+        if not title:
+            first_user_msg = next((msg for msg in messages if msg.get("role") == "user"), None)
+            if first_user_msg:
+                content = first_user_msg.get("content", "")
+                title = content[:50].strip()
+                if len(content) > 50:
+                    title += "..."
+            else:
+                from datetime import datetime
+                title = f"Conversation {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        
+        # Get created_at from first message
+        from datetime import datetime
+        created_at = None
+        if messages:
+            first_msg = messages[0]
+            timestamp = first_msg.get("timestamp")
+            if timestamp:
+                try:
+                    if isinstance(timestamp, str):
+                        created_at = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                    else:
+                        created_at = timestamp
+                except Exception:
+                    pass
+        
+        if not created_at:
+            created_at = datetime.now()
+        
+        # Create ConversationNote
+        conversation_note = ConversationNote(
+            title=title,
+            project=project,
+            messages=messages,
+            created_at=created_at
+        )
+        
+        # Save
+        success, file_path, error = self.note_saver.save_conversation(conversation_note)
+        
+        if success:
+            message = f"Conversation saved as note: {file_path}"
+            if error:
+                message += f" (Warning: {error})"
+            logger.info(message)
+            return {
+                "content": [{
+                    "type": "text",
+                    "text": message
+                }]
+            }
+        else:
+            error_message = f"Failed to save conversation: {error}"
             logger.error(error_message)
             return {
                 "content": [{

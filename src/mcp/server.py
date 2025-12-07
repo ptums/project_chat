@@ -91,6 +91,31 @@ def create_server() -> MCPProtocolHandler:
                     "properties": {},
                     "required": []
                 }
+            },
+            {
+                "name": "save_conversation",
+                "description": "Save a conversation as a markdown note in the project directory",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "project": {
+                            "type": "string",
+                            "description": "Project name (DAAS, THN, FF, General, 700B)"
+                        },
+                        "messages": {
+                            "type": "array",
+                            "description": "List of conversation messages with role, content, timestamp",
+                            "items": {
+                                "type": "object"
+                            }
+                        },
+                        "title": {
+                            "type": "string",
+                            "description": "Optional title for the note"
+                        }
+                    },
+                    "required": ["project", "messages"]
+                }
             }
         ]
     })
@@ -127,6 +152,8 @@ def _handle_tool_call(params: Dict[str, Any], tools_handler: ToolsHandler) -> Di
         return tools_handler.search_notes(arguments)
     elif tool_name == "sync_repository":
         return tools_handler.sync_repository(arguments)
+    elif tool_name == "save_conversation":
+        return tools_handler.save_conversation(arguments)
     else:
         raise ValueError(f"Unknown tool: {tool_name}")
 

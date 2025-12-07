@@ -39,19 +39,31 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
 
     # Load conversation history
     history = load_conversation_messages(conversation_id, limit=50)
-
+    
+    # Extract note reads from history (system messages with note_read meta)
+    note_reads = []
+    other_messages = []
+    for msg in history:
+        meta = msg.get("meta", {})
+        if meta.get("note_read") and msg.get("role") == "system":
+            note_reads.append(msg)
+        else:
+            other_messages.append(msg)
+    
     # Build messages for OpenAI
     messages = []
 
     # Add indexed context if available (from conversation_index)
     if indexed_context and indexed_context.get("context"):
         context_msg = (
-            f"You are my assistant for project {project}. "
-            f"Here is relevant context from prior conversations:\n\n"
-            f"{indexed_context['context']}"
+            f"We're working on project {project} together. "
+            f"Here's relevant context from prior conversations and notes:\n\n"
+            f"{indexed_context['context']}\n\n"
+            f"Recall and reference this information naturally as our conversation progresses. "
+            f"Use it to answer questions, make connections, and maintain context throughout our dialogue."
         )
         if indexed_context.get("notes"):
-            context_msg += "\n\nKey notes:\n" + "\n".join(
+            context_msg += "\n\nKey sources:\n" + "\n".join(
                 f"- {note}" for note in indexed_context["notes"]
             )
         messages.append({"role": "system", "content": context_msg})
@@ -61,11 +73,38 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
         messages.append({"role": "system", "content": project_context})
 
     base_system = (
-        "You are an assistant helping the user with their personal projects "
-        "(THN, DAAS, FF, 700B, or general). Be practical and concise."
+        "You are a conversational assistant helping the user with their personal projects "
+        "(THN, DAAS, FF, 700B, or general). This is a conversation between two people - "
+        "be natural, engaging, and thoughtful.\n\n"
+        "Important conversational qualities:\n"
+        "- Be honest and direct - say what you think, don't hedge unnecessarily\n"
+        "- Think deeply about questions before responding - consider multiple angles and implications\n"
+        "- Inspire new ideas - help the user see connections and possibilities they might not have considered\n"
+        "- Think logically - use clear reasoning and explain your thought process when helpful\n"
+        "- Show empathy - understand the user's perspective and respond with care and understanding\n\n"
+        "When referencing information from meditation notes or prior conversations, do so naturally "
+        "as part of the conversation flow. Recall and reference relevant information when it's "
+        "helpful, and maintain awareness of context throughout the conversation."
     )
     messages.append({"role": "system", "content": base_system})
-    messages.extend(history)
+    
+    # Add note reads first (most recent first) so they're fresh in context
+    if note_reads:
+        # Get the most recent note read (last in list since history is chronological)
+        most_recent_note = note_reads[-1]
+        note_content = most_recent_note.get("content", "")
+        # Extract just the note content (skip the header)
+        if "[Note loaded:" in note_content:
+            note_parts = note_content.split("\n\n", 1)
+            if len(note_parts) > 1:
+                note_content = note_parts[1]  # Get content after header
+        messages.append({
+            "role": "system",
+            "content": f"The user has loaded a note for discussion. Here is the note content:\n\n{note_content}\n\nYou can now reference and discuss this note naturally in the conversation."
+        })
+    
+    # Add other conversation messages
+    messages.extend(other_messages)
 
     # Query OpenAI
     if stream:

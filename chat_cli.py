@@ -635,19 +635,20 @@ def print_help_line():
     print()
 
 
-def _handle_mcp_command(args: str, current_project: str):
+def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):
     """
     Handle /mcp command with subcommands.
     
     Commands:
     - /mcp status - Show status of MCP server
-    - /mcp list - List all meditation note resources
-    - /mcp read <uri> - Read a specific resource
+    - /mcp list [project] - List all meditation note resources (optionally filtered by project)
+    - /mcp read <uri|title|slug> [project] - Read a specific note by URI, title, or slug
     - /mcp search <query> [limit] - Search notes
     - /mcp sync - Sync repository from GitLab
+    - /mcp save [title] - Save current conversation as a note
     """
     if not args:
-        print(color_text("Usage: /mcp [status|list|read <uri>|search <query> [limit]|sync]", "orange"))
+        print(color_text("Usage: /mcp [status|list [project]|read <uri|title|slug> [project]|search <query> [limit]|sync|save [title]]", "orange"))
         return
     
     parts = args.split()
@@ -675,14 +676,24 @@ def _handle_mcp_command(args: str, current_project: str):
             print(color_text("=" * 60, "grey"))
         
         elif subcmd == "list":
-            # List all resources
-            resources = api.list_resources()
+            # List resources, optionally filtered by project
+            project_filter = parts[1] if len(parts) > 1 else None
             
-            if not resources:
-                print(color_text("No resources found. Try running /mcp sync first.", "grey"))
-                return
+            if project_filter:
+                # List resources for specific project
+                resources = api.list_resources_by_project(project_filter)
+                if not resources:
+                    print(color_text(f"No resources found for project '{project_filter}'. Try running /mcp sync first.", "grey"))
+                    return
+                print(color_text(f"MCP Resources for {project_filter} ({len(resources)} total):", "cyan", bold=True))
+            else:
+                # List all resources
+                resources = api.list_resources()
+                if not resources:
+                    print(color_text("No resources found. Try running /mcp sync first.", "grey"))
+                    return
+                print(color_text(f"MCP Resources ({len(resources)} total):", "cyan", bold=True))
             
-            print(color_text(f"MCP Resources ({len(resources)} total):", "cyan", bold=True))
             for resource in resources:
                 uri = resource.get("uri", "")
                 name = resource.get("name", uri)
@@ -690,20 +701,57 @@ def _handle_mcp_command(args: str, current_project: str):
         
         elif subcmd == "read":
             if len(parts) < 2:
-                print(color_text("Usage: /mcp read <uri>", "orange"))
+                print(color_text("Usage: /mcp read <uri|title|slug> [project]", "orange"))
                 return
             
-            uri = parts[1]
-            content = api.read_resource(uri)
-            
-            if not content:
-                print(color_text(f"Error: Resource '{uri}' not found.", "orange"))
+            if not conversation_id:
+                print(color_text("Error: No active conversation. Start a conversation first.", "orange"))
                 return
             
-            print(color_text(f"Resource: {uri}", "cyan", bold=True))
+            identifier = parts[1]
+            project_filter = parts[2] if len(parts) > 2 else current_project
+            
+            result = api.read_resource(identifier, project=project_filter)
+            
+            if not result:
+                print(color_text(f"Error: Note '{identifier}' not found.", "orange"))
+                if not identifier.startswith("meditation://"):
+                    print(color_text("Tip: Try using the full URI (meditation://note/...) or check the title/spelling.", "grey"))
+                return
+            
+            note_info = result.get("note", {})
+            content = result.get("content", "")
+            title = note_info.get("title", identifier)
+            uri = note_info.get("uri", identifier)
+            file_path = note_info.get("file_path", "")
+            
+            print(color_text(f"Note: {title}", "cyan", bold=True))
+            if file_path:
+                print(color_text(f"Path: {file_path}", "grey"))
+            print(color_text(f"URI: {uri}", "grey"))
             print(color_text("=" * 60, "grey"))
             print(content)
             print(color_text("=" * 60, "grey"))
+            
+            # Save note content to conversation so AI can reference it
+            try:
+                from brain_core.db import save_message
+                note_message = (
+                    f"[Note loaded: {title}]\n"
+                    f"URI: {uri}\n"
+                    f"File: {file_path}\n\n"
+                    f"{content}"
+                )
+                save_message(
+                    conversation_id,
+                    "system",
+                    note_message,
+                    meta={"note_read": True, "note_uri": uri, "note_title": title, "note_file_path": file_path}
+                )
+                print(color_text("✓ Note added to conversation context", "green"))
+            except Exception as e:
+                logger.warning(f"Failed to save note to conversation: {e}")
+                print(color_text("Note: Could not add note to conversation context", "orange"))
         
         elif subcmd == "search":
             if len(parts) < 2:
@@ -740,9 +788,66 @@ def _handle_mcp_command(args: str, current_project: str):
             else:
                 print(color_text("Sync completed (no output)", "grey"))
         
+        elif subcmd == "save":
+            if not conversation_id:
+                print(color_text("Error: No active conversation to save.", "orange"))
+                return
+            
+            # Extract title if provided
+            title = " ".join(parts[1:]) if len(parts) > 1 else None
+            if title:
+                title = title.strip('"\'')  # Remove quotes if user added them
+            
+            # Load conversation messages from database
+            try:
+                from brain_core.db import get_conn
+                from brain_core.chat import load_conversation_messages
+                
+                messages_data = load_conversation_messages(conversation_id, limit=1000)
+                
+                # Convert to format expected by MCP API
+                messages = []
+                for msg in messages_data:
+                    role = msg.get("role", "unknown")
+                    content = msg.get("content", "")
+                    # Get timestamp from meta or use current time
+                    timestamp = None
+                    if "meta" in msg and isinstance(msg["meta"], dict):
+                        timestamp = msg["meta"].get("created_at")
+                    if not timestamp:
+                        timestamp = datetime.datetime.utcnow().isoformat() + "Z"
+                    
+                    messages.append({
+                        "role": role,
+                        "content": content,
+                        "timestamp": timestamp
+                    })
+                
+                if not messages:
+                    print(color_text("Error: No messages found in conversation.", "orange"))
+                    return
+                
+                # Save conversation
+                print(color_text("Saving conversation...", "grey"))
+                result = api.save_conversation(current_project, messages, title=title)
+                
+                if result.get("success"):
+                    file_path = result.get("file_path", "unknown")
+                    message = result.get("message", "Note saved")
+                    print(color_text(f"✓ {message}", "green"))
+                    if "Warning" in message:
+                        print(color_text(f"  Note: {message.split('(Warning:')[1].rstrip(')')}", "orange"))
+                else:
+                    error_msg = result.get("message", "Unknown error")
+                    print(color_text(f"Error: {error_msg}", "orange"))
+                    
+            except Exception as e:
+                print(color_text(f"Error saving conversation: {e}", "orange"))
+                logger.exception("Error in /mcp save command")
+        
         else:
             print(color_text(f"Unknown MCP command: {subcmd}", "orange"))
-            print(color_text("Usage: /mcp [status|list|read <uri>|search <query> [limit]|sync]", "grey"))
+            print(color_text("Usage: /mcp [status|list|read <uri>|search <query> [limit]|sync|save [title]]", "grey"))
     
     except ImportError as e:
         print(color_text(f"MCP integration not available: {e}", "orange"))
@@ -1309,7 +1414,7 @@ def main():
                     if reply:
                         print()  # Ensure newline after response
             elif special == "mcp":
-                _handle_mcp_command(msg, current_project)
+                _handle_mcp_command(msg, current_project, conv_id)
             elif special == "readfile":
                 # Read file and process content
                 filepath = msg.strip()
