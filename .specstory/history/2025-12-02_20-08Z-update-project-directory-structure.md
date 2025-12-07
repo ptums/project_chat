@@ -9889,3 +9889,153 @@ Try running `/mcp status` again. The server should start correctly. If there are
 
 ---
 
+_**User (2025-12-06 16:55Z)**_
+
+So now i am getting Timeout waiting for response from MCP server 'meditation-notes'
+
+
+
+My current set up is I am running project_chat and meditations-mcp on the same server. In one window I am running meditations-mcp server and this is the output 
+
+
+
+2025-12-06 18:23:53 - src.services.note_parser - INFO - Found 63 markdown files
+
+
+
+2025-12-06 18:23:53 - src.services.note_parser - ERROR - Error parsing file /Users/tumultymedia/.meditation-mcp/repos/meditations/cs/Untitled.md: Note content cannot be empty
+
+2025-12-06 18:23:53 - src.services.note_parser - WARNING - Skipping file /Users/tumultymedia/.meditation-mcp/repos/meditations/cs/Untitled.md: Failed to parse file /Users/tumultymedia/.meditation-mcp/repos/meditations/cs/Untitled.md: Note content cannot be empty
+
+2025-12-06 18:23:53 - src.services.note_parser - INFO - Successfully parsed 62 notes
+
+2025-12-06 18:23:53 - src.services.repository_service - INFO - Step 3: Building index with 62 notes
+
+2025-12-06 18:23:53 - src.services.index_builder - INFO - Building index with 62 notes
+
+2025-12-06 18:23:53 - src.services.index_builder - INFO - Index built successfully: 62 notes indexed
+
+2025-12-06 18:23:53 - src.services.repository_service - INFO - Sync completed successfully: 62 notes indexed
+
+2025-12-06 18:23:53 - meditation-mcp - INFO - MCP server started, waiting for requests
+
+
+
+And in the other window i have started project_chat set up a new conversation in project THN and run /mcp status and I get this 
+
+
+
+Timeout waiting for response from MCP server 'meditation-notes'
+
+Failed to initialize MCP server 'meditation-notes'
+
+Failed to initialize MCP client for 'meditation-notes'
+
+meditation-notes: ✗ Failed to create client
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+The timeout suggests the server process starts but doesn't respond to the initialize request. Investigating the initialization flow and response handling:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "How does MCP server handle initialize request and send response?" • **10** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `brain_core/mcp_client.py` | L24-508 |
+| `specs/010-mcp-server-integration/contracts/mcp-client.md` | L131 |
+| `brain_core/mcp_client.py` | L508 |
+| `brain_core/context_builder.py` | L23-247 |
+| `brain_core/mcp_config.py` | L98-215 |
+| `chat_cli.py` | L628-888 |
+| `specs/010-mcp-server-integration/data-model.md` | L90 |
+| `brain_core/mcp_config.py` | L95 |
+| `specs/010-mcp-server-integration/research.md` | L52 |
+| `specs/010-mcp-server-integration/spec.md` | L55 |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The server performs an initial sync on startup (parsing notes, building index), which can take longer than the 2-second initialize timeout. Increasing the timeout and adding a startup delay:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -21,5 +21,5 @@
+  
+  # Timeout constants (in seconds)
+- INITIALIZE_TIMEOUT = 2.0
++ INITIALIZE_TIMEOUT = 10.0  # Increased to allow for server startup/sync
+  RESOURCE_TIMEOUT = 0.5
+  TOOL_TIMEOUT = 1.0
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="search_replace">
+<details>
+<summary>Tool use: **search_replace**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "fe9ff07b-2143-49da-b5b0-c85ef8485416"
+}
+```
+User decision: **accepted**
+
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
