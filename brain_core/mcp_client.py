@@ -33,7 +33,7 @@ class MCPClient:
     methods for resource discovery, resource reading, and tool invocation.
     """
     
-    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None):
+    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):
         """
         Initialize MCP client.
         
@@ -42,11 +42,13 @@ class MCPClient:
             command: Command to start MCP server (e.g., "python")
             args: Command-line arguments for MCP server
             env: Environment variables for the server process
+            cwd: Working directory for the server process (optional)
         """
         self.server_name = server_name
         self.command = command
         self.args = args
         self.env = env or {}
+        self.cwd = cwd
         
         self.process: Optional[subprocess.Popen] = None
         self.initialized = False
@@ -78,22 +80,63 @@ class MCPClient:
             env = os.environ.copy()
             env.update(self.env)
             
+            logger.debug(f"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}")
+            if self.cwd:
+                logger.debug(f"Working directory: {self.cwd}")
+            
             self.process = subprocess.Popen(
                 [self.command] + self.args,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env=env,
+                cwd=self.cwd,
                 text=True,
                 bufsize=1
             )
             
+            # Give the process a moment to start and check if it's still alive
+            time.sleep(0.1)
+            
+            if self.process.poll() is not None:
+                # Process exited immediately - read stderr to see why
+                stderr_output = ""
+                try:
+                    if self.process.stderr:
+                        # Read all available stderr
+                        import select
+                        if hasattr(select, 'select'):
+                            # Non-blocking read
+                            ready, _, _ = select.select([self.process.stderr], [], [], 0.1)
+                            if ready:
+                                stderr_output = self.process.stderr.read(4096)  # Read up to 4KB
+                        else:
+                            # Fallback: blocking read with timeout
+                            stderr_output = self.process.stderr.read(4096)
+                except Exception as e:
+                    logger.debug(f"Could not read stderr: {e}")
+                
+                error_msg = f"MCP server '{self.server_name}' exited immediately (exit code: {self.process.returncode})"
+                if stderr_output:
+                    error_msg += f"\nStderr: {stderr_output.strip()}"
+                logger.error(error_msg)
+                self.last_error = (time.time(), error_msg)
+                self.process = None
+                self.retry_count += 1
+                return False
+            
             logger.info(f"MCP server '{self.server_name}' process started (PID: {self.process.pid})")
             return True
             
+        except FileNotFoundError as e:
+            error_msg = f"Command not found: {self.command}. Is it installed and in PATH?"
+            logger.error(error_msg)
+            self.last_error = (time.time(), error_msg)
+            self.retry_count += 1
+            return False
         except Exception as e:
             error_msg = f"Failed to start MCP server '{self.server_name}': {e}"
-            logger.error(error_msg)
+            logger.error(error_msg, exc_info=True)
             self.last_error = (time.time(), error_msg)
             self.retry_count += 1
             return False
@@ -189,11 +232,36 @@ class MCPClient:
             # Read response line (with timeout handling via threading)
             response_line = None
             response_error = None
+            stderr_output = None
             
             def read_response():
-                nonlocal response_line, response_error
+                nonlocal response_line, response_error, stderr_output
                 try:
+                    # Check if process is still alive first
+                    if not self._is_process_alive():
+                        # Process died - try to read stderr
+                        if self.process and self.process.stderr:
+                            try:
+                                stderr_output = self.process.stderr.read()
+                            except Exception:
+                                pass
+                        response_error = Exception("Process died during request")
+                        return
+                    
                     response_line = self.process.stdout.readline()
+                    
+                    # Also check stderr for any errors (non-blocking)
+                    if self.process.stderr:
+                        try:
+                            # Try to read stderr if available (non-blocking)
+                            import select
+                            if hasattr(select, 'select'):
+                                ready, _, _ = select.select([self.process.stderr], [], [], 0)
+                                if ready:
+                                    stderr_output = self.process.stderr.read()
+                        except (ImportError, OSError):
+                            # select not available or not supported (e.g., Windows)
+                            pass
                 except Exception as e:
                     response_error = e
             
@@ -203,12 +271,19 @@ class MCPClient:
             
             if reader_thread.is_alive():
                 logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}'")
+                # Check if process is still alive
+                if not self._is_process_alive():
+                    logger.error(f"MCP server '{self.server_name}' process died during request")
                 return None
             
             if response_error:
+                if stderr_output:
+                    logger.error(f"MCP server '{self.server_name}' stderr: {stderr_output}")
                 raise response_error
             
             if not response_line:
+                if stderr_output:
+                    logger.error(f"MCP server '{self.server_name}' stderr: {stderr_output}")
                 return None
             
             response = json.loads(response_line.strip())
@@ -230,11 +305,27 @@ class MCPClient:
         except json.JSONDecodeError as e:
             error_msg = f"Failed to parse JSON response from MCP server '{self.server_name}': {e}"
             logger.error(error_msg)
+            # Try to read stderr for more context
+            if self.process and self.process.stderr:
+                try:
+                    stderr_content = self.process.stderr.read()
+                    if stderr_content:
+                        logger.error(f"Stderr output: {stderr_content}")
+                except Exception:
+                    pass
             self.last_error = (time.time(), error_msg)
             return None
         except Exception as e:
             error_msg = f"Error communicating with MCP server '{self.server_name}': {e}"
-            logger.error(error_msg)
+            logger.error(error_msg, exc_info=True)
+            # Try to read stderr for more context
+            if self.process and self.process.stderr:
+                try:
+                    stderr_content = self.process.stderr.read()
+                    if stderr_content:
+                        logger.error(f"Stderr output: {stderr_content}")
+                except Exception:
+                    pass
             self.last_error = (time.time(), error_msg)
             self.retry_count += 1
             return None

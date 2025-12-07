@@ -9070,3 +9070,822 @@ All code passes linting with no errors. The implementation is ready for testing.
 
 ---
 
+_**User (2025-12-06 16:55Z)**_
+
+So this isn't working properly when I integrate it with the mcp server when I run /mcp status I get the following 
+
+
+
+Failed to initialize MCP server 'meditation-notes'
+
+Failed to initialize MCP client for 'meditation-notes'
+
+meditation-notes: ✗ Disconnected (Error: Process not found)
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Investigating the MCP initialization issue. Checking the configuration and client initialization code:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/mcp_config.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking the subprocess startup and request handling code for issues:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving error handling and diagnostics. The process may be failing silently. Adding stderr capture and better error reporting:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -78,4 +78,6 @@
+              env = os.environ.copy()
+              env.update(self.env)
++             
++             logger.debug(f"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}")
+              
+              self.process = subprocess.Popen(
+```
+
+**Chunk 2**
+Lines added: 28, lines removed: 1
+
+```diff
+@@ -89,10 +91,37 @@
+              )
+              
++             # Give the process a moment to start and check if it's still alive
++             time.sleep(0.1)
++             
++             if self.process.poll() is not None:
++                 # Process exited immediately - read stderr to see why
++                 stderr_output = ""
++                 try:
++                     if self.process.stderr:
++                         stderr_output = self.process.stderr.read()
++                 except Exception:
++                     pass
++                 
++                 error_msg = f"MCP server '{self.server_name}' exited immediately"
++                 if stderr_output:
++                     error_msg += f": {stderr_output.strip()}"
++                 logger.error(error_msg)
++                 self.last_error = (time.time(), error_msg)
++                 self.process = None
++                 self.retry_count += 1
++                 return False
++             
+              logger.info(f"MCP server '{self.server_name}' process started (PID: {self.process.pid})")
+              return True
+              
++         except FileNotFoundError as e:
++             error_msg = f"Command not found: {self.command}. Is it installed and in PATH?"
++             logger.error(error_msg)
++             self.last_error = (time.time(), error_msg)
++             self.retry_count += 1
++             return False
+          except Exception as e:
+              error_msg = f"Failed to start MCP server '{self.server_name}': {e}"
+-             logger.error(error_msg)
++             logger.error(error_msg, exc_info=True)
+              self.last_error = (time.time(), error_msg)
+              self.retry_count += 1
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 22, lines removed: 1
+
+```diff
+@@ -219,9 +219,30 @@
+              response_line = None
+              response_error = None
++             stderr_output = None
+              
+              def read_response():
+-                 nonlocal response_line, response_error
++                 nonlocal response_line, response_error, stderr_output
+                  try:
++                     # Check if process is still alive first
++                     if not self._is_process_alive():
++                         # Process died - try to read stderr
++                         if self.process and self.process.stderr:
++                             try:
++                                 stderr_output = self.process.stderr.read()
++                             except Exception:
++                                 pass
++                         response_error = Exception("Process died during request")
++                         return
++                     
+                      response_line = self.process.stdout.readline()
++                     
++                     # Also check stderr for any errors
++                     if self.process.stderr:
++                         # Non-blocking check for stderr
++                         import select
++                         if hasattr(select, 'select'):
++                             ready, _, _ = select.select([self.process.stderr], [], [], 0)
++                             if ready:
++                                 stderr_output = self.process.stderr.read()
+                  except Exception as e:
+                      response_error = e
+```
+
+**Chunk 2**
+Lines added: 7, lines removed: undefined
+
+```diff
+@@ -233,10 +254,17 @@
+              if reader_thread.is_alive():
+                  logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}'")
++                 # Check if process is still alive
++                 if not self._is_process_alive():
++                     logger.error(f"MCP server '{self.server_name}' process died during request")
+                  return None
+              
+              if response_error:
++                 if stderr_output:
++                     logger.error(f"MCP server '{self.server_name}' stderr: {stderr_output}")
+                  raise response_error
+              
+              if not response_line:
++                 if stderr_output:
++                     logger.error(f"MCP server '{self.server_name}' stderr: {stderr_output}")
+                  return None
+              
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 17, lines removed: 1
+
+```diff
+@@ -288,9 +288,25 @@
+              error_msg = f"Failed to parse JSON response from MCP server '{self.server_name}': {e}"
+              logger.error(error_msg)
++             # Try to read stderr for more context
++             if self.process and self.process.stderr:
++                 try:
++                     stderr_content = self.process.stderr.read()
++                     if stderr_content:
++                         logger.error(f"Stderr output: {stderr_content}")
++                 except Exception:
++                     pass
+              self.last_error = (time.time(), error_msg)
+              return None
+          except Exception as e:
+              error_msg = f"Error communicating with MCP server '{self.server_name}': {e}"
+-             logger.error(error_msg)
++             logger.error(error_msg, exc_info=True)
++             # Try to read stderr for more context
++             if self.process and self.process.stderr:
++                 try:
++                     stderr_content = self.process.stderr.read()
++                     if stderr_content:
++                         logger.error(f"Stderr output: {stderr_content}")
++                 except Exception:
++                     pass
+              self.last_error = (time.time(), error_msg)
+              self.retry_count += 1
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing the `select` import issue and improving error reporting in the status command:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 11, lines removed: 7
+
+```diff
+@@ -237,12 +237,16 @@
+                      response_line = self.process.stdout.readline()
+                      
+-                     # Also check stderr for any errors
++                     # Also check stderr for any errors (non-blocking)
+                      if self.process.stderr:
+-                         # Non-blocking check for stderr
+-                         import select
+-                         if hasattr(select, 'select'):
+-                             ready, _, _ = select.select([self.process.stderr], [], [], 0)
+-                             if ready:
+-                                 stderr_output = self.process.stderr.read()
++                         try:
++                             # Try to read stderr if available (non-blocking)
++                             import select
++                             if hasattr(select, 'select'):
++                                 ready, _, _ = select.select([self.process.stderr], [], [], 0)
++                                 if ready:
++                                     stderr_output = self.process.stderr.read()
++                         except (ImportError, OSError):
++                             # select not available or not supported (e.g., Windows)
++                             pass
+                  except Exception as e:
+                      response_error = e
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py</summary>
+
+**Chunk 1**
+Lines added: 17, lines removed: 8
+
+```diff
+@@ -672,13 +672,22 @@
+                  try:
+                      client = _get_mcp_client(server_name, server_config)
+-                     if client and client._is_process_alive():
+-                         # Count cached resources
+-                         cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0
+-                         print(f"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)")
+-                     else:
+-                         error_msg = client.last_error[1] if client and client.last_error else "Process not found"
+-                         print(f"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})")
++                     if client:
++                         if hasattr(client, 'process') and client.process and client._is_process_alive():
++                             if client.initialized:
++                                 # Count cached resources
++                                 cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0
++                                 print(f"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)")
++                             else:
++                                 print(f"{server_name}: {color_text('⚠ Process running but not initialized', 'orange')}")
++                         else:
++                             error_msg = client.last_error[1] if client.last_error else "Process not found"
++                             print(f"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})")
++                     else:
++                         print(f"{server_name}: {color_text('✗ Failed to create client', 'orange')}")
+                  except Exception as e:
+-                     print(f"{server_name}: {color_text('✗ Error', 'orange')} ({e})")
++                     import traceback
++                     error_detail = str(e)
++                     print(f"{server_name}: {color_text('✗ Error', 'orange')} ({error_detail})")
++                     logger.debug(f"Full error for {server_name}:", exc_info=True)
+              
+              print(color_text("=" * 60, "grey"))
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `brain_core/mcp_client.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding a diagnostic mode to capture stderr output when the process fails. The MCP server may need to run from a specific directory or with PYTHONPATH set. Improving error reporting:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 14, lines removed: 5
+
+```diff
+@@ -99,11 +99,20 @@
+                  try:
+                      if self.process.stderr:
+-                         stderr_output = self.process.stderr.read()
+-                 except Exception:
+-                     pass
++                         # Read all available stderr
++                         import select
++                         if hasattr(select, 'select'):
++                             # Non-blocking read
++                             ready, _, _ = select.select([self.process.stderr], [], [], 0.1)
++                             if ready:
++                                 stderr_output = self.process.stderr.read(4096)  # Read up to 4KB
++                         else:
++                             # Fallback: blocking read with timeout
++                             stderr_output = self.process.stderr.read(4096)
++                 except Exception as e:
++                     logger.debug(f"Could not read stderr: {e}")
+                  
+-                 error_msg = f"MCP server '{self.server_name}' exited immediately"
++                 error_msg = f"MCP server '{self.server_name}' exited immediately (exit code: {self.process.returncode})"
+                  if stderr_output:
+-                     error_msg += f": {stderr_output.strip()}"
++                     error_msg += f"\nStderr: {stderr_output.strip()}"
+                  logger.error(error_msg)
+                  self.last_error = (time.time(), error_msg)
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: cd /Users/petertumulty/Documents/Sites/project_chat/project_chat && python3 -c "import sys; print('Python path:', sys.executable); import subprocess; result = subprocess.run(['python', '-m', 'src.mcp.server'], capture_output=True, text=True, timeout=2); print('Exit code:', result.returncode); print('Stderr:', result.stderr[:500] if result.stderr else 'None')" 2>&1 || echo "Command failed - this is expected if MCP server is not in PATH"</summary>
+
+```bash
+cd /Users/petertumulty/Documents/Sites/project_chat/project_chat && python3 -c "import sys; print('Python path:', sys.executable); import subprocess; result = subprocess.run(['python', '-m', 'src.mcp.server'], capture_output=True, text=True, timeout=2); print('Exit code:', result.returncode); print('Stderr:', result.stderr[:500] if result.stderr else 'None')" 2>&1 || echo "Command failed - this is expected if MCP server is not in PATH"
+```
+
+```
+Python path: /Users/petertumulty/.pyenv/versions/3.10.0/bin/python3
+Exit code: 1
+Stderr: /Users/petertumulty/.pyenv/versions/3.10.0/bin/python: Error while finding module specification for 'src.mcp.server' (ModuleNotFoundError: No module named 'src')
+
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The MCP server module isn't found because it's not in the Python path. Adding support for a working directory (`cwd`) in the configuration and improving error messages:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -34,5 +34,5 @@
+      """
+      
+-     def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None):
++     def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):
+          """
+          Initialize MCP client.
+```
+
+**Chunk 2**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -43,9 +43,11 @@
+              args: Command-line arguments for MCP server
+              env: Environment variables for the server process
++             cwd: Working directory for the server process (optional)
+          """
+          self.server_name = server_name
+          self.command = command
+          self.args = args
+          self.env = env or {}
++         self.cwd = cwd
+          
+          self.process: Optional[subprocess.Popen] = None
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: undefined
+
+```diff
+@@ -82,4 +82,6 @@
+              
+              logger.debug(f"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}")
++             if self.cwd:
++                 logger.debug(f"Working directory: {self.cwd}")
+              
+              self.process = subprocess.Popen(
+```
+
+**Chunk 2**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -89,4 +91,5 @@
+                  stderr=subprocess.PIPE,
+                  env=env,
++                 cwd=self.cwd,
+                  text=True,
+                  bufsize=1
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 1
+
+```diff
+@@ -169,5 +169,6 @@
+                  command=server_config["command"],
+                  args=server_config.get("args", []),
+-                 env=server_config.get("env", {})
++                 env=server_config.get("env", {}),
++                 cwd=server_config.get("cwd")
+              )
+              
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/mcp_config.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the configuration validation to support `cwd` and adding a comment in the config file:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_config.py</summary>
+
+**Chunk 1**
+Lines added: 4, lines removed: undefined
+
+```diff
+@@ -120,4 +120,8 @@
+          return False
+      
++     if "cwd" in config and not isinstance(config["cwd"], str):
++         logger.error(f"MCP server '{server_name}' 'cwd' must be a string (directory path)")
++         return False
++     
+      return True
+  
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 3 files</summary>
+      
+Lint paths:
+
+- `brain_core/mcp_client.py`
+- `brain_core/mcp_config.py`
+- `brain_core/context_builder.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Problem
+
+The MCP server module `src.mcp.server` isn't found because it's not in Python's module search path. The error shows:
+```
+ModuleNotFoundError: No module named 'src'
+```
+
+## Solution
+
+Update `mcp_config.json` with one of these options:
+
+**Option 1: Add `cwd` (working directory)**
+Point to the MCP server's root directory:
+
+```json
+{
+  "mcpServers": {
+    "meditation-notes": {
+      "command": "python",
+      "args": ["-m", "src.mcp.server"],
+      "cwd": "/path/to/meditation-mcp",
+      "env": {
+        "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
+      }
+    }
+  }
+}
+```
+
+**Option 2: Add PYTHONPATH to env**
+Add the MCP server's directory to PYTHONPATH:
+
+```json
+{
+  "mcpServers": {
+    "meditation-notes": {
+      "command": "python",
+      "args": ["-m", "src.mcp.server"],
+      "env": {
+        "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations",
+        "PYTHONPATH": "/path/to/meditation-mcp"
+      }
+    }
+  }
+}
+```
+
+**Option 3: Use absolute path in command**
+If the MCP server has a direct entry point script:
+
+```json
+{
+  "mcpServers": {
+    "meditation-notes": {
+      "command": "python",
+      "args": ["/path/to/meditation-mcp/src/mcp/server.py"],
+      "env": {
+        "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
+      }
+    }
+  }
+}
+```
+
+## Improvements made
+
+1. Added `cwd` support for setting the working directory
+2. Improved error messages to show stderr output
+3. Better process lifecycle checks
+4. Enhanced status command to show more diagnostic info
+
+After updating the config, run `/mcp status` again. The error messages should now show the actual failure reason from the MCP server.
+
+---
+
+_**User (2025-12-06 16:55Z)**_
+
+Just for your information this i my current mcp_config.json
+
+
+
+{
+
+  "mcpServers": {
+
+    "meditation-notes": {
+
+      "command": "/Users/tumultymedia/project_chat/meditation-mcp/.venv/bin/python",
+
+      "args": ["-m", "src.mcp.server"],
+
+      "env": {
+
+        "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
+
+      }
+
+    }
+
+  }
+
+}
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Adding the `cwd` field to the config so Python can find the `src.mcp.server` module:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/mcp_config.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+The string to replace was not found in the file.
+
+---
+
+
+
+---
+
+
+Updating the config with the correct content:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/mcp_config.json</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 1
+
+```diff
+@@ -2,6 +2,7 @@
+    "mcpServers": {
+      "meditation-notes": {
+-       "command": "python",
++       "command": "/Users/tumultymedia/project_chat/meditation-mcp/.venv/bin/python",
+        "args": ["-m", "src.mcp.server"],
++       "cwd": "/Users/tumultymedia/project_chat/meditation-mcp",
+        "env": {
+          "GITLAB_URL": "http://192.168.119.200:8201/tumultymedia/meditations"
+```
+
+</details>
+
+</tool-use>
+
+---
+
+
+
+---
+
+
+Added the `cwd` field to your config. This sets the working directory to the meditation-mcp directory so Python can find the `src.mcp.server` module when running `-m src.mcp.server`.
+
+The config now:
+1. Uses the venv Python directly (good for dependencies)
+2. Sets the working directory to the meditation-mcp root (so `src` module is found)
+3. Includes the GitLab URL environment variable
+
+Try running `/mcp status` again. The server should start correctly. If there are still issues, the improved error messages will show the actual stderr output from the MCP server process.
+
+---
+

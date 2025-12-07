@@ -671,15 +671,24 @@ def _handle_mcp_command(args: str, current_project: str):
                 
                 try:
                     client = _get_mcp_client(server_name, server_config)
-                    if client and client._is_process_alive():
-                        # Count cached resources
-                        cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0
-                        print(f"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)")
+                    if client:
+                        if hasattr(client, 'process') and client.process and client._is_process_alive():
+                            if client.initialized:
+                                # Count cached resources
+                                cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0
+                                print(f"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)")
+                            else:
+                                print(f"{server_name}: {color_text('⚠ Process running but not initialized', 'orange')}")
+                        else:
+                            error_msg = client.last_error[1] if client.last_error else "Process not found"
+                            print(f"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})")
                     else:
-                        error_msg = client.last_error[1] if client and client.last_error else "Process not found"
-                        print(f"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})")
+                        print(f"{server_name}: {color_text('✗ Failed to create client', 'orange')}")
                 except Exception as e:
-                    print(f"{server_name}: {color_text('✗ Error', 'orange')} ({e})")
+                    import traceback
+                    error_detail = str(e)
+                    print(f"{server_name}: {color_text('✗ Error', 'orange')} ({error_detail})")
+                    logger.debug(f"Full error for {server_name}:", exc_info=True)
             
             print(color_text("=" * 60, "grey"))
         
