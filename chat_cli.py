@@ -141,9 +141,15 @@ def save_current_conversation(conv_id: uuid.UUID, current_project: str, preserve
         logger.exception("Ollama error during indexing")
     except ValueError as e:
         # T014: Error handling for ValueError
-        error_occurred = True
-        error_message = f"Indexing validation error: {str(e)}"
-        logger.exception("Validation error during indexing")
+        # Check if this is the "no messages" case - that's not really an error
+        if "No messages found" in str(e):
+            logger.info(f"Conversation {conv_id} has no messages - skipping indexing (this is normal)")
+            error_occurred = False  # Not really an error
+            error_message = None
+        else:
+            error_occurred = True
+            error_message = f"Indexing validation error: {str(e)}"
+            logger.exception("Validation error during indexing")
     except Exception as e:
         # T014: Error handling for generic Exception
         error_occurred = True

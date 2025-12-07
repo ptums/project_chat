@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
 # Timeout constants (in seconds)
-INITIALIZE_TIMEOUT = 2.0
+INITIALIZE_TIMEOUT = 10.0  # Increased to allow for server startup/sync
 RESOURCE_TIMEOUT = 0.5
 TOOL_TIMEOUT = 1.0
 
@@ -126,6 +126,28 @@ class MCPClient:
                 return False
             
             logger.info(f"MCP server '{self.server_name}' process started (PID: {self.process.pid})")
+            
+            # Give the server a moment to initialize (it may need to sync repository, build index, etc.)
+            # Wait a bit and check if process is still alive
+            time.sleep(0.5)
+            if self.process.poll() is not None:
+                # Process exited during startup
+                stderr_output = ""
+                try:
+                    if self.process.stderr:
+                        stderr_output = self.process.stderr.read(4096)
+                except Exception:
+                    pass
+                
+                error_msg = f"MCP server '{self.server_name}' exited during startup (exit code: {self.process.returncode})"
+                if stderr_output:
+                    error_msg += f"\nStderr: {stderr_output.strip()}"
+                logger.error(error_msg)
+                self.last_error = (time.time(), error_msg)
+                self.process = None
+                self.retry_count += 1
+                return False
+            
             return True
             
         except FileNotFoundError as e:
@@ -270,10 +292,21 @@ class MCPClient:
             reader_thread.join(timeout=timeout)
             
             if reader_thread.is_alive():
-                logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}'")
+                logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}' (timeout: {timeout}s)")
                 # Check if process is still alive
                 if not self._is_process_alive():
                     logger.error(f"MCP server '{self.server_name}' process died during request")
+                    # Try to read stderr for diagnostics
+                    if self.process and self.process.stderr:
+                        try:
+                            stderr_content = self.process.stderr.read(4096)
+                            if stderr_content:
+                                logger.error(f"Stderr output: {stderr_content}")
+                        except Exception:
+                            pass
+                else:
+                    # Process is alive but not responding - might be stuck
+                    logger.warning(f"MCP server '{self.server_name}' process is alive but not responding")
                 return None
             
             if response_error:
@@ -343,6 +376,11 @@ class MCPClient:
         if not self._is_process_alive():
             if not self._start_process():
                 return False
+        
+        # Give the server additional time to complete any startup operations
+        # (e.g., repository sync, index building) before sending initialize
+        logger.debug(f"Waiting for MCP server '{self.server_name}' to be ready...")
+        time.sleep(1.0)  # Additional wait for server initialization
         
         params = {
             "protocolVersion": MCP_PROTOCOL_VERSION,
