@@ -1,5 +1,6 @@
 # chat_cli.py
 import datetime
+import getpass
 import itertools
 import logging
 import signal
@@ -827,9 +828,23 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
                     print(color_text("Error: No messages found in conversation.", "orange"))
                     return
                 
+                # Prompt for GitLab credentials
+                print(color_text("GitLab credentials required for push:", "grey"))
+                gitlab_username = input("GitLab username: ").strip()
+                gitlab_password = getpass.getpass("GitLab password/token: ").strip()
+                
+                if not gitlab_username or not gitlab_password:
+                    print(color_text("Warning: No credentials provided. Note will be saved locally but may fail to push.", "orange"))
+                
                 # Save conversation
                 print(color_text("Saving conversation...", "grey"))
-                result = api.save_conversation(current_project, messages, title=title)
+                result = api.save_conversation(
+                    current_project, 
+                    messages, 
+                    title=title,
+                    gitlab_username=gitlab_username if gitlab_username else None,
+                    gitlab_password=gitlab_password if gitlab_password else None
+                )
                 
                 if result.get("success"):
                     file_path = result.get("file_path", "unknown")

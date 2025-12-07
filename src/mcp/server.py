@@ -7,7 +7,8 @@ import os
 import sys
 import logging
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from dotenv import load_dotenv
 
 from .protocol import MCPProtocolHandler
 from .resources import ResourcesHandler
@@ -15,6 +16,36 @@ from .tools import ToolsHandler
 from ..models.repository import Repository
 from ..models.index import NoteIndex
 from ..services.index_builder import IndexBuilder
+
+# Load .env.local first (development), then .env (production/default)
+# .env.local takes precedence if it exists
+# Search for .env files starting from current directory, then project root
+def find_env_file(filename: str) -> Optional[str]:
+    """Find .env file in current directory or project root."""
+    # Check current directory first
+    if os.path.exists(filename):
+        return filename
+    # Check project root (go up to 3 levels to find project root)
+    current = Path.cwd()
+    for _ in range(3):
+        env_path = current / filename
+        if env_path.exists():
+            return str(env_path)
+        current = current.parent
+    return None
+
+env_local = find_env_file(".env.local")
+if env_local:
+    load_dotenv(env_local)
+    print(f"Loaded environment from: {env_local}", file=sys.stderr)
+
+env_file = find_env_file(".env")
+if env_file:
+    load_dotenv(env_file)
+    print(f"Loaded environment from: {env_file}", file=sys.stderr)
+else:
+    # Fallback to default behavior
+    load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -112,6 +143,14 @@ def create_server() -> MCPProtocolHandler:
                         "title": {
                             "type": "string",
                             "description": "Optional title for the note"
+                        },
+                        "gitlab_username": {
+                            "type": "string",
+                            "description": "Optional GitLab username for authentication"
+                        },
+                        "gitlab_password": {
+                            "type": "string",
+                            "description": "Optional GitLab password or token for authentication"
                         }
                     },
                     "required": ["project", "messages"]

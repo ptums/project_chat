@@ -186,8 +186,16 @@ class ToolsHandler:
             created_at=created_at
         )
         
+        # Get optional credentials
+        gitlab_username = params.get("gitlab_username")
+        gitlab_password = params.get("gitlab_password")
+        
         # Save
-        success, file_path, error = self.note_saver.save_conversation(conversation_note)
+        success, file_path, error = self.note_saver.save_conversation(
+            conversation_note,
+            gitlab_username=gitlab_username,
+            gitlab_password=gitlab_password
+        )
         
         if success:
             message = f"Conversation saved as note: {file_path}"

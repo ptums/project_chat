@@ -5,12 +5,11 @@ Saves conversations as markdown notes in the appropriate project directory
 and commits/pushes them to the GitLab repository.
 """
 import logging
-import os
 import re
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse, quote
 
 import git
 from git import Repo, GitCommandError
@@ -162,53 +161,20 @@ class NoteSaver:
         self.repository = repository
         self.index = index
         self.project_mapper = ProjectDirectoryMapper()
-        self._configure_git_credentials()
     
-    def _configure_git_credentials(self):
-        """Configure Git credentials from environment variables."""
-        # Get credentials from environment
-        gitlab_username = os.getenv("GITLAB_USERNAME") or os.getenv("GITLAB_USER")
-        gitlab_token = os.getenv("GITLAB_TOKEN") or os.getenv("GITLAB_PASSWORD")
-        
-        if gitlab_username and gitlab_token:
-            # Update remote URL to include credentials
-            try:
-                if self.repository.local_path.exists() and (self.repository.local_path / ".git").exists():
-                    repo = Repo(self.repository.local_path)
-                    remote = repo.remotes.origin
-                    current_url = remote.url
-                    
-                    # Check if credentials are already in URL
-                    if "@" not in current_url or gitlab_username not in current_url:
-                        # Parse URL and inject credentials
-                        parsed = urlparse(current_url)
-                        
-                        # Build new URL with credentials
-                        # Format: https://username:token@host/path
-                        if parsed.scheme in ("http", "https"):
-                            new_netloc = f"{gitlab_username}:{gitlab_token}@{parsed.netloc.split('@')[-1]}"
-                            new_url = urlunparse((
-                                parsed.scheme,
-                                new_netloc,
-                                parsed.path,
-                                parsed.params,
-                                parsed.query,
-                                parsed.fragment
-                            ))
-                            
-                            # Update remote URL
-                            remote.set_url(new_url)
-                            logger.info("GitLab credentials configured from environment variables")
-            except Exception as e:
-                logger.warning(f"Could not configure Git credentials: {e}")
-                # Continue anyway - user might have credentials cached
-    
-    def save_conversation(self, conversation_note: ConversationNote) -> tuple[bool, Optional[str], Optional[str]]:
+    def save_conversation(
+        self, 
+        conversation_note: ConversationNote,
+        gitlab_username: Optional[str] = None,
+        gitlab_password: Optional[str] = None
+    ) -> tuple[bool, Optional[str], Optional[str]]:
         """
         Save conversation as note in project directory.
         
         Args:
             conversation_note: ConversationNote instance
+            gitlab_username: Optional GitLab username for authentication
+            gitlab_password: Optional GitLab password or token for authentication
             
         Returns:
             Tuple of (success: bool, file_path: Optional[str], error_message: Optional[str])
@@ -265,8 +231,42 @@ class NoteSaver:
             
             repo = Repo(self.repository.local_path)
             
-            # Ensure credentials are configured before operations
-            self._configure_git_credentials()
+            # Temporarily configure credentials in remote URL if provided
+            original_url = None
+            if gitlab_username and gitlab_password:
+                try:
+                    remote = repo.remotes.origin
+                    original_url = remote.url
+                    
+                    # Parse URL and inject credentials
+                    parsed = urlparse(original_url)
+                    if parsed.scheme in ("http", "https"):
+                        # Extract host and port using urlparse attributes (handles passwords with @ correctly)
+                        # This is safer than string splitting
+                        hostname = parsed.hostname or ''
+                        port = f":{parsed.port}" if parsed.port else ''
+                        netloc = f"{hostname}{port}"
+                        
+                        # URL-encode username and password to handle special characters like @, :, etc.
+                        encoded_username = quote(gitlab_username, safe='')
+                        encoded_password = quote(gitlab_password, safe='')
+                        
+                        # Build new netloc with encoded credentials
+                        new_netloc = f"{encoded_username}:{encoded_password}@{netloc}"
+                        authenticated_url = urlunparse((
+                            parsed.scheme,
+                            new_netloc,
+                            parsed.path,
+                            parsed.params,
+                            parsed.query,
+                            parsed.fragment
+                        ))
+                        
+                        # Update remote URL with credentials
+                        remote.set_url(authenticated_url)
+                        logger.debug("Temporarily configured remote URL with credentials")
+                except Exception as e:
+                    logger.warning(f"Could not configure credentials in remote URL: {e}")
             
             # Check if repository is out of sync (has remote changes)
             try:
@@ -297,6 +297,7 @@ class NoteSaver:
             logger.info(f"Committed note: {commit_message}")
             
             # Push to remote
+            push_error = None
             try:
                 repo.remotes.origin.push(self.repository.branch)
                 logger.info(f"Pushed note to remote repository")
@@ -305,12 +306,23 @@ class NoteSaver:
                 logger.error(error_msg)
                 # Handle specific error cases
                 if "permission denied" in str(e).lower() or "authentication" in str(e).lower():
-                    error_msg = "Permission denied. Check GitLab credentials."
+                    push_error = "Permission denied. Check GitLab credentials."
                 elif "network" in str(e).lower() or "connection" in str(e).lower():
-                    error_msg = "Network error. Note saved locally but not pushed."
-                # Note is still saved locally and committed, just not pushed
-                # Return success but with warning
-                return True, relative_path, f"Note saved but push failed: {error_msg}"
+                    push_error = "Network error. Note saved locally but not pushed."
+                else:
+                    push_error = error_msg
+            finally:
+                # Restore original URL if we modified it
+                if original_url:
+                    try:
+                        repo.remotes.origin.set_url(original_url)
+                        logger.debug("Restored original remote URL")
+                    except Exception as e:
+                        logger.warning(f"Could not restore original remote URL: {e}")
+            
+            # If push failed, return success with warning
+            if push_error:
+                return True, relative_path, f"Note saved but push failed: {push_error}"
             
             # Parse and add note to index
             try:

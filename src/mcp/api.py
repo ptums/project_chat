@@ -227,7 +227,14 @@ class MCPApi:
         
         return result
     
-    def save_conversation(self, project: str, messages: List[Dict[str, Any]], title: Optional[str] = None) -> Dict[str, Any]:
+    def save_conversation(
+        self, 
+        project: str, 
+        messages: List[Dict[str, Any]], 
+        title: Optional[str] = None,
+        gitlab_username: Optional[str] = None,
+        gitlab_password: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Save a conversation as a note in the project directory.
         
@@ -235,6 +242,8 @@ class MCPApi:
             project: Project name
             messages: List of message dicts with role, content, timestamp
             title: Optional title for the note
+            gitlab_username: Optional GitLab username for authentication
+            gitlab_password: Optional GitLab password or token for authentication
             
         Returns:
             Dict with success status, file_path, and message
@@ -279,7 +288,11 @@ class MCPApi:
         )
         
         # Save using NoteSaver
-        success, file_path, error = self.note_saver.save_conversation(conversation_note)
+        success, file_path, error = self.note_saver.save_conversation(
+            conversation_note,
+            gitlab_username=gitlab_username,
+            gitlab_password=gitlab_password
+        )
         
         if success:
             return {
