@@ -1,0 +1,1 @@
+"""Models for meditation notes MCP server."""

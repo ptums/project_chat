@@ -6525,3 +6525,9511 @@ Status: **completed**
 
 ---
 
+
+Checking how the server is invoked and adding diagnostics to capture server stderr output:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py",
+  "offset": 366,
+  "limit": 40,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    def initialize(self) -&gt; bool:\n        \"\"\"\n        Initialize MCP protocol with server.\n        \n        Returns:\n            True if initialization successful, False otherwise\n        \"\"\"\n        if self.initialized:\n            return True\n        \n        if not self._is_process_alive():\n            if not self._start_process():\n                return False\n        \n        # Give the server additional time to complete any startup operations\n        # (e.g., repository sync, index building) before sending initialize\n        logger.debug(f\"Waiting for MCP server '{self.server_name}' to be ready...\")\n        time.sleep(1.0)  # Additional wait for server initialization\n        \n        params = {\n            \"protocolVersion\": MCP_PROTOCOL_VERSION,\n            \"capabilities\": {},\n            \"clientInfo\": {\n                \"name\": \"project_chat\",\n                \"version\": \"1.0\"\n            }\n        }\n        \n        result = self._send_request(\"initialize\", params, timeout=INITIALIZE_TIMEOUT)\n        \n        if result:\n            self.capabilities = result.get(\"capabilities\", {})\n            self.initialized = True\n            self.retry_count = 0  # Reset retry count on successful init\n            logger.info(f\"MCP server '{self.server_name}' initialized successfully\")\n            return True\n        else:\n            logger.error(f\"Failed to initialize MCP server '{self.server_name}'\")\n            return False\n    ",
+  "totalLinesInFile": 549
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "Failed to create client",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "Failed to create client",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 692,
+                  "content": "                        print(f\"{server_name}: {color_text('✗ Failed to create client', 'orange')}\")"
+                }
+              ]
+            },
+            {
+              "file": ".specstory/history/2025-12-02_20-08Z-update-project-directory-structure.md",
+              "matches": [
+                {
+                  "lineNumber": 9430,
+                  "content": "+                         print(f\"{server_name}: {color_text('✗ Failed to create client', 'orange')}\")"
+                },
+                {
+                  "lineNumber": 9934,
+                  "content": "meditation-notes: ✗ Failed to create client"
+                }
+              ]
+            }
+          ],
+          "totalLines": 3,
+          "totalMatchedLines": 3
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reviewing error handling and improving diagnostics:
+
+
+---
+
+File not found
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py",
+  "offset": 290,
+  "limit": 80,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            reader_thread = threading.Thread(target=read_response, daemon=True)\n            reader_thread.start()\n            reader_thread.join(timeout=timeout)\n            \n            if reader_thread.is_alive():\n                logger.warning(f\"Timeout waiting for response from MCP server '{self.server_name}' (timeout: {timeout}s)\")\n                # Check if process is still alive\n                if not self._is_process_alive():\n                    logger.error(f\"MCP server '{self.server_name}' process died during request\")\n                    # Try to read stderr for diagnostics\n                    if self.process and self.process.stderr:\n                        try:\n                            stderr_content = self.process.stderr.read(4096)\n                            if stderr_content:\n                                logger.error(f\"Stderr output: {stderr_content}\")\n                        except Exception:\n                            pass\n                else:\n                    # Process is alive but not responding - might be stuck\n                    logger.warning(f\"MCP server '{self.server_name}' process is alive but not responding\")\n                return None\n            \n            if response_error:\n                if stderr_output:\n                    logger.error(f\"MCP server '{self.server_name}' stderr: {stderr_output}\")\n                raise response_error\n            \n            if not response_line:\n                if stderr_output:\n                    logger.error(f\"MCP server '{self.server_name}' stderr: {stderr_output}\")\n                return None\n            \n            response = json.loads(response_line.strip())\n            \n            # Check for errors\n            if \"error\" in response:\n                error = response[\"error\"]\n                error_msg = f\"MCP server error: {error.get('message', 'Unknown error')}\"\n                logger.error(f\"{error_msg} (code: {error.get('code', 'unknown')})\")\n                self.last_error = (time.time(), error_msg)\n                return None\n            \n            # Verify response ID matches\n            if response.get(\"id\") != request_id:\n                logger.warning(f\"Response ID mismatch: expected {request_id}, got {response.get('id')}\")\n            \n            return response.get(\"result\")\n            \n        except json.JSONDecodeError as e:\n            error_msg = f\"Failed to parse JSON response from MCP server '{self.server_name}': {e}\"\n            logger.error(error_msg)\n            # Try to read stderr for more context\n            if self.process and self.process.stderr:\n                try:\n                    stderr_content = self.process.stderr.read()\n                    if stderr_content:\n                        logger.error(f\"Stderr output: {stderr_content}\")\n                except Exception:\n                    pass\n            self.last_error = (time.time(), error_msg)\n            return None\n        except Exception as e:\n            error_msg = f\"Error communicating with MCP server '{self.server_name}': {e}\"\n            logger.error(error_msg, exc_info=True)\n            # Try to read stderr for more context\n            if self.process and self.process.stderr:\n                try:\n                    stderr_content = self.process.stderr.read()\n                    if stderr_content:\n                        logger.error(f\"Stderr output: {stderr_content}\")\n                except Exception:\n                    pass\n            self.last_error = (time.time(), error_msg)\n            self.retry_count += 1\n            return None\n    \n    def initialize(self) -&gt; bool:\n        \"\"\"\n        Initialize MCP protocol with server.\n        ",
+  "totalLinesInFile": 549
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Improving timeout handling: reading stderr when the process is alive but not responding, and adding diagnostics.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "6f599115-f7ca-4c9a-b2f0-e28a3a19dfc9"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Increasing the initialization timeout and adding more diagnostic information:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9cc4b4ab-59a4-47a5-aedf-920e5ecaf290"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "54404a09-c136-4de5-9b12-9cb2fd1b5349"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking if we need to ensure unbuffered output. Reviewing how the process is started and whether we should set environment variables:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py",
+  "offset": 71,
+  "limit": 35,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    def _start_process(self) -&gt; bool:\n        \"\"\"\n        Start MCP server process.\n        \n        Returns:\n            True if process started successfully, False otherwise\n        \"\"\"\n        try:\n            # Merge with current environment\n            env = os.environ.copy()\n            env.update(self.env)\n            \n            logger.debug(f\"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}\")\n            if self.cwd:\n                logger.debug(f\"Working directory: {self.cwd}\")\n            \n            self.process = subprocess.Popen(\n                [self.command] + self.args,\n                stdin=subprocess.PIPE,\n                stdout=subprocess.PIPE,\n                stderr=subprocess.PIPE,\n                env=env,\n                cwd=self.cwd,\n                text=True,\n                bufsize=1\n            )\n            \n            # Give the process a moment to start and check if it's still alive\n            time.sleep(0.1)\n            \n            if self.process.poll() is not None:\n                # Process exited immediately - read stderr to see why\n                stderr_output = \"\"\n                try:\n                    if self.process.stderr:",
+  "totalLinesInFile": 599
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "8cf32c88-58a0-4f79-aeb5-a17ada98622b"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing bufsize: line buffering (1) is better; unbuffered (0) is slower. Relying on PYTHONUNBUFFERED for unbuffered output:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "17ddd84a-997b-464e-a130-25acfc9a0b99"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking for syntax errors:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "brain_core/mcp_client.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "brain_core/mcp_client.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile brain_core/mcp_client.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/mcp_client.py"
+          }
+        ],
+        "fullText": "python -m py_compile brain_core/mcp_client.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success",
+  "reviewData": {
+    "status": "Done",
+    "selectedOption": "allowlistCommands",
+    "isShowingInput": false,
+    "candidatesForAllowlist": [
+      "python"
+    ],
+    "approvalType": "user"
+  }
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+User decision: **accepted**
+
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Changes Made
+
+1. **Increased initialization timeout**: From 10 to 30 seconds to allow for startup operations (repository sync, index building).
+
+2. **Set PYTHONUNBUFFERED environment variable**: Ensures Python subprocesses output immediately, important for stdio-based MCP communication.
+
+3. **Improved stderr diagnostics**: When the process is alive but not responding, the code now reads stderr output to show what the server is doing.
+
+4. **Added pre-initialize stderr check**: Checks for initial stderr output before sending the initialize request.
+
+5. **Enhanced error messages**: Error messages now include stderr output for debugging.
+
+## Root Cause Analysis
+
+The issue appears to be:
+- Python output buffering: The server may have been ready but output was buffered, so nothing was written to stdout.
+- Insufficient timeout: 10 seconds may not be enough if the server is syncing a repository or building an index during startup.
+
+The changes ensure unbuffered output and provide more time and better diagnostics. If the timeout still occurs, check the stderr output for specific server errors.
+
+---
+
+_**User (2025-12-07 00:29Z)**_
+
+/speckit.plan so integration with a separate mcp server isn't working and its hard to debug, so my plan is to now set up the mcp server within the project instead. 
+
+
+
+So please do the following:
+
+
+
+1 - undo all the code changes that pertain to connecting to a mcp server such as mcp_client and mcp config
+
+2 - Then standup an mcp server within the codebase that does the following 
+
+
+
+# Implementation Plan: Meditation MCP Server
+
+
+
+**Branch**: `001-meditation-mcp-server` | **Date**: 2025-12-06 | **Spec**: [spec.md](./spec.md)
+
+**Input**: Feature specification from `/specs/001-meditation-mcp-server/spec.md`
+
+
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+
+
+
+## Summary
+
+
+
+Build an MCP (Model Context Protocol) server that synchronizes meditation notes from a GitLab repository and exposes them to the project_chat AI tool. The server will clone/pull notes from http://192.168.119.200:8201/tumultymedia/meditations, parse Obsidian markdown files, and serve them via the MCP protocol interface. Implementation uses Python 3.11+ with GitPython for repository sync, markdown parsing libraries for note processing, and a custom stdio-based JSON-RPC handler for the MCP protocol. Notes are indexed in-memory for fast O(1) lookups, meeting performance goals of 30s sync and 200ms retrieval.
+
+
+
+## Technical Context
+
+
+
+**Language/Version**: Python 3.11+  
+
+**Primary Dependencies**: GitPython (Git operations), markdown (markdown parsing), python-frontmatter (YAML frontmatter), custom stdio JSON-RPC for MCP protocol  
+
+**Storage**: Local filesystem cache (cloned GitLab repo), in-memory index (dict) for fast O(1) lookups  
+
+**Testing**: pytest  
+
+**Target Platform**: macOS/Linux server (runs as background service via stdio)  
+
+**Project Type**: single (MCP server application)  
+
+**Performance Goals**: Sync 1000 notes within 30 seconds (incremental pull), retrieve any note within 200ms (in-memory index)  
+
+**Constraints**: <200ms p95 response time for note retrieval, handle GitLab connection failures gracefully, support both authenticated and unauthenticated GitLab access  
+
+**Scale/Scope**: Up to 1000 meditation notes, single user (project_chat AI tool), local network GitLab server
+
+
+
+## Constitution Check
+
+
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+
+
+**Note**: Constitution file contains template placeholders. No specific gates defined yet. Will re-evaluate after Phase 1 design.
+
+
+
+## Project Structure
+
+
+
+### Documentation (this feature)
+
+
+
+```text
+
+specs/[###-feature]/
+
+├── plan.md              # This file (/speckit.plan command output)
+
+├── research.md          # Phase 0 output (/speckit.plan command)
+
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+
+├── contracts/           # Phase 1 output (/speckit.plan command)
+
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+
+```
+
+
+
+### Source Code (repository root)
+
+
+
+```text
+
+src/
+
+├── models/
+
+│   ├── note.py           # Note entity
+
+│   ├── repository.py     # Repository entity
+
+│   └── index.py          # NoteIndex entity
+
+├── services/
+
+│   ├── git_sync.py       # GitLab repository sync service
+
+│   ├── note_parser.py    # Obsidian markdown parser
+
+│   └── index_builder.py  # Index building service
+
+├── mcp/
+
+│   ├── server.py         # Main MCP server (stdio handler)
+
+│   ├── protocol.py      # JSON-RPC protocol handlers
+
+│   ├── resources.py      # MCP resource handlers
+
+│   └── tools.py          # MCP tool handlers
+
+└── cli/
+
+    └── main.py           # CLI entry point (optional)
+
+
+
+tests/
+
+├── contract/
+
+│   └── test_mcp_protocol.py  # MCP protocol contract tests
+
+├── integration/
+
+│   ├── test_git_sync.py       # Git sync integration tests
+
+│   └── test_mcp_server.py     # End-to-end MCP server tests
+
+└── unit/
+
+    ├── test_note_parser.py    # Note parsing unit tests
+
+    ├── test_index.py          # Index operations unit tests
+
+    └── test_services.py       # Service layer unit tests
+
+```
+
+
+
+**Structure Decision**: Single project structure chosen as this is a standalone MCP server application. Clear separation between models (entities), services (business logic), and MCP handlers (protocol interface). Tests organized by type (unit, integration, contract) for clear test boundaries.
+
+
+
+## Complexity Tracking
+
+
+
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+
+|-----------|------------|-------------------------------------|
+
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+
+
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Undoing external MCP client code, then setting up an internal MCP server. Finding and removing external MCP client code:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "Where is MCP client code used to connect to external servers?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 138,
+            "column": 28
+          },
+          "endPosition": {
+            "line": 247
+          }
+        },
+        "contents": "def _get_mcp_client(server_name: str, server_config: Dict[str, Any]):\n    \"\"\"\n    Get or create MCP client for a server (thread-safe).\n    \n    Args:\n        server_name: Name of the MCP server\n        server_config: Server configuration dict\n        \n    Returns:\n        MCPClient instance or None if error\n    \"\"\"\n    global _mcp_clients\n    \n    with _mcp_clients_lock:\n        if server_name in _mcp_clients:\n            client = _mcp_clients[server_name]\n            # Check if client is still valid\n            if hasattr(client, '_is_process_alive') and client._is_process_alive():\n                return client\n            # Remove dead client\n            del _mcp_clients[server_name]\n        \n        # Create new client\n        try:\n            from .mcp_client import MCPClient\n            client = MCPClient(\n                server_name=server_name,\n                command=server_config[\"command\"],\n                args=server_config.get(\"args\", []),\n                env=server_config.get(\"env\", {}),\n                cwd=server_config.get(\"cwd\")\n            )\n            \n            # Initialize client\n            if client.initialize():\n                _mcp_clients[server_name] = client\n                return client\n            else:\n                logger.warning(f\"Failed to initialize MCP client for '{server_name}'\")\n                return None\n        except Exception as e:\n            logger.error(f\"Error creating MCP client for '{server_name}': {e}\")\n            return None\n\n\ndef _get_mcp_resources_for_project(project: str, user_message: str) -&gt; List[Dict[str, Any]]:\n    ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def _get_mcp_client(server_name: str, server_config: Dict[str, Any]):",
+            "lineNumber": 142,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 143
+          },
+          {
+            "text": "    Get or create MCP client for a server (thread-safe).",
+            "lineNumber": 144
+          },
+          {
+            "text": "    ",
+            "lineNumber": 145
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 146
+          },
+          {
+            "text": "        server_name: Name of the MCP server",
+            "lineNumber": 147
+          },
+          {
+            "text": "        server_config: Server configuration dict",
+            "lineNumber": 148
+          },
+          {
+            "text": "        ",
+            "lineNumber": 149
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 150
+          },
+          {
+            "text": "        MCPClient instance or None if error",
+            "lineNumber": 151
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 152
+          },
+          {
+            "text": "    global _mcp_clients",
+            "lineNumber": 153
+          },
+          {
+            "text": "    ",
+            "lineNumber": 154
+          },
+          {
+            "text": "    with _mcp_clients_lock:",
+            "lineNumber": 155
+          },
+          {
+            "text": "        if server_name in _mcp_clients:",
+            "lineNumber": 156
+          },
+          {
+            "text": "            client = _mcp_clients[server_name]",
+            "lineNumber": 157
+          },
+          {
+            "text": "            # Check if client is still valid",
+            "lineNumber": 158
+          },
+          {
+            "text": "            if hasattr(client, '_is_process_alive') and client._is_process_alive():",
+            "lineNumber": 159
+          },
+          {
+            "text": "                return client",
+            "lineNumber": 160
+          },
+          {
+            "text": "            # Remove dead client",
+            "lineNumber": 161
+          },
+          {
+            "text": "            del _mcp_clients[server_name]",
+            "lineNumber": 162
+          },
+          {
+            "text": "        ",
+            "lineNumber": 163
+          },
+          {
+            "text": "        # Create new client",
+            "lineNumber": 164
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 165
+          },
+          {
+            "text": "            from .mcp_client import MCPClient",
+            "lineNumber": 166
+          },
+          {
+            "text": "            client = MCPClient(",
+            "lineNumber": 167
+          },
+          {
+            "text": "                server_name=server_name,",
+            "lineNumber": 168
+          },
+          {
+            "text": "                command=server_config[\"command\"],",
+            "lineNumber": 169
+          },
+          {
+            "text": "                args=server_config.get(\"args\", []),",
+            "lineNumber": 170
+          },
+          {
+            "text": "                env=server_config.get(\"env\", {}),",
+            "lineNumber": 171
+          },
+          {
+            "text": "                cwd=server_config.get(\"cwd\")",
+            "lineNumber": 172
+          },
+          {
+            "text": "            )",
+            "lineNumber": 173
+          },
+          {
+            "text": "            ",
+            "lineNumber": 174
+          },
+          {
+            "text": "            # Initialize client",
+            "lineNumber": 175
+          },
+          {
+            "text": "            if client.initialize():",
+            "lineNumber": 176
+          },
+          {
+            "text": "                _mcp_clients[server_name] = client",
+            "lineNumber": 177
+          },
+          {
+            "text": "                return client",
+            "lineNumber": 178
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 179
+          },
+          {
+            "text": "                logger.warning(f\"Failed to initialize MCP client for '{server_name}'\")",
+            "lineNumber": 180
+          },
+          {
+            "text": "                return None",
+            "lineNumber": 181
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 182
+          },
+          {
+            "text": "            logger.error(f\"Error creating MCP client for '{server_name}': {e}\")",
+            "lineNumber": 183
+          },
+          {
+            "text": "            return None",
+            "lineNumber": 184,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 185
+          },
+          {
+            "lineNumber": 186
+          },
+          {
+            "text": "def _get_mcp_resources_for_project(project: str, user_message: str) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 187,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 188
+          }
+        ]
+      },
+      "score": 0.41335558891296387
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 931
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n\n            else:\n                # Sync all servers\n                servers = mcp_config.get_all_servers()\n                if not servers:\n                    print(color_text(\"No MCP servers configured.\", \"grey\"))\n                    return\n                \n                for server_name in servers:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    try:\n                        client = _get_mcp_client(server_name, server_config)\n                        if not client:\n                            continue\n                        \n                        print(color_text(f\"Syncing {server_name}...\", \"grey\"))\n                        result = client.call_tool(\"sync_repository\", {})\n                        if result and \"content\" in result:\n                            for content_item in result[\"content\"]:\n                                if content_item.get(\"type\") == \"text\":\n                                    print(content_item.get(\"text\", \"\"))\n                            client.invalidate_cache()\n                            print(color_text(f\"✓ {server_name} sync complete\", \"green\"))\n                    except Exception as e:\n                        print(color_text(f\"Error syncing {server_name}: {e}\", \"orange\"))\n        \n        else:\n            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))\n            print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"grey\"))\n    \n    except ImportError as e:\n        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))\n    except Exception as e:\n        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))\n        logger.exception(\"MCP command error\")\n\n\ndef show_project_memory_blurb(project: str, limit: int = 3):\n    \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 858
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 859
+          },
+          {
+            "text": "                # Sync all servers",
+            "lineNumber": 860
+          },
+          {
+            "text": "                servers = mcp_config.get_all_servers()",
+            "lineNumber": 861
+          },
+          {
+            "text": "                if not servers:",
+            "lineNumber": 862
+          },
+          {
+            "text": "                    print(color_text(\"No MCP servers configured.\", \"grey\"))",
+            "lineNumber": 863
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 864
+          },
+          {
+            "text": "                ",
+            "lineNumber": 865
+          },
+          {
+            "text": "                for server_name in servers:",
+            "lineNumber": 866
+          },
+          {
+            "text": "                    server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 867
+          },
+          {
+            "text": "                    if not server_config:",
+            "lineNumber": 868
+          },
+          {
+            "text": "                        continue",
+            "lineNumber": 869
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 870
+          },
+          {
+            "text": "                    try:",
+            "lineNumber": 871
+          },
+          {
+            "text": "                        client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 872
+          },
+          {
+            "text": "                        if not client:",
+            "lineNumber": 873
+          },
+          {
+            "text": "                            continue",
+            "lineNumber": 874
+          },
+          {
+            "text": "                        ",
+            "lineNumber": 875
+          },
+          {
+            "text": "                        print(color_text(f\"Syncing {server_name}...\", \"grey\"))",
+            "lineNumber": 876
+          },
+          {
+            "text": "                        result = client.call_tool(\"sync_repository\", {})",
+            "lineNumber": 877
+          },
+          {
+            "text": "                        if result and \"content\" in result:",
+            "lineNumber": 878
+          },
+          {
+            "text": "                            for content_item in result[\"content\"]:",
+            "lineNumber": 879
+          },
+          {
+            "text": "                                if content_item.get(\"type\") == \"text\":",
+            "lineNumber": 880
+          },
+          {
+            "text": "                                    print(content_item.get(\"text\", \"\"))",
+            "lineNumber": 881
+          },
+          {
+            "text": "                            client.invalidate_cache()",
+            "lineNumber": 882
+          },
+          {
+            "text": "                            print(color_text(f\"✓ {server_name} sync complete\", \"green\"))",
+            "lineNumber": 883
+          },
+          {
+            "text": "                    except Exception as e:",
+            "lineNumber": 884
+          },
+          {
+            "text": "                        print(color_text(f\"Error syncing {server_name}: {e}\", \"orange\"))",
+            "lineNumber": 885
+          },
+          {
+            "text": "        ",
+            "lineNumber": 886
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 887
+          },
+          {
+            "text": "            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))",
+            "lineNumber": 888
+          },
+          {
+            "text": "            print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"grey\"))",
+            "lineNumber": 889
+          },
+          {
+            "text": "    ",
+            "lineNumber": 890
+          },
+          {
+            "text": "    except ImportError as e:",
+            "lineNumber": 891
+          },
+          {
+            "text": "        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))",
+            "lineNumber": 892
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 893
+          },
+          {
+            "text": "        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))",
+            "lineNumber": 894
+          },
+          {
+            "text": "        logger.exception(\"MCP command error\")",
+            "lineNumber": 895,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 896
+          },
+          {
+            "lineNumber": 897
+          },
+          {
+            "text": "def show_project_memory_blurb(project: str, limit: int = 3):",
+            "lineNumber": 898,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 899
+          }
+        ]
+      },
+      "score": 0.39454859495162964
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 107
+          }
+        },
+        "contents": "# Quickstart: MCP Server Integration\n\n## Overview\n\nThis guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.\n\n## Prerequisites\n\n1. Meditation MCP server installed and accessible\n2. GitLab repository accessible (for meditation notes)\n3. Python 3.10+ (existing requirement)\n\n## Configuration\n\n### Step 1: Create MCP Configuration File\n\nCreate &#96;mcp_config.json&#96; in project root:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### Step 2: Set Environment Variables (Optional)\n\nIf you need to pass additional environment variables:\n\n&#96;&#96;&#96;bash\nexport MCP_MEDITATION_GITLAB_TOKEN=your-token-here\nexport MCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\nOr add to &#96;.env&#96; file:\n&#96;&#96;&#96;\nMCP_MEDITATION_GITLAB_TOKEN=your-token-here\nMCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\n### Step 3: Verify Configuration\n\nStart project_chat and check MCP status:\n\n&#96;&#96;&#96;bash\npython3 chat_cli.py\n&#96;&#96;&#96;\n\nIn chat, run:\n&#96;&#96;&#96;\n/mcp status\n&#96;&#96;&#96;\n\nExpected output:\n&#96;&#96;&#96;\nMCP Server Status:\n==================================================\nmeditation-notes: ✓ Connected (42 resources cached)\n&#96;&#96;&#96;\n\n## Usage Examples\n\n### Example 1: List Meditation Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp list meditation-notes\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nMCP Resources (meditation-notes):\n  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1\n  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1\n  ...\n&#96;&#96;&#96;\n\n### Example 2: Read a Specific Note\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nResource: meditation://note/morning-meditation-2024-12-01\n==================================================\n\n# Morning Meditation\n\nToday's meditation focused on...\n&#96;&#96;&#96;\n\n### Example 3: Search Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"\n&#96;&#96;&#96;\n\nOutput:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "1. Meditation MCP server installed and accessible",
+            "lineNumber": 9
+          },
+          {
+            "text": "2. GitLab repository accessible (for meditation notes)",
+            "lineNumber": 10
+          },
+          {
+            "text": "3. Python 3.10+ (existing requirement)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "## Configuration",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "### Step 1: Create MCP Configuration File",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "Create &#96;mcp_config.json&#96; in project root:",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 19
+          },
+          {
+            "text": "{",
+            "lineNumber": 20
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 21
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 23
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 24
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 25
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 26
+          },
+          {
+            "text": "      },",
+            "lineNumber": 27
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 28
+          },
+          {
+            "text": "    }",
+            "lineNumber": 29
+          },
+          {
+            "text": "  }",
+            "lineNumber": 30
+          },
+          {
+            "text": "}",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Step 2: Set Environment Variables (Optional)",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "If you need to pass additional environment variables:",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 38
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 39
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "Or add to &#96;.env&#96; file:",
+            "lineNumber": 43
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 44
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 45
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### Step 3: Verify Configuration",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "Start project_chat and check MCP status:",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 53
+          },
+          {
+            "text": "python3 chat_cli.py",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "In chat, run:",
+            "lineNumber": 57
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 58
+          },
+          {
+            "text": "/mcp status",
+            "lineNumber": 59
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "Expected output:",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "text": "MCP Server Status:",
+            "lineNumber": 64
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 65
+          },
+          {
+            "text": "meditation-notes: ✓ Connected (42 resources cached)",
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Usage Examples",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### Example 1: List Meditation Notes",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 73
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp list meditation-notes",
+            "lineNumber": 74
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 77
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 78
+          },
+          {
+            "text": "MCP Resources (meditation-notes):",
+            "lineNumber": 79
+          },
+          {
+            "text": "  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1",
+            "lineNumber": 80
+          },
+          {
+            "text": "  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1",
+            "lineNumber": 81
+          },
+          {
+            "text": "  ...",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### Example 2: Read a Specific Note",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 87
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 88
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 91
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 92
+          },
+          {
+            "text": "Resource: meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 93
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 94
+          },
+          {
+            "lineNumber": 95
+          },
+          {
+            "text": "# Morning Meditation",
+            "lineNumber": 96
+          },
+          {
+            "lineNumber": 97
+          },
+          {
+            "text": "Today's meditation focused on...",
+            "lineNumber": 98
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "### Example 3: Search Notes",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 103
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"",
+            "lineNumber": 104
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 107
+          }
+        ]
+      },
+      "score": 0.38312828540802
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 55,
+            "column": 6
+          }
+        },
+        "contents": "# MCP Server Integration\n\n## Overview\n\nIntegrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.\n\n## Requirements\n\n### 1. MCP Client Infrastructure\n\n- Implement MCP client that communicates via JSON-RPC over stdio\n- Support stdio transport for MCP server communication\n- Handle MCP protocol initialization and capabilities negotiation\n- Support resource discovery and retrieval\n- Support tool invocation\n\n### 2. Configuration Management\n\n- Add MCP server configuration to project_chat config system\n- Support multiple MCP servers (extensible for future servers)\n- Configuration via environment variables or config file\n- Support for server-specific environment variables\n\n### 3. Meditation MCP Server Integration\n\n- Configure meditation MCP server connection\n- Access meditation notes as resources during conversations\n- Support search_notes tool for finding relevant meditation content\n- Support sync_repository tool for updating note index\n- Integrate meditation notes into conversation context when relevant\n\n### 4. Context Integration\n\n- Automatically include relevant MCP resources in conversation context\n- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)\n- Graceful degradation if MCP server unavailable\n- Cache MCP resources to reduce latency\n\n### 5. CLI Integration\n\n- Add &#96;/mcp&#96; command for manual MCP operations\n- Support listing available MCP resources\n- Support searching MCP resources\n- Support manual sync operations\n\n## Technical Details\n\n### MCP Server Configuration\n\nThe meditation MCP server should be configured as:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Integrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. MCP Client Infrastructure",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Implement MCP client that communicates via JSON-RPC over stdio",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Support stdio transport for MCP server communication",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Handle MCP protocol initialization and capabilities negotiation",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Support resource discovery and retrieval",
+            "lineNumber": 14
+          },
+          {
+            "text": "- Support tool invocation",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "### 2. Configuration Management",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "- Add MCP server configuration to project_chat config system",
+            "lineNumber": 19
+          },
+          {
+            "text": "- Support multiple MCP servers (extensible for future servers)",
+            "lineNumber": 20
+          },
+          {
+            "text": "- Configuration via environment variables or config file",
+            "lineNumber": 21
+          },
+          {
+            "text": "- Support for server-specific environment variables",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "### 3. Meditation MCP Server Integration",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "- Configure meditation MCP server connection",
+            "lineNumber": 26
+          },
+          {
+            "text": "- Access meditation notes as resources during conversations",
+            "lineNumber": 27
+          },
+          {
+            "text": "- Support search_notes tool for finding relevant meditation content",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Support sync_repository tool for updating note index",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Integrate meditation notes into conversation context when relevant",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "### 4. Context Integration",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "- Automatically include relevant MCP resources in conversation context",
+            "lineNumber": 34
+          },
+          {
+            "text": "- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)",
+            "lineNumber": 35
+          },
+          {
+            "text": "- Graceful degradation if MCP server unavailable",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Cache MCP resources to reduce latency",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "### 5. CLI Integration",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- Add &#96;/mcp&#96; command for manual MCP operations",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Support listing available MCP resources",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Support searching MCP resources",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Support manual sync operations",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "## Technical Details",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "The meditation MCP server should be configured as:",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      ",
+            "lineNumber": 56
+          }
+        ]
+      },
+      "score": 0.36899256706237793
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 52
+          }
+        },
+        "contents": "# Research: MCP Server Integration\n\n## MCP Protocol Implementation\n\n### Decision: JSON-RPC 2.0 over stdio\n\n**Rationale**: MCP servers communicate via JSON-RPC 2.0 protocol over stdin/stdout. This is a standard protocol that allows for structured request/response communication with external processes.\n\n**Alternatives considered**:\n- HTTP/WebSocket: Rejected - MCP servers use stdio for simplicity and portability\n- Custom protocol: Rejected - JSON-RPC 2.0 is standard and well-supported\n\n### Decision: Subprocess with Persistent Connection\n\n**Rationale**: MCP servers are long-running processes that maintain state. We need to:\n1. Start the MCP server process once\n2. Keep it alive for the duration of the chat session\n3. Send multiple requests over the same connection\n4. Handle process lifecycle (start, stop, restart on failure)\n\n**Implementation approach**:\n- Use &#96;subprocess.Popen&#96; with &#96;stdin&#96;, &#96;stdout&#96;, &#96;stderr&#96; pipes\n- Maintain process handle for the session\n- Send JSON-RPC requests via stdin\n- Read JSON-RPC responses from stdout\n- Handle process termination and restart on errors\n\n**Alternatives considered**:\n- One-shot subprocess per request: Rejected - too slow, loses server state\n- Threading vs asyncio: Use threading for simplicity (project uses sync code)\n\n## Subprocess Management\n\n### Decision: Threading for Non-Blocking Operations\n\n**Rationale**: Project_chat uses synchronous code patterns. For non-blocking MCP calls:\n- Use threading to run MCP requests in background\n- Main thread continues chat interaction\n- Cache results for immediate access\n\n**Alternatives considered**:\n- asyncio: Rejected - would require async/await throughout codebase\n- Synchronous blocking: Rejected - would block chat during MCP calls\n- Threading: Chosen - minimal code changes, fits existing patterns\n\n### Decision: Process Lifecycle Management\n\n**Rationale**: MCP servers should:\n- Start on first use (lazy initialization)\n- Restart on failure (with backoff)\n- Shutdown gracefully on chat exit\n- Support multiple servers (one process per server)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## MCP Protocol Implementation",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### Decision: JSON-RPC 2.0 over stdio",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Rationale**: MCP servers communicate via JSON-RPC 2.0 protocol over stdin/stdout. This is a standard protocol that allows for structured request/response communication with external processes.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 9
+          },
+          {
+            "text": "- HTTP/WebSocket: Rejected - MCP servers use stdio for simplicity and portability",
+            "lineNumber": 10
+          },
+          {
+            "text": "- Custom protocol: Rejected - JSON-RPC 2.0 is standard and well-supported",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "### Decision: Subprocess with Persistent Connection",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Rationale**: MCP servers are long-running processes that maintain state. We need to:",
+            "lineNumber": 15
+          },
+          {
+            "text": "1. Start the MCP server process once",
+            "lineNumber": 16
+          },
+          {
+            "text": "2. Keep it alive for the duration of the chat session",
+            "lineNumber": 17
+          },
+          {
+            "text": "3. Send multiple requests over the same connection",
+            "lineNumber": 18
+          },
+          {
+            "text": "4. Handle process lifecycle (start, stop, restart on failure)",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 21
+          },
+          {
+            "text": "- Use &#96;subprocess.Popen&#96; with &#96;stdin&#96;, &#96;stdout&#96;, &#96;stderr&#96; pipes",
+            "lineNumber": 22
+          },
+          {
+            "text": "- Maintain process handle for the session",
+            "lineNumber": 23
+          },
+          {
+            "text": "- Send JSON-RPC requests via stdin",
+            "lineNumber": 24
+          },
+          {
+            "text": "- Read JSON-RPC responses from stdout",
+            "lineNumber": 25
+          },
+          {
+            "text": "- Handle process termination and restart on errors",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 28
+          },
+          {
+            "text": "- One-shot subprocess per request: Rejected - too slow, loses server state",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Threading vs asyncio: Use threading for simplicity (project uses sync code)",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "## Subprocess Management",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Decision: Threading for Non-Blocking Operations",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "**Rationale**: Project_chat uses synchronous code patterns. For non-blocking MCP calls:",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Use threading to run MCP requests in background",
+            "lineNumber": 37
+          },
+          {
+            "text": "- Main thread continues chat interaction",
+            "lineNumber": 38
+          },
+          {
+            "text": "- Cache results for immediate access",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 41
+          },
+          {
+            "text": "- asyncio: Rejected - would require async/await throughout codebase",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Synchronous blocking: Rejected - would block chat during MCP calls",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Threading: Chosen - minimal code changes, fits existing patterns",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "### Decision: Process Lifecycle Management",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "**Rationale**: MCP servers should:",
+            "lineNumber": 48
+          },
+          {
+            "text": "- Start on first use (lazy initialization)",
+            "lineNumber": 49
+          },
+          {
+            "text": "- Restart on failure (with backoff)",
+            "lineNumber": 50
+          },
+          {
+            "text": "- Shutdown gracefully on chat exit",
+            "lineNumber": 51
+          },
+          {
+            "text": "- Support multiple servers (one process per server)",
+            "lineNumber": 52
+          }
+        ]
+      },
+      "score": 0.36295396089553833
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n\n        \n        if subcmd == \"status\":\n            # Show status of all configured servers\n            servers = mcp_config.get_all_servers()\n            if not servers:\n                print(color_text(\"No MCP servers configured.\", \"grey\"))\n                return\n            \n            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))\n            print(color_text(\"=\" * 60, \"grey\"))\n            \n            for server_name in servers:\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    continue\n                \n                try:\n                    client = _get_mcp_client(server_name, server_config)\n                    if client:\n                        if hasattr(client, 'process') and client.process and client._is_process_alive():\n                            if client.initialized:\n                                # Count cached resources\n                                cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0\n                                print(f\"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)\")\n                            else:\n                                print(f\"{server_name}: {color_text('⚠ Process running but not initialized', 'orange')}\")\n                        else:\n                            error_msg = client.last_error[1] if client.last_error else \"Process not found\"\n                            print(f\"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})\")\n                    else:\n                        print(f\"{server_name}: {color_text('✗ Failed to create client', 'orange')}\")\n                except Exception as e:\n                    import traceback\n                    error_detail = str(e)\n                    print(f\"{server_name}: {color_text('✗ Error', 'orange')} ({error_detail})\")\n                    logger.debug(f\"Full error for {server_name}:\", exc_info=True)\n            \n            print(color_text(\"=\" * 60, \"grey\"))",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 661
+          },
+          {
+            "text": "        ",
+            "lineNumber": 662
+          },
+          {
+            "text": "        if subcmd == \"status\":",
+            "lineNumber": 663
+          },
+          {
+            "text": "            # Show status of all configured servers",
+            "lineNumber": 664
+          },
+          {
+            "text": "            servers = mcp_config.get_all_servers()",
+            "lineNumber": 665
+          },
+          {
+            "text": "            if not servers:",
+            "lineNumber": 666
+          },
+          {
+            "text": "                print(color_text(\"No MCP servers configured.\", \"grey\"))",
+            "lineNumber": 667
+          },
+          {
+            "text": "                return",
+            "lineNumber": 668
+          },
+          {
+            "text": "            ",
+            "lineNumber": 669
+          },
+          {
+            "text": "            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))",
+            "lineNumber": 670
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 671
+          },
+          {
+            "text": "            ",
+            "lineNumber": 672
+          },
+          {
+            "text": "            for server_name in servers:",
+            "lineNumber": 673
+          },
+          {
+            "text": "                server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 674
+          },
+          {
+            "text": "                if not server_config:",
+            "lineNumber": 675
+          },
+          {
+            "text": "                    continue",
+            "lineNumber": 676
+          },
+          {
+            "text": "                ",
+            "lineNumber": 677
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 678
+          },
+          {
+            "text": "                    client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 679
+          },
+          {
+            "text": "                    if client:",
+            "lineNumber": 680
+          },
+          {
+            "text": "                        if hasattr(client, 'process') and client.process and client._is_process_alive():",
+            "lineNumber": 681
+          },
+          {
+            "text": "                            if client.initialized:",
+            "lineNumber": 682
+          },
+          {
+            "text": "                                # Count cached resources",
+            "lineNumber": 683
+          },
+          {
+            "text": "                                cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0",
+            "lineNumber": 684
+          },
+          {
+            "text": "                                print(f\"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)\")",
+            "lineNumber": 685
+          },
+          {
+            "text": "                            else:",
+            "lineNumber": 686
+          },
+          {
+            "text": "                                print(f\"{server_name}: {color_text('⚠ Process running but not initialized', 'orange')}\")",
+            "lineNumber": 687
+          },
+          {
+            "text": "                        else:",
+            "lineNumber": 688
+          },
+          {
+            "text": "                            error_msg = client.last_error[1] if client.last_error else \"Process not found\"",
+            "lineNumber": 689
+          },
+          {
+            "text": "                            print(f\"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})\")",
+            "lineNumber": 690
+          },
+          {
+            "text": "                    else:",
+            "lineNumber": 691
+          },
+          {
+            "text": "                        print(f\"{server_name}: {color_text('✗ Failed to create client', 'orange')}\")",
+            "lineNumber": 692
+          },
+          {
+            "text": "                except Exception as e:",
+            "lineNumber": 693
+          },
+          {
+            "text": "                    import traceback",
+            "lineNumber": 694
+          },
+          {
+            "text": "                    error_detail = str(e)",
+            "lineNumber": 695
+          },
+          {
+            "text": "                    print(f\"{server_name}: {color_text('✗ Error', 'orange')} ({error_detail})\")",
+            "lineNumber": 696
+          },
+          {
+            "text": "                    logger.debug(f\"Full error for {server_name}:\", exc_info=True)",
+            "lineNumber": 697
+          },
+          {
+            "text": "            ",
+            "lineNumber": 698
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 699
+          }
+        ]
+      },
+      "score": 0.36271315813064575
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {
+            "line": 27
+          },
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "class MCPClient:\ndef initialize(self) -&gt; bool:\n\n        \n        params = {\n            \"protocolVersion\": MCP_PROTOCOL_VERSION,\n            \"capabilities\": {},\n            \"clientInfo\": {\n                \"name\": \"project_chat\",\n                \"version\": \"1.0\"\n            }\n        }\n        \n        logger.debug(f\"Sending initialize request to '{self.server_name}'...\")\n        result = self._send_request(\"initialize\", params, timeout=INITIALIZE_TIMEOUT)\n        \n        if result:\n            self.capabilities = result.get(\"capabilities\", {})\n            self.initialized = True\n            self.retry_count = 0  # Reset retry count on successful init\n            logger.info(f\"MCP server '{self.server_name}' initialized successfully\")\n            return True\n        else:\n            # On failure, try to capture stderr output for diagnostics\n            error_details = \"\"\n            if self.process and self.process.stderr:\n                try:\n                    import select\n                    if hasattr(select, 'select'):\n                        ready, _, _ = select.select([self.process.stderr], [], [], 1.0)\n                        if ready:\n                            stderr_content = self.process.stderr.read(8192)\n                            if stderr_content:\n                                error_details = f\"\\nServer stderr: {stderr_content[:1000]}\"\n                except (ImportError, OSError, Exception):\n                    pass\n            \n            logger.error(f\"Failed to initialize MCP server '{self.server_name}'{error_details}\")\n            return False\n    \n    def shutdown(self):\n        \"\"\"Shutdown MCP client and stop server process.\"\"\"\n        self._stop_process()\n        logger.info(f\"MCP client '{self.server_name}' shut down\")\n    \n    def __enter__(self):\n        \"\"\"Context manager entry.\"\"\"\n        if not self.initialized:\n            self.initialize()\n        return self\n    \n    def __exit__(self, exc_type, exc_val, exc_tb):\n        \"\"\"Context manager exit.\"\"\"\n        self.shutdown()\n    \n    def list_resources(self) -&gt; List[Dict[str, Any]]:\n        \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 28,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 29,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 221,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 222,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "text": "def initialize(self) -&gt; bool:",
+            "lineNumber": 393
+          },
+          {
+            "lineNumber": 423
+          },
+          {
+            "text": "        ",
+            "lineNumber": 424
+          },
+          {
+            "text": "        params = {",
+            "lineNumber": 425
+          },
+          {
+            "text": "            \"protocolVersion\": MCP_PROTOCOL_VERSION,",
+            "lineNumber": 426
+          },
+          {
+            "text": "            \"capabilities\": {},",
+            "lineNumber": 427
+          },
+          {
+            "text": "            \"clientInfo\": {",
+            "lineNumber": 428
+          },
+          {
+            "text": "                \"name\": \"project_chat\",",
+            "lineNumber": 429
+          },
+          {
+            "text": "                \"version\": \"1.0\"",
+            "lineNumber": 430
+          },
+          {
+            "text": "            }",
+            "lineNumber": 431
+          },
+          {
+            "text": "        }",
+            "lineNumber": 432
+          },
+          {
+            "text": "        ",
+            "lineNumber": 433
+          },
+          {
+            "text": "        logger.debug(f\"Sending initialize request to '{self.server_name}'...\")",
+            "lineNumber": 434
+          },
+          {
+            "text": "        result = self._send_request(\"initialize\", params, timeout=INITIALIZE_TIMEOUT)",
+            "lineNumber": 435
+          },
+          {
+            "text": "        ",
+            "lineNumber": 436
+          },
+          {
+            "text": "        if result:",
+            "lineNumber": 437
+          },
+          {
+            "text": "            self.capabilities = result.get(\"capabilities\", {})",
+            "lineNumber": 438
+          },
+          {
+            "text": "            self.initialized = True",
+            "lineNumber": 439
+          },
+          {
+            "text": "            self.retry_count = 0  # Reset retry count on successful init",
+            "lineNumber": 440
+          },
+          {
+            "text": "            logger.info(f\"MCP server '{self.server_name}' initialized successfully\")",
+            "lineNumber": 441
+          },
+          {
+            "text": "            return True",
+            "lineNumber": 442
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 443
+          },
+          {
+            "text": "            # On failure, try to capture stderr output for diagnostics",
+            "lineNumber": 444
+          },
+          {
+            "text": "            error_details = \"\"",
+            "lineNumber": 445
+          },
+          {
+            "text": "            if self.process and self.process.stderr:",
+            "lineNumber": 446
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 447
+          },
+          {
+            "text": "                    import select",
+            "lineNumber": 448
+          },
+          {
+            "text": "                    if hasattr(select, 'select'):",
+            "lineNumber": 449
+          },
+          {
+            "text": "                        ready, _, _ = select.select([self.process.stderr], [], [], 1.0)",
+            "lineNumber": 450
+          },
+          {
+            "text": "                        if ready:",
+            "lineNumber": 451
+          },
+          {
+            "text": "                            stderr_content = self.process.stderr.read(8192)",
+            "lineNumber": 452
+          },
+          {
+            "text": "                            if stderr_content:",
+            "lineNumber": 453
+          },
+          {
+            "text": "                                error_details = f\"\\nServer stderr: {stderr_content[:1000]}\"",
+            "lineNumber": 454
+          },
+          {
+            "text": "                except (ImportError, OSError, Exception):",
+            "lineNumber": 455
+          },
+          {
+            "text": "                    pass",
+            "lineNumber": 456
+          },
+          {
+            "text": "            ",
+            "lineNumber": 457
+          },
+          {
+            "text": "            logger.error(f\"Failed to initialize MCP server '{self.server_name}'{error_details}\")",
+            "lineNumber": 458
+          },
+          {
+            "text": "            return False",
+            "lineNumber": 459
+          },
+          {
+            "text": "    ",
+            "lineNumber": 460
+          },
+          {
+            "text": "    def shutdown(self):",
+            "lineNumber": 461
+          },
+          {
+            "text": "        \"\"\"Shutdown MCP client and stop server process.\"\"\"",
+            "lineNumber": 462
+          },
+          {
+            "text": "        self._stop_process()",
+            "lineNumber": 463
+          },
+          {
+            "text": "        logger.info(f\"MCP client '{self.server_name}' shut down\")",
+            "lineNumber": 464
+          },
+          {
+            "text": "    ",
+            "lineNumber": 465
+          },
+          {
+            "text": "    def __enter__(self):",
+            "lineNumber": 466
+          },
+          {
+            "text": "        \"\"\"Context manager entry.\"\"\"",
+            "lineNumber": 467
+          },
+          {
+            "text": "        if not self.initialized:",
+            "lineNumber": 468
+          },
+          {
+            "text": "            self.initialize()",
+            "lineNumber": 469
+          },
+          {
+            "text": "        return self",
+            "lineNumber": 470
+          },
+          {
+            "text": "    ",
+            "lineNumber": 471
+          },
+          {
+            "text": "    def __exit__(self, exc_type, exc_val, exc_tb):",
+            "lineNumber": 472
+          },
+          {
+            "text": "        \"\"\"Context manager exit.\"\"\"",
+            "lineNumber": 473
+          },
+          {
+            "text": "        self.shutdown()",
+            "lineNumber": 474
+          },
+          {
+            "text": "    ",
+            "lineNumber": 475
+          },
+          {
+            "text": "    def list_resources(self) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 476
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 477
+          }
+        ]
+      },
+      "score": 0.35887110233306885
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "\"\"\"\nMCP (Model Context Protocol) client implementation.\n\nProvides functionality to communicate with MCP servers via JSON-RPC 2.0 over stdio.\nSupports resource discovery, resource reading, and tool invocation.\n\"\"\"\n\nimport json\nimport logging\nimport os\nimport subprocess\nimport threading\nimport time\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nlogger = logging.getLogger(__name__)\n\n# Protocol version\nMCP_PROTOCOL_VERSION = \"2024-11-05\"\n\n# Timeout constants (in seconds)\nINITIALIZE_TIMEOUT = 30.0  # Increased to allow for server startup/sync/index building\nRESOURCE_TIMEOUT = 0.5\nTOOL_TIMEOUT = 1.0\n\n\nclass MCPClient:\n    \"\"\"\n    Client for communicating with MCP servers via JSON-RPC 2.0 over stdio.\n    \n    Manages subprocess lifecycle, handles JSON-RPC communication, and provides\n    methods for resource discovery, resource reading, and tool invocation.\n    \"\"\"\n    \n    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):\n        ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "MCP (Model Context Protocol) client implementation.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides functionality to communicate with MCP servers via JSON-RPC 2.0 over stdio.",
+            "lineNumber": 4
+          },
+          {
+            "text": "Supports resource discovery, resource reading, and tool invocation.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "import json",
+            "lineNumber": 8
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 9
+          },
+          {
+            "text": "import os",
+            "lineNumber": 10
+          },
+          {
+            "text": "import subprocess",
+            "lineNumber": 11
+          },
+          {
+            "text": "import threading",
+            "lineNumber": 12
+          },
+          {
+            "text": "import time",
+            "lineNumber": 13
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 14
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "# Protocol version",
+            "lineNumber": 19
+          },
+          {
+            "text": "MCP_PROTOCOL_VERSION = \"2024-11-05\"",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "# Timeout constants (in seconds)",
+            "lineNumber": 22
+          },
+          {
+            "text": "INITIALIZE_TIMEOUT = 30.0  # Increased to allow for server startup/sync/index building",
+            "lineNumber": 23
+          },
+          {
+            "text": "RESOURCE_TIMEOUT = 0.5",
+            "lineNumber": 24
+          },
+          {
+            "text": "TOOL_TIMEOUT = 1.0",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 29
+          },
+          {
+            "text": "    Client for communicating with MCP servers via JSON-RPC 2.0 over stdio.",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    Manages subprocess lifecycle, handles JSON-RPC communication, and provides",
+            "lineNumber": 32
+          },
+          {
+            "text": "    methods for resource discovery, resource reading, and tool invocation.",
+            "lineNumber": 33
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 34
+          },
+          {
+            "text": "    ",
+            "lineNumber": 35
+          },
+          {
+            "text": "    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):",
+            "lineNumber": 36
+          },
+          {
+            "text": "        ",
+            "lineNumber": 37
+          }
+        ]
+      },
+      "score": 0.3559338450431824
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./mcp_config.json",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 12
+          }
+        },
+        "contents": "{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"/Users/tumultymedia/project_chat/meditation-mcp/.venv/bin/python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"cwd\": \"/Users/tumultymedia/project_chat/meditation-mcp\",\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      }\n    }\n  }\n}",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "{",
+            "lineNumber": 1
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 2
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 3
+          },
+          {
+            "text": "      \"command\": \"/Users/tumultymedia/project_chat/meditation-mcp/.venv/bin/python\",",
+            "lineNumber": 4
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 5
+          },
+          {
+            "text": "      \"cwd\": \"/Users/tumultymedia/project_chat/meditation-mcp\",",
+            "lineNumber": 6
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 7
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 8
+          },
+          {
+            "text": "      }",
+            "lineNumber": 9
+          },
+          {
+            "text": "    }",
+            "lineNumber": 10
+          },
+          {
+            "text": "  }",
+            "lineNumber": 11
+          },
+          {
+            "text": "}",
+            "lineNumber": 12
+          }
+        ]
+      },
+      "score": 0.34869179129600525
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {
+            "line": 27
+          },
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "class MCPClient:\ndef _get_next_id(self) -&gt; int:\n\n            return self._request_id\n    \n    def _start_process(self) -&gt; bool:\n        \"\"\"\n        Start MCP server process.\n        \n        Returns:\n            True if process started successfully, False otherwise\n        \"\"\"\n        try:\n            # Merge with current environment\n            env = os.environ.copy()\n            env.update(self.env)\n            \n            # Ensure Python subprocesses output immediately (unbuffered)\n            # This is critical for MCP servers that need to communicate via stdio\n            if \"python\" in self.command.lower() or self.command.endswith(\"python\"):\n                env[\"PYTHONUNBUFFERED\"] = \"1\"\n            \n            logger.debug(f\"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}\")\n            if self.cwd:\n                logger.debug(f\"Working directory: {self.cwd}\")\n            \n            self.process = subprocess.Popen(\n                [self.command] + self.args,\n                stdin=subprocess.PIPE,\n                stdout=subprocess.PIPE,\n                stderr=subprocess.PIPE,\n                env=env,\n                cwd=self.cwd,\n                text=True,\n                bufsize=1  # Line buffered for text mode\n            )\n            \n            # Give the process a moment to start and check if it's still alive\n            time.sleep(0.1)\n            \n            if",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 28,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 29,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "text": "def _get_next_id(self) -&gt; int:",
+            "lineNumber": 65
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "            return self._request_id",
+            "lineNumber": 69
+          },
+          {
+            "text": "    ",
+            "lineNumber": 70
+          },
+          {
+            "text": "    def _start_process(self) -&gt; bool:",
+            "lineNumber": 71
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 72
+          },
+          {
+            "text": "        Start MCP server process.",
+            "lineNumber": 73
+          },
+          {
+            "text": "        ",
+            "lineNumber": 74
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 75
+          },
+          {
+            "text": "            True if process started successfully, False otherwise",
+            "lineNumber": 76
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 77
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 78
+          },
+          {
+            "text": "            # Merge with current environment",
+            "lineNumber": 79
+          },
+          {
+            "text": "            env = os.environ.copy()",
+            "lineNumber": 80
+          },
+          {
+            "text": "            env.update(self.env)",
+            "lineNumber": 81
+          },
+          {
+            "text": "            ",
+            "lineNumber": 82
+          },
+          {
+            "text": "            # Ensure Python subprocesses output immediately (unbuffered)",
+            "lineNumber": 83
+          },
+          {
+            "text": "            # This is critical for MCP servers that need to communicate via stdio",
+            "lineNumber": 84
+          },
+          {
+            "text": "            if \"python\" in self.command.lower() or self.command.endswith(\"python\"):",
+            "lineNumber": 85
+          },
+          {
+            "text": "                env[\"PYTHONUNBUFFERED\"] = \"1\"",
+            "lineNumber": 86
+          },
+          {
+            "text": "            ",
+            "lineNumber": 87
+          },
+          {
+            "text": "            logger.debug(f\"Starting MCP server '{self.server_name}' with command: {self.command} {' '.join(self.args)}\")",
+            "lineNumber": 88
+          },
+          {
+            "text": "            if self.cwd:",
+            "lineNumber": 89
+          },
+          {
+            "text": "                logger.debug(f\"Working directory: {self.cwd}\")",
+            "lineNumber": 90
+          },
+          {
+            "text": "            ",
+            "lineNumber": 91
+          },
+          {
+            "text": "            self.process = subprocess.Popen(",
+            "lineNumber": 92
+          },
+          {
+            "text": "                [self.command] + self.args,",
+            "lineNumber": 93
+          },
+          {
+            "text": "                stdin=subprocess.PIPE,",
+            "lineNumber": 94
+          },
+          {
+            "text": "                stdout=subprocess.PIPE,",
+            "lineNumber": 95
+          },
+          {
+            "text": "                stderr=subprocess.PIPE,",
+            "lineNumber": 96
+          },
+          {
+            "text": "                env=env,",
+            "lineNumber": 97
+          },
+          {
+            "text": "                cwd=self.cwd,",
+            "lineNumber": 98
+          },
+          {
+            "text": "                text=True,",
+            "lineNumber": 99
+          },
+          {
+            "text": "                bufsize=1  # Line buffered for text mode",
+            "lineNumber": 100
+          },
+          {
+            "text": "            )",
+            "lineNumber": 101
+          },
+          {
+            "text": "            ",
+            "lineNumber": 102
+          },
+          {
+            "text": "            # Give the process a moment to start and check if it's still alive",
+            "lineNumber": 103
+          },
+          {
+            "text": "            time.sleep(0.1)",
+            "lineNumber": 104
+          },
+          {
+            "text": "            ",
+            "lineNumber": 105
+          },
+          {
+            "text": "            if",
+            "lineNumber": 106
+          }
+        ]
+      },
+      "score": 0.346673846244812
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 634,
+            "column": 11
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n    \"\"\"\n    Handle /mcp command with subcommands.\n    \n    Commands:\n    - /mcp status - Show status of all MCP servers\n    - /mcp list [server] - List resources from server(s)\n    - /mcp read &lt;uri&gt; - Read a specific resource\n    - /mcp search &lt;server&gt; &lt;query&gt; [limit] - Search resources\n    - /mcp sync [server] - Sync repository\n    \"\"\"\n    if not args:\n        print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"orange\"))\n        return\n    \n    parts = args.split()\n    subcmd = parts[0].lower() if parts else \"\"\n    \n    try:\n        from brain_core.mcp_config import get_mcp_config\n        from brain_core.mcp_client import MCPClient\n        from brain_core.context_builder import _get_mcp_client\n        \n        mcp_config = get_mcp_config()\n        \n        if subcmd == \"status\":\n            # Show status of all configured servers\n            servers = mcp_config.get_all_servers()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 639
+          },
+          {
+            "text": "    Handle /mcp command with subcommands.",
+            "lineNumber": 640
+          },
+          {
+            "text": "    ",
+            "lineNumber": 641
+          },
+          {
+            "text": "    Commands:",
+            "lineNumber": 642
+          },
+          {
+            "text": "    - /mcp status - Show status of all MCP servers",
+            "lineNumber": 643
+          },
+          {
+            "text": "    - /mcp list [server] - List resources from server(s)",
+            "lineNumber": 644
+          },
+          {
+            "text": "    - /mcp read &lt;uri&gt; - Read a specific resource",
+            "lineNumber": 645
+          },
+          {
+            "text": "    - /mcp search &lt;server&gt; &lt;query&gt; [limit] - Search resources",
+            "lineNumber": 646
+          },
+          {
+            "text": "    - /mcp sync [server] - Sync repository",
+            "lineNumber": 647
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 648
+          },
+          {
+            "text": "    if not args:",
+            "lineNumber": 649
+          },
+          {
+            "text": "        print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"orange\"))",
+            "lineNumber": 650
+          },
+          {
+            "text": "        return",
+            "lineNumber": 651
+          },
+          {
+            "text": "    ",
+            "lineNumber": 652
+          },
+          {
+            "text": "    parts = args.split()",
+            "lineNumber": 653
+          },
+          {
+            "text": "    subcmd = parts[0].lower() if parts else \"\"",
+            "lineNumber": 654
+          },
+          {
+            "text": "    ",
+            "lineNumber": 655
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 656
+          },
+          {
+            "text": "        from brain_core.mcp_config import get_mcp_config",
+            "lineNumber": 657
+          },
+          {
+            "text": "        from brain_core.mcp_client import MCPClient",
+            "lineNumber": 658
+          },
+          {
+            "text": "        from brain_core.context_builder import _get_mcp_client",
+            "lineNumber": 659
+          },
+          {
+            "text": "        ",
+            "lineNumber": 660
+          },
+          {
+            "text": "        mcp_config = get_mcp_config()",
+            "lineNumber": 661
+          },
+          {
+            "text": "        ",
+            "lineNumber": 662
+          },
+          {
+            "text": "        if subcmd == \"status\":",
+            "lineNumber": 663
+          },
+          {
+            "text": "            # Show status of all configured servers",
+            "lineNumber": 664
+          },
+          {
+            "text": "            servers = mcp_config.get_all_servers()",
+            "lineNumber": 665
+          }
+        ]
+      },
+      "score": 0.34587550163269043
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n\n            else:\n                # List from all servers\n                servers = mcp_config.get_all_servers()\n                if not servers:\n                    print(color_text(\"No MCP servers configured.\", \"grey\"))\n                    return\n                \n                for server_name in servers:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    try:\n                        client = _get_mcp_client(server_name, server_config)\n                        if not client:\n                            continue\n                        \n                        resources = client.list_resources()\n                        if resources:\n                            print(color_text(f\"MCP Resources ({server_name}):\", \"cyan\", bold=True))\n                            for resource in resources:\n                                uri = resource.get(\"uri\", \"\")\n                                name = resource.get(\"name\", uri)\n                                print(f\"  {uri} - {name}\")\n                            print()\n                    except Exception as e:\n                        logger.warning(f\"Error listing resources from '{server_name}': {e}\")\n        \n        elif subcmd == \"read\":",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 730
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 731
+          },
+          {
+            "text": "                # List from all servers",
+            "lineNumber": 732
+          },
+          {
+            "text": "                servers = mcp_config.get_all_servers()",
+            "lineNumber": 733
+          },
+          {
+            "text": "                if not servers:",
+            "lineNumber": 734
+          },
+          {
+            "text": "                    print(color_text(\"No MCP servers configured.\", \"grey\"))",
+            "lineNumber": 735
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 736
+          },
+          {
+            "text": "                ",
+            "lineNumber": 737
+          },
+          {
+            "text": "                for server_name in servers:",
+            "lineNumber": 738
+          },
+          {
+            "text": "                    server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 739
+          },
+          {
+            "text": "                    if not server_config:",
+            "lineNumber": 740
+          },
+          {
+            "text": "                        continue",
+            "lineNumber": 741
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 742
+          },
+          {
+            "text": "                    try:",
+            "lineNumber": 743
+          },
+          {
+            "text": "                        client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 744
+          },
+          {
+            "text": "                        if not client:",
+            "lineNumber": 745
+          },
+          {
+            "text": "                            continue",
+            "lineNumber": 746
+          },
+          {
+            "text": "                        ",
+            "lineNumber": 747
+          },
+          {
+            "text": "                        resources = client.list_resources()",
+            "lineNumber": 748
+          },
+          {
+            "text": "                        if resources:",
+            "lineNumber": 749
+          },
+          {
+            "text": "                            print(color_text(f\"MCP Resources ({server_name}):\", \"cyan\", bold=True))",
+            "lineNumber": 750
+          },
+          {
+            "text": "                            for resource in resources:",
+            "lineNumber": 751
+          },
+          {
+            "text": "                                uri = resource.get(\"uri\", \"\")",
+            "lineNumber": 752
+          },
+          {
+            "text": "                                name = resource.get(\"name\", uri)",
+            "lineNumber": 753
+          },
+          {
+            "text": "                                print(f\"  {uri} - {name}\")",
+            "lineNumber": 754
+          },
+          {
+            "text": "                            print()",
+            "lineNumber": 755
+          },
+          {
+            "text": "                    except Exception as e:",
+            "lineNumber": 756
+          },
+          {
+            "text": "                        logger.warning(f\"Error listing resources from '{server_name}': {e}\")",
+            "lineNumber": 757
+          },
+          {
+            "text": "        ",
+            "lineNumber": 758
+          },
+          {
+            "text": "        elif subcmd == \"read\":",
+            "lineNumber": 759
+          }
+        ]
+      },
+      "score": 0.3427380323410034
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 91
+          }
+        },
+        "contents": "# Data Model: MCP Server Integration\n\n## Overview\n\nThis integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.\n\n## Configuration Entities\n\n### MCP Server Configuration\n\n**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;\n\n**Structure**:\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects\n    }\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- &#96;command&#96;: Executable command to start MCP server\n- &#96;args&#96;: Command-line arguments\n- &#96;env&#96;: Environment variables for the server process\n- &#96;projects&#96;: Optional list of project tags that should use this server\n\n## In-Memory Entities\n\n### MCP Client State\n\n**Purpose**: Track active MCP server processes and connections\n\n**Fields**:\n- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")\n- &#96;process&#96;: subprocess.Popen instance\n- &#96;initialized&#96;: Boolean (has initialize been called)\n- &#96;capabilities&#96;: Dict of server capabilities\n- &#96;last_error&#96;: Timestamp and error message of last failure\n- &#96;retry_count&#96;: Number of consecutive failures\n\n### MCP Resource Cache\n\n**Purpose**: Cache MCP resources to reduce latency\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"meditation://note/morning-meditation-2024-12-01\": {\n    \"content\": \"...\",\n    \"mimeType\": \"text/markdown\",\n    \"cached_at\": timestamp,\n    \"ttl\": 300  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- Resource URI as key\n- &#96;content&#96;: Resource content (text)\n- &#96;mimeType&#96;: MIME type of content\n- &#96;cached_at&#96;: Timestamp when cached\n- &#96;ttl&#96;: Time-to-live in seconds\n\n### MCP Resource List Cache\n\n**Purpose**: Cache list of available resources\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"server_name\": {\n    \"resources\": [...],\n    \"cached_at\": timestamp,\n    \"ttl\": 60  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n## No Database Changes\n\n- No new tables required\n- No schema modifications\n- Configuration stored in files, not database",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Configuration Entities",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 13
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 14
+          },
+          {
+            "text": "{",
+            "lineNumber": 15
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 16
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 17
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 18
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 19
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 20
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "      },",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects",
+            "lineNumber": 23
+          },
+          {
+            "text": "    }",
+            "lineNumber": 24
+          },
+          {
+            "text": "  }",
+            "lineNumber": 25
+          },
+          {
+            "text": "}",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 29
+          },
+          {
+            "text": "- &#96;command&#96;: Executable command to start MCP server",
+            "lineNumber": 30
+          },
+          {
+            "text": "- &#96;args&#96;: Command-line arguments",
+            "lineNumber": 31
+          },
+          {
+            "text": "- &#96;env&#96;: Environment variables for the server process",
+            "lineNumber": 32
+          },
+          {
+            "text": "- &#96;projects&#96;: Optional list of project tags that should use this server",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "## In-Memory Entities",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "### MCP Client State",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Purpose**: Track active MCP server processes and connections",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 41
+          },
+          {
+            "text": "- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "- &#96;process&#96;: subprocess.Popen instance",
+            "lineNumber": 43
+          },
+          {
+            "text": "- &#96;initialized&#96;: Boolean (has initialize been called)",
+            "lineNumber": 44
+          },
+          {
+            "text": "- &#96;capabilities&#96;: Dict of server capabilities",
+            "lineNumber": 45
+          },
+          {
+            "text": "- &#96;last_error&#96;: Timestamp and error message of last failure",
+            "lineNumber": 46
+          },
+          {
+            "text": "- &#96;retry_count&#96;: Number of consecutive failures",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### MCP Resource Cache",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Purpose**: Cache MCP resources to reduce latency",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 53
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 54
+          },
+          {
+            "text": "{",
+            "lineNumber": 55
+          },
+          {
+            "text": "  \"meditation://note/morning-meditation-2024-12-01\": {",
+            "lineNumber": 56
+          },
+          {
+            "text": "    \"content\": \"...\",",
+            "lineNumber": 57
+          },
+          {
+            "text": "    \"mimeType\": \"text/markdown\",",
+            "lineNumber": 58
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 59
+          },
+          {
+            "text": "    \"ttl\": 300  # seconds",
+            "lineNumber": 60
+          },
+          {
+            "text": "  }",
+            "lineNumber": 61
+          },
+          {
+            "text": "}",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 65
+          },
+          {
+            "text": "- Resource URI as key",
+            "lineNumber": 66
+          },
+          {
+            "text": "- &#96;content&#96;: Resource content (text)",
+            "lineNumber": 67
+          },
+          {
+            "text": "- &#96;mimeType&#96;: MIME type of content",
+            "lineNumber": 68
+          },
+          {
+            "text": "- &#96;cached_at&#96;: Timestamp when cached",
+            "lineNumber": 69
+          },
+          {
+            "text": "- &#96;ttl&#96;: Time-to-live in seconds",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "### MCP Resource List Cache",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "**Purpose**: Cache list of available resources",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 76
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 77
+          },
+          {
+            "text": "{",
+            "lineNumber": 78
+          },
+          {
+            "text": "  \"server_name\": {",
+            "lineNumber": 79
+          },
+          {
+            "text": "    \"resources\": [...],",
+            "lineNumber": 80
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 81
+          },
+          {
+            "text": "    \"ttl\": 60  # seconds",
+            "lineNumber": 82
+          },
+          {
+            "text": "  }",
+            "lineNumber": 83
+          },
+          {
+            "text": "}",
+            "lineNumber": 84
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "## No Database Changes",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "- No new tables required",
+            "lineNumber": 89
+          },
+          {
+            "text": "- No schema modifications",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Configuration stored in files, not database",
+            "lineNumber": 91
+          }
+        ]
+      },
+      "score": 0.33916330337524414
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {
+            "line": 27
+          },
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "class MCPClient:\ndef _send_request(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 5.0) -&gt; Optional[Dict[str, Any]]:\n\n        except Exception as e:\n            error_msg = f\"Error communicating with MCP server '{self.server_name}': {e}\"\n            logger.error(error_msg, exc_info=True)\n            # Try to read stderr for more context\n            if self.process and self.process.stderr:\n                try:\n                    stderr_content = self.process.stderr.read()\n                    if stderr_content:\n                        logger.error(f\"Stderr output: {stderr_content}\")\n                except Exception:\n                    pass\n            self.last_error = (time.time(), error_msg)\n            self.retry_count += 1\n            return None\n    \n    def initialize(self) -&gt; bool:\n        \"\"\"\n        Initialize MCP protocol with server.\n        \n        Returns:\n            True if initialization successful, False otherwise\n        \"\"\"\n        if self.initialized:\n            return True\n        \n        if not self._is_process_alive():\n            if not self._start_process():\n                return False\n        \n        # Give the server additional time to complete any startup operations\n        # (e.g., repository sync, index building) before sending initialize\n        logger.debug(f\"Waiting for MCP server '{self.server_name}' to be ready...\")\n        time.sleep(1.0)  # Additional wait for server initialization\n        \n        # Check for any initial stderr output that might indicate startup issues\n        if self.process and self.process.stderr:\n            try:\n                import select\n                if hasattr(select, 'select'):\n                    ready, _, _ = select.select([self.process.stderr], [], [], 0.5)\n                    if ready:\n                        initial_stderr = self.process.stderr.read(4096)\n                        if initial_stderr:\n                            logger.debug(f\"Initial stderr from '{self.server_name}': {initial_stderr[:500]}\")\n            except (ImportError, OSError):\n                pass\n        \n        params = {\n            \"protocolVersion\": MCP_PROTOCOL_VERSION",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 28,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 29,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 221,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 222,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "text": "def _send_request(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 5.0) -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 221
+          },
+          {
+            "lineNumber": 377
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 378
+          },
+          {
+            "text": "            error_msg = f\"Error communicating with MCP server '{self.server_name}': {e}\"",
+            "lineNumber": 379
+          },
+          {
+            "text": "            logger.error(error_msg, exc_info=True)",
+            "lineNumber": 380
+          },
+          {
+            "text": "            # Try to read stderr for more context",
+            "lineNumber": 381
+          },
+          {
+            "text": "            if self.process and self.process.stderr:",
+            "lineNumber": 382
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 383
+          },
+          {
+            "text": "                    stderr_content = self.process.stderr.read()",
+            "lineNumber": 384
+          },
+          {
+            "text": "                    if stderr_content:",
+            "lineNumber": 385
+          },
+          {
+            "text": "                        logger.error(f\"Stderr output: {stderr_content}\")",
+            "lineNumber": 386
+          },
+          {
+            "text": "                except Exception:",
+            "lineNumber": 387
+          },
+          {
+            "text": "                    pass",
+            "lineNumber": 388
+          },
+          {
+            "text": "            self.last_error = (time.time(), error_msg)",
+            "lineNumber": 389
+          },
+          {
+            "text": "            self.retry_count += 1",
+            "lineNumber": 390
+          },
+          {
+            "text": "            return None",
+            "lineNumber": 391
+          },
+          {
+            "text": "    ",
+            "lineNumber": 392
+          },
+          {
+            "text": "    def initialize(self) -&gt; bool:",
+            "lineNumber": 393
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 394
+          },
+          {
+            "text": "        Initialize MCP protocol with server.",
+            "lineNumber": 395
+          },
+          {
+            "text": "        ",
+            "lineNumber": 396
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 397
+          },
+          {
+            "text": "            True if initialization successful, False otherwise",
+            "lineNumber": 398
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 399
+          },
+          {
+            "text": "        if self.initialized:",
+            "lineNumber": 400
+          },
+          {
+            "text": "            return True",
+            "lineNumber": 401
+          },
+          {
+            "text": "        ",
+            "lineNumber": 402
+          },
+          {
+            "text": "        if not self._is_process_alive():",
+            "lineNumber": 403
+          },
+          {
+            "text": "            if not self._start_process():",
+            "lineNumber": 404
+          },
+          {
+            "text": "                return False",
+            "lineNumber": 405
+          },
+          {
+            "text": "        ",
+            "lineNumber": 406
+          },
+          {
+            "text": "        # Give the server additional time to complete any startup operations",
+            "lineNumber": 407
+          },
+          {
+            "text": "        # (e.g., repository sync, index building) before sending initialize",
+            "lineNumber": 408
+          },
+          {
+            "text": "        logger.debug(f\"Waiting for MCP server '{self.server_name}' to be ready...\")",
+            "lineNumber": 409
+          },
+          {
+            "text": "        time.sleep(1.0)  # Additional wait for server initialization",
+            "lineNumber": 410
+          },
+          {
+            "text": "        ",
+            "lineNumber": 411
+          },
+          {
+            "text": "        # Check for any initial stderr output that might indicate startup issues",
+            "lineNumber": 412
+          },
+          {
+            "text": "        if self.process and self.process.stderr:",
+            "lineNumber": 413
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 414
+          },
+          {
+            "text": "                import select",
+            "lineNumber": 415
+          },
+          {
+            "text": "                if hasattr(select, 'select'):",
+            "lineNumber": 416
+          },
+          {
+            "text": "                    ready, _, _ = select.select([self.process.stderr], [], [], 0.5)",
+            "lineNumber": 417
+          },
+          {
+            "text": "                    if ready:",
+            "lineNumber": 418
+          },
+          {
+            "text": "                        initial_stderr = self.process.stderr.read(4096)",
+            "lineNumber": 419
+          },
+          {
+            "text": "                        if initial_stderr:",
+            "lineNumber": 420
+          },
+          {
+            "text": "                            logger.debug(f\"Initial stderr from '{self.server_name}': {initial_stderr[:500]}\")",
+            "lineNumber": 421
+          },
+          {
+            "text": "            except (ImportError, OSError):",
+            "lineNumber": 422
+          },
+          {
+            "text": "                pass",
+            "lineNumber": 423
+          },
+          {
+            "text": "        ",
+            "lineNumber": 424
+          },
+          {
+            "text": "        params = {",
+            "lineNumber": 425
+          },
+          {
+            "text": "            \"protocolVersion\": MCP_PROTOCOL_VERSION",
+            "lineNumber": 426
+          }
+        ]
+      },
+      "score": 0.33145949244499207
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {
+            "line": 187
+          },
+          "endPosition": {
+            "line": 243
+          }
+        },
+        "contents": "2. Verify MCP server is running (not restarting each time)\n3. Check repository size (should handle 1000+ notes)\n4. Check network latency to GitLab\n\n## Advanced Configuration\n\n### Multiple MCP Servers\n\nYou can configure multiple MCP servers:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]\n    },\n    \"code-index\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.code_server\"],\n      \"env\": {\n        \"REPO_PATH\": \"../repos\"\n      },\n      \"projects\": [\"THN\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### Project-Specific Servers\n\nAssociate MCP servers with specific projects:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"projects\": [\"DAAS\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\nWhen in DAAS project, meditation notes are automatically included in context.\n\n## Next Steps\n\n1. Test MCP integration with meditation server\n2. Configure additional MCP servers as needed\n3. Use &#96;/mcp&#96; commands to explore available resources\n4. Let automatic context integration enhance conversations",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "2. Verify MCP server is running (not restarting each time)",
+            "lineNumber": 188
+          },
+          {
+            "text": "3. Check repository size (should handle 1000+ notes)",
+            "lineNumber": 189
+          },
+          {
+            "text": "4. Check network latency to GitLab",
+            "lineNumber": 190
+          },
+          {
+            "lineNumber": 191
+          },
+          {
+            "text": "## Advanced Configuration",
+            "lineNumber": 192
+          },
+          {
+            "lineNumber": 193
+          },
+          {
+            "text": "### Multiple MCP Servers",
+            "lineNumber": 194
+          },
+          {
+            "lineNumber": 195
+          },
+          {
+            "text": "You can configure multiple MCP servers:",
+            "lineNumber": 196
+          },
+          {
+            "lineNumber": 197
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 198
+          },
+          {
+            "text": "{",
+            "lineNumber": 199
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 200
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 201
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 202
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 203
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 204
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 205
+          },
+          {
+            "text": "      },",
+            "lineNumber": 206
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 207
+          },
+          {
+            "text": "    },",
+            "lineNumber": 208
+          },
+          {
+            "text": "    \"code-index\": {",
+            "lineNumber": 209
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 210
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.code_server\"],",
+            "lineNumber": 211
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 212
+          },
+          {
+            "text": "        \"REPO_PATH\": \"../repos\"",
+            "lineNumber": 213
+          },
+          {
+            "text": "      },",
+            "lineNumber": 214
+          },
+          {
+            "text": "      \"projects\": [\"THN\"]",
+            "lineNumber": 215
+          },
+          {
+            "text": "    }",
+            "lineNumber": 216
+          },
+          {
+            "text": "  }",
+            "lineNumber": 217
+          },
+          {
+            "text": "}",
+            "lineNumber": 218
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 219
+          },
+          {
+            "lineNumber": 220
+          },
+          {
+            "text": "### Project-Specific Servers",
+            "lineNumber": 221
+          },
+          {
+            "lineNumber": 222
+          },
+          {
+            "text": "Associate MCP servers with specific projects:",
+            "lineNumber": 223
+          },
+          {
+            "lineNumber": 224
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 225
+          },
+          {
+            "text": "{",
+            "lineNumber": 226
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 227
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 228
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 229
+          },
+          {
+            "text": "    }",
+            "lineNumber": 230
+          },
+          {
+            "text": "  }",
+            "lineNumber": 231
+          },
+          {
+            "text": "}",
+            "lineNumber": 232
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 233
+          },
+          {
+            "lineNumber": 234
+          },
+          {
+            "text": "When in DAAS project, meditation notes are automatically included in context.",
+            "lineNumber": 235
+          },
+          {
+            "lineNumber": 236
+          },
+          {
+            "text": "## Next Steps",
+            "lineNumber": 237
+          },
+          {
+            "lineNumber": 238
+          },
+          {
+            "text": "1. Test MCP integration with meditation server",
+            "lineNumber": 239
+          },
+          {
+            "text": "2. Configure additional MCP servers as needed",
+            "lineNumber": 240
+          },
+          {
+            "text": "3. Use &#96;/mcp&#96; commands to explore available resources",
+            "lineNumber": 241
+          },
+          {
+            "text": "4. Let automatic context integration enhance conversations",
+            "lineNumber": 242
+          }
+        ]
+      },
+      "score": 0.32746076583862305
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 50
+          },
+          "endPosition": {
+            "line": 95
+          }
+        },
+        "contents": "&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      }\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### MCP Protocol Support\n\n- JSON-RPC 2.0 over stdio\n- Protocol version: 2024-11-05\n- Resources: list and read operations\n- Tools: call operations\n- Error handling with appropriate JSON-RPC error codes\n\n### Integration Points\n\n1. **Context Building**: MCP resources can be included in conversation context\n2. **Tool Invocation**: MCP tools can be called during conversations\n3. **Resource Access**: MCP resources can be read and included in responses\n4. **Project Association**: MCP servers can be associated with specific projects\n\n## Use Cases\n\n1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes\n2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;\n3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;\n4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;\n\n## Constraints\n\n- Must not break existing functionality\n- Must handle MCP server failures gracefully\n- Must support async/background operations for MCP calls\n- Must cache MCP resources to avoid excessive calls\n- Must respect rate limits if MCP server has them",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 56
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 57
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 58
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 59
+          },
+          {
+            "text": "      }",
+            "lineNumber": 60
+          },
+          {
+            "text": "    }",
+            "lineNumber": 61
+          },
+          {
+            "text": "  }",
+            "lineNumber": 62
+          },
+          {
+            "text": "}",
+            "lineNumber": 63
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### MCP Protocol Support",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "- JSON-RPC 2.0 over stdio",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Protocol version: 2024-11-05",
+            "lineNumber": 69
+          },
+          {
+            "text": "- Resources: list and read operations",
+            "lineNumber": 70
+          },
+          {
+            "text": "- Tools: call operations",
+            "lineNumber": 71
+          },
+          {
+            "text": "- Error handling with appropriate JSON-RPC error codes",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "### Integration Points",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "1. **Context Building**: MCP resources can be included in conversation context",
+            "lineNumber": 76
+          },
+          {
+            "text": "2. **Tool Invocation**: MCP tools can be called during conversations",
+            "lineNumber": 77
+          },
+          {
+            "text": "3. **Resource Access**: MCP resources can be read and included in responses",
+            "lineNumber": 78
+          },
+          {
+            "text": "4. **Project Association**: MCP servers can be associated with specific projects",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "## Use Cases",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes",
+            "lineNumber": 83
+          },
+          {
+            "text": "2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;",
+            "lineNumber": 84
+          },
+          {
+            "text": "3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;",
+            "lineNumber": 85
+          },
+          {
+            "text": "4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "## Constraints",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "- Must not break existing functionality",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Must handle MCP server failures gracefully",
+            "lineNumber": 91
+          },
+          {
+            "text": "- Must support async/background operations for MCP calls",
+            "lineNumber": 92
+          },
+          {
+            "text": "- Must cache MCP resources to avoid excessive calls",
+            "lineNumber": 93
+          },
+          {
+            "text": "- Must respect rate limits if MCP server has them",
+            "lineNumber": 94
+          }
+        ]
+      },
+      "score": 0.3231622576713562
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n{server_name}': {e}\")\n        \n        elif subcmd == \"read\":\n            if len(parts) &lt; 2:\n                print(color_text(\"Usage: /mcp read &lt;uri&gt;\", \"orange\"))\n                return\n            \n            uri = parts[1]\n            \n            # Find which server has this resource\n            servers = mcp_config.get_all_servers()\n            resource_content = None\n            \n            for server_name in servers:\n                try:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    client = _get_mcp_client(server_name, server_config)\n                    if not client:\n                        continue\n                    \n                    # Try to read from this server\n                    content = client.read_resource(uri)\n                    if content:\n                        resource_content = content\n                        break\n                except Exception:\n                    continue\n            \n            if not resource_content:\n                print(color_text(f\"Error: Resource '{uri}' not found.\", \"orange\"))\n                return\n            \n            print(color_text(f\"Resource: {uri}\", \"cyan\", bold=True))\n            print(color_text(\"=\" * 60, \"grey\"))\n            print(resource_content)\n            print(color_text(\"=\" * 60, \"grey\"))\n        \n        elif subcmd == \"search\":",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "text": "{server_name}': {e}\")",
+            "lineNumber": 757
+          },
+          {
+            "text": "        ",
+            "lineNumber": 758
+          },
+          {
+            "text": "        elif subcmd == \"read\":",
+            "lineNumber": 759
+          },
+          {
+            "text": "            if len(parts) &lt; 2:",
+            "lineNumber": 760
+          },
+          {
+            "text": "                print(color_text(\"Usage: /mcp read &lt;uri&gt;\", \"orange\"))",
+            "lineNumber": 761
+          },
+          {
+            "text": "                return",
+            "lineNumber": 762
+          },
+          {
+            "text": "            ",
+            "lineNumber": 763
+          },
+          {
+            "text": "            uri = parts[1]",
+            "lineNumber": 764
+          },
+          {
+            "text": "            ",
+            "lineNumber": 765
+          },
+          {
+            "text": "            # Find which server has this resource",
+            "lineNumber": 766
+          },
+          {
+            "text": "            servers = mcp_config.get_all_servers()",
+            "lineNumber": 767
+          },
+          {
+            "text": "            resource_content = None",
+            "lineNumber": 768
+          },
+          {
+            "text": "            ",
+            "lineNumber": 769
+          },
+          {
+            "text": "            for server_name in servers:",
+            "lineNumber": 770
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 771
+          },
+          {
+            "text": "                    server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 772
+          },
+          {
+            "text": "                    if not server_config:",
+            "lineNumber": 773
+          },
+          {
+            "text": "                        continue",
+            "lineNumber": 774
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 775
+          },
+          {
+            "text": "                    client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 776
+          },
+          {
+            "text": "                    if not client:",
+            "lineNumber": 777
+          },
+          {
+            "text": "                        continue",
+            "lineNumber": 778
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 779
+          },
+          {
+            "text": "                    # Try to read from this server",
+            "lineNumber": 780
+          },
+          {
+            "text": "                    content = client.read_resource(uri)",
+            "lineNumber": 781
+          },
+          {
+            "text": "                    if content:",
+            "lineNumber": 782
+          },
+          {
+            "text": "                        resource_content = content",
+            "lineNumber": 783
+          },
+          {
+            "text": "                        break",
+            "lineNumber": 784
+          },
+          {
+            "text": "                except Exception:",
+            "lineNumber": 785
+          },
+          {
+            "text": "                    continue",
+            "lineNumber": 786
+          },
+          {
+            "text": "            ",
+            "lineNumber": 787
+          },
+          {
+            "text": "            if not resource_content:",
+            "lineNumber": 788
+          },
+          {
+            "text": "                print(color_text(f\"Error: Resource '{uri}' not found.\", \"orange\"))",
+            "lineNumber": 789
+          },
+          {
+            "text": "                return",
+            "lineNumber": 790
+          },
+          {
+            "text": "            ",
+            "lineNumber": 791
+          },
+          {
+            "text": "            print(color_text(f\"Resource: {uri}\", \"cyan\", bold=True))",
+            "lineNumber": 792
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 793
+          },
+          {
+            "text": "            print(resource_content)",
+            "lineNumber": 794
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 795
+          },
+          {
+            "text": "        ",
+            "lineNumber": 796
+          },
+          {
+            "text": "        elif subcmd == \"search\":",
+            "lineNumber": 797
+          }
+        ]
+      },
+      "score": 0.32136261463165283
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/contracts/mcp-client.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 131
+          }
+        },
+        "contents": "# MCP Client Contract\n\n## Overview\n\nThe MCP client communicates with MCP servers using JSON-RPC 2.0 over stdio.\n\n## Protocol\n\n### Transport\n- **Method**: stdio (stdin/stdout)\n- **Format**: JSON-RPC 2.0\n- **Encoding**: UTF-8\n\n### Protocol Version\n- **Version**: 2024-11-05\n\n## Initialization\n\n### Initialize Request\n\n**Method**: &#96;initialize&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"project_chat\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"result\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {\n      \"resources\": {},\n      \"tools\": {}\n    },\n    \"serverInfo\": {\n      \"name\": \"meditation-mcp\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n&#96;&#96;&#96;\n\n## Resources\n\n### List Resources\n\n**Method**: &#96;resources/list&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"resources/list\"\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"result\": {\n    \"resources\": [\n      {\n        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",\n        \"name\": \"Morning Meditation - Dec 1\",\n        \"description\": \"Meditation note\",\n        \"mimeType\": \"text/markdown\"\n      }\n    ]\n  }\n}\n&#96;&#96;&#96;\n\n### Read Resource\n\n**Method**: &#96;resources/read&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"resources/read\",\n  \"params\": {\n    \"uri\": \"meditation://note/morning-meditation-2024-12-01\"\n  }\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"result\": {\n    \"contents\": [\n      {\n        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",\n        \"mimeType\": \"text/markdown\",\n        \"text\": \"# Morning Meditation\\n\\nContent here...\"\n      }\n    ]\n  }\n}\n&#96;&#96;&#96;\n\n**Error Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"error\": {\n    \"code\": -32000,",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# MCP Client Contract",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "The MCP client communicates with MCP servers using JSON-RPC 2.0 over stdio.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Protocol",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### Transport",
+            "lineNumber": 9
+          },
+          {
+            "text": "- **Method**: stdio (stdin/stdout)",
+            "lineNumber": 10
+          },
+          {
+            "text": "- **Format**: JSON-RPC 2.0",
+            "lineNumber": 11
+          },
+          {
+            "text": "- **Encoding**: UTF-8",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "### Protocol Version",
+            "lineNumber": 14
+          },
+          {
+            "text": "- **Version**: 2024-11-05",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "## Initialization",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "### Initialize Request",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Method**: &#96;initialize&#96;",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 23
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 24
+          },
+          {
+            "text": "{",
+            "lineNumber": 25
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 26
+          },
+          {
+            "text": "  \"id\": 1,",
+            "lineNumber": 27
+          },
+          {
+            "text": "  \"method\": \"initialize\",",
+            "lineNumber": 28
+          },
+          {
+            "text": "  \"params\": {",
+            "lineNumber": 29
+          },
+          {
+            "text": "    \"protocolVersion\": \"2024-11-05\",",
+            "lineNumber": 30
+          },
+          {
+            "text": "    \"capabilities\": {},",
+            "lineNumber": 31
+          },
+          {
+            "text": "    \"clientInfo\": {",
+            "lineNumber": 32
+          },
+          {
+            "text": "      \"name\": \"project_chat\",",
+            "lineNumber": 33
+          },
+          {
+            "text": "      \"version\": \"1.0\"",
+            "lineNumber": 34
+          },
+          {
+            "text": "    }",
+            "lineNumber": 35
+          },
+          {
+            "text": "  }",
+            "lineNumber": 36
+          },
+          {
+            "text": "}",
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 41
+          },
+          {
+            "text": "{",
+            "lineNumber": 42
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 43
+          },
+          {
+            "text": "  \"id\": 1,",
+            "lineNumber": 44
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 45
+          },
+          {
+            "text": "    \"protocolVersion\": \"2024-11-05\",",
+            "lineNumber": 46
+          },
+          {
+            "text": "    \"capabilities\": {",
+            "lineNumber": 47
+          },
+          {
+            "text": "      \"resources\": {},",
+            "lineNumber": 48
+          },
+          {
+            "text": "      \"tools\": {}",
+            "lineNumber": 49
+          },
+          {
+            "text": "    },",
+            "lineNumber": 50
+          },
+          {
+            "text": "    \"serverInfo\": {",
+            "lineNumber": 51
+          },
+          {
+            "text": "      \"name\": \"meditation-mcp\",",
+            "lineNumber": 52
+          },
+          {
+            "text": "      \"version\": \"1.0\"",
+            "lineNumber": 53
+          },
+          {
+            "text": "    }",
+            "lineNumber": 54
+          },
+          {
+            "text": "  }",
+            "lineNumber": 55
+          },
+          {
+            "text": "}",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Resources",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "### List Resources",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "**Method**: &#96;resources/list&#96;",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 65
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 66
+          },
+          {
+            "text": "{",
+            "lineNumber": 67
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 68
+          },
+          {
+            "text": "  \"id\": 2,",
+            "lineNumber": 69
+          },
+          {
+            "text": "  \"method\": \"resources/list\"",
+            "lineNumber": 70
+          },
+          {
+            "text": "}",
+            "lineNumber": 71
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 74
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 75
+          },
+          {
+            "text": "{",
+            "lineNumber": 76
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 77
+          },
+          {
+            "text": "  \"id\": 2,",
+            "lineNumber": 78
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 79
+          },
+          {
+            "text": "    \"resources\": [",
+            "lineNumber": 80
+          },
+          {
+            "text": "      {",
+            "lineNumber": 81
+          },
+          {
+            "text": "        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",",
+            "lineNumber": 82
+          },
+          {
+            "text": "        \"name\": \"Morning Meditation - Dec 1\",",
+            "lineNumber": 83
+          },
+          {
+            "text": "        \"description\": \"Meditation note\",",
+            "lineNumber": 84
+          },
+          {
+            "text": "        \"mimeType\": \"text/markdown\"",
+            "lineNumber": 85
+          },
+          {
+            "text": "      }",
+            "lineNumber": 86
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 87
+          },
+          {
+            "text": "  }",
+            "lineNumber": 88
+          },
+          {
+            "text": "}",
+            "lineNumber": 89
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "### Read Resource",
+            "lineNumber": 92
+          },
+          {
+            "lineNumber": 93
+          },
+          {
+            "text": "**Method**: &#96;resources/read&#96;",
+            "lineNumber": 94
+          },
+          {
+            "lineNumber": 95
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 96
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 97
+          },
+          {
+            "text": "{",
+            "lineNumber": 98
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 99
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 100
+          },
+          {
+            "text": "  \"method\": \"resources/read\",",
+            "lineNumber": 101
+          },
+          {
+            "text": "  \"params\": {",
+            "lineNumber": 102
+          },
+          {
+            "text": "    \"uri\": \"meditation://note/morning-meditation-2024-12-01\"",
+            "lineNumber": 103
+          },
+          {
+            "text": "  }",
+            "lineNumber": 104
+          },
+          {
+            "text": "}",
+            "lineNumber": 105
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 108
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 109
+          },
+          {
+            "text": "{",
+            "lineNumber": 110
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 111
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 112
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 113
+          },
+          {
+            "text": "    \"contents\": [",
+            "lineNumber": 114
+          },
+          {
+            "text": "      {",
+            "lineNumber": 115
+          },
+          {
+            "text": "        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",",
+            "lineNumber": 116
+          },
+          {
+            "text": "        \"mimeType\": \"text/markdown\",",
+            "lineNumber": 117
+          },
+          {
+            "text": "        \"text\": \"# Morning Meditation\\n\\nContent here...\"",
+            "lineNumber": 118
+          },
+          {
+            "text": "      }",
+            "lineNumber": 119
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 120
+          },
+          {
+            "text": "  }",
+            "lineNumber": 121
+          },
+          {
+            "text": "}",
+            "lineNumber": 122
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 123
+          },
+          {
+            "lineNumber": 124
+          },
+          {
+            "text": "**Error Response**:",
+            "lineNumber": 125
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 126
+          },
+          {
+            "text": "{",
+            "lineNumber": 127
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 128
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 129
+          },
+          {
+            "text": "  \"error\": {",
+            "lineNumber": 130
+          },
+          {
+            "text": "    \"code\": -32000,",
+            "lineNumber": 131
+          }
+        ]
+      },
+      "score": 0.3175947964191437
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_config.py",
+        "range": {
+          "startPosition": {
+            "line": 125,
+            "column": 15
+          },
+          "endPosition": {
+            "line": 215
+          }
+        },
+        "contents": "class MCPConfig:\n    \"\"\"\n    Manages MCP server configurations.\n    \n    Loads configurations from JSON file and environment variables,\n    validates them, and provides access to server configurations.\n    \"\"\"\n    \n    def __init__(self, config_path: Optional[str] = None):\n        \"\"\"\n        Initialize MCP configuration manager.\n        \n        Args:\n            config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root.\n        \"\"\"\n        self.config_path = config_path\n        self._servers: Dict[str, Dict[str, Any]] = {}\n        self._project_to_servers: Dict[str, List[str]] = {}\n        self._load_config()\n    \n    def _load_config(self):\n        \"\"\"Load and validate MCP server configurations.\"\"\"\n        raw_config = load_mcp_config(self.config_path)\n        \n        for server_name, server_config in raw_config.items():\n            # Resolve environment variables\n            resolved_config = resolve_env_variables(server_config, server_name)\n            \n            # Validate configuration\n            if not validate_server_config(server_name, resolved_config):\n                logger.warning(f\"Skipping invalid MCP server configuration: {server_name}\")\n                continue\n            \n            self._servers[server_name] = resolved_config\n            \n            # Build project-to-server mapping\n            projects = resolved_config.get(\"projects\", [])\n            for project in projects:\n                if project not in self._project_to_servers:\n                    self._project_to_servers[project] = []\n                self._project_to_servers[project].append(server_name)\n        \n        logger.info(f\"MCP configuration loaded: {len(self._servers)} server(s), {len(self._project_to_servers)} project(s)\")\n    \n    def get_server_config(self, server_name: str) -&gt; Optional[Dict[str, Any]]:\n        ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "class MCPConfig:",
+            "lineNumber": 129,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 130
+          },
+          {
+            "text": "    Manages MCP server configurations.",
+            "lineNumber": 131
+          },
+          {
+            "text": "    ",
+            "lineNumber": 132
+          },
+          {
+            "text": "    Loads configurations from JSON file and environment variables,",
+            "lineNumber": 133
+          },
+          {
+            "text": "    validates them, and provides access to server configurations.",
+            "lineNumber": 134
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 135
+          },
+          {
+            "text": "    ",
+            "lineNumber": 136
+          },
+          {
+            "text": "    def __init__(self, config_path: Optional[str] = None):",
+            "lineNumber": 137
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 138
+          },
+          {
+            "text": "        Initialize MCP configuration manager.",
+            "lineNumber": 139
+          },
+          {
+            "text": "        ",
+            "lineNumber": 140
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 141
+          },
+          {
+            "text": "            config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root.",
+            "lineNumber": 142
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 143
+          },
+          {
+            "text": "        self.config_path = config_path",
+            "lineNumber": 144
+          },
+          {
+            "text": "        self._servers: Dict[str, Dict[str, Any]] = {}",
+            "lineNumber": 145
+          },
+          {
+            "text": "        self._project_to_servers: Dict[str, List[str]] = {}",
+            "lineNumber": 146
+          },
+          {
+            "text": "        self._load_config()",
+            "lineNumber": 147
+          },
+          {
+            "text": "    ",
+            "lineNumber": 148
+          },
+          {
+            "text": "    def _load_config(self):",
+            "lineNumber": 149
+          },
+          {
+            "text": "        \"\"\"Load and validate MCP server configurations.\"\"\"",
+            "lineNumber": 150
+          },
+          {
+            "text": "        raw_config = load_mcp_config(self.config_path)",
+            "lineNumber": 151
+          },
+          {
+            "text": "        ",
+            "lineNumber": 152
+          },
+          {
+            "text": "        for server_name, server_config in raw_config.items():",
+            "lineNumber": 153
+          },
+          {
+            "text": "            # Resolve environment variables",
+            "lineNumber": 154
+          },
+          {
+            "text": "            resolved_config = resolve_env_variables(server_config, server_name)",
+            "lineNumber": 155
+          },
+          {
+            "text": "            ",
+            "lineNumber": 156
+          },
+          {
+            "text": "            # Validate configuration",
+            "lineNumber": 157
+          },
+          {
+            "text": "            if not validate_server_config(server_name, resolved_config):",
+            "lineNumber": 158
+          },
+          {
+            "text": "                logger.warning(f\"Skipping invalid MCP server configuration: {server_name}\")",
+            "lineNumber": 159
+          },
+          {
+            "text": "                continue",
+            "lineNumber": 160
+          },
+          {
+            "text": "            ",
+            "lineNumber": 161
+          },
+          {
+            "text": "            self._servers[server_name] = resolved_config",
+            "lineNumber": 162
+          },
+          {
+            "text": "            ",
+            "lineNumber": 163
+          },
+          {
+            "text": "            # Build project-to-server mapping",
+            "lineNumber": 164
+          },
+          {
+            "text": "            projects = resolved_config.get(\"projects\", [])",
+            "lineNumber": 165
+          },
+          {
+            "text": "            for project in projects:",
+            "lineNumber": 166
+          },
+          {
+            "text": "                if project not in self._project_to_servers:",
+            "lineNumber": 167
+          },
+          {
+            "text": "                    self._project_to_servers[project] = []",
+            "lineNumber": 168
+          },
+          {
+            "text": "                self._project_to_servers[project].append(server_name)",
+            "lineNumber": 169
+          },
+          {
+            "text": "        ",
+            "lineNumber": 170
+          },
+          {
+            "text": "        logger.info(f\"MCP configuration loaded: {len(self._servers)} server(s), {len(self._project_to_servers)} project(s)\")",
+            "lineNumber": 171
+          },
+          {
+            "text": "    ",
+            "lineNumber": 172
+          },
+          {
+            "text": "    def get_server_config(self, server_name: str) -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 173
+          },
+          {
+            "text": "        ",
+            "lineNumber": 174
+          }
+        ]
+      },
+      "score": 0.3156856298446655
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n\n        \n        elif subcmd == \"search\":\n            if len(parts) &lt; 3:\n                print(color_text(\"Usage: /mcp search &lt;server&gt; &lt;query&gt; [limit]\", \"orange\"))\n                return\n            \n            server_name = parts[1]\n            query = parts[2]\n            limit = int(parts[3]) if len(parts) &gt; 3 else 10\n            \n            server_config = mcp_config.get_server_config(server_name)\n            if not server_config:\n                print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))\n                return\n            \n            try:\n                client = _get_mcp_client(server_name, server_config)\n                if not client:\n                    print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))\n                    return\n                \n                result = client.call_tool(\"search_notes\", {\"query\": query, \"limit\": limit})\n                if result and \"content\" in result:\n                    for content_item in result[\"content\"]:\n                        if content_item.get(\"type\") == \"text\":\n                            print(color_text(f\"Search Results ({server_name}): \\\"{query}\\\"\", \"cyan\", bold=True))\n                            print(color_text(\"=\" * 60, \"grey\"))\n                            print(content_item.get(\"text\", \"\"))\n                            print(color_text(\"=\" * 60, \"grey\"))\n                else:\n                    print(color_text(f\"No results found for '{query}'.\", \"grey\"))\n            except Exception as e:\n                print(color_text(f\"Error searching: {e}\", \"orange\"))\n        \n        elif subcmd == \"sync\":\n            server_name =",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 795
+          },
+          {
+            "text": "        ",
+            "lineNumber": 796
+          },
+          {
+            "text": "        elif subcmd == \"search\":",
+            "lineNumber": 797
+          },
+          {
+            "text": "            if len(parts) &lt; 3:",
+            "lineNumber": 798
+          },
+          {
+            "text": "                print(color_text(\"Usage: /mcp search &lt;server&gt; &lt;query&gt; [limit]\", \"orange\"))",
+            "lineNumber": 799
+          },
+          {
+            "text": "                return",
+            "lineNumber": 800
+          },
+          {
+            "text": "            ",
+            "lineNumber": 801
+          },
+          {
+            "text": "            server_name = parts[1]",
+            "lineNumber": 802
+          },
+          {
+            "text": "            query = parts[2]",
+            "lineNumber": 803
+          },
+          {
+            "text": "            limit = int(parts[3]) if len(parts) &gt; 3 else 10",
+            "lineNumber": 804
+          },
+          {
+            "text": "            ",
+            "lineNumber": 805
+          },
+          {
+            "text": "            server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 806
+          },
+          {
+            "text": "            if not server_config:",
+            "lineNumber": 807
+          },
+          {
+            "text": "                print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))",
+            "lineNumber": 808
+          },
+          {
+            "text": "                return",
+            "lineNumber": 809
+          },
+          {
+            "text": "            ",
+            "lineNumber": 810
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 811
+          },
+          {
+            "text": "                client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 812
+          },
+          {
+            "text": "                if not client:",
+            "lineNumber": 813
+          },
+          {
+            "text": "                    print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))",
+            "lineNumber": 814
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 815
+          },
+          {
+            "text": "                ",
+            "lineNumber": 816
+          },
+          {
+            "text": "                result = client.call_tool(\"search_notes\", {\"query\": query, \"limit\": limit})",
+            "lineNumber": 817
+          },
+          {
+            "text": "                if result and \"content\" in result:",
+            "lineNumber": 818
+          },
+          {
+            "text": "                    for content_item in result[\"content\"]:",
+            "lineNumber": 819
+          },
+          {
+            "text": "                        if content_item.get(\"type\") == \"text\":",
+            "lineNumber": 820
+          },
+          {
+            "text": "                            print(color_text(f\"Search Results ({server_name}): \\\"{query}\\\"\", \"cyan\", bold=True))",
+            "lineNumber": 821
+          },
+          {
+            "text": "                            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 822
+          },
+          {
+            "text": "                            print(content_item.get(\"text\", \"\"))",
+            "lineNumber": 823
+          },
+          {
+            "text": "                            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 824
+          },
+          {
+            "text": "                else:",
+            "lineNumber": 825
+          },
+          {
+            "text": "                    print(color_text(f\"No results found for '{query}'.\", \"grey\"))",
+            "lineNumber": 826
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 827
+          },
+          {
+            "text": "                print(color_text(f\"Error searching: {e}\", \"orange\"))",
+            "lineNumber": 828
+          },
+          {
+            "text": "        ",
+            "lineNumber": 829
+          },
+          {
+            "text": "        elif subcmd == \"sync\":",
+            "lineNumber": 830
+          },
+          {
+            "text": "            server_name =",
+            "lineNumber": 831
+          }
+        ]
+      },
+      "score": 0.3153860867023468
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {
+            "line": 27
+          },
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "class MCPClient:\n\n    \n    def _send_request(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 5.0) -&gt; Optional[Dict[str, Any]]:\n        \"\"\"\n        Send JSON-RPC request to MCP server.\n        \n        Args:\n            method: JSON-RPC method name\n            params: Method parameters\n            timeout: Request timeout in seconds\n            \n        Returns:\n            Response dict or None if error/timeout\n        \"\"\"\n        if not self._is_process_alive():\n            if not self._restart_process():\n                return None\n        \n        request_id = self._get_next_id()\n        request = {\n            \"jsonrpc\": \"2.0\",\n            \"id\": request_id,\n            \"method\": method\n        }\n        if params:\n            request[\"params\"] = params\n        \n        try:\n            # Send request\n            request_json = json.dumps(request) + \"\\n\"\n            if not self.process or not self.process.stdin:\n                return None\n            \n            self.process.stdin.write(request_json)\n            self.process.stdin.flush()\n            \n            # Read response with timeout\n            if not self.process.stdout:\n                return None\n            \n            # Read response line (with timeout handling via threading)\n            response_line = None\n            response_error = None\n            stderr_output = None\n            \n            def read_response():\n                nonlocal",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 28,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 29,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 219
+          },
+          {
+            "text": "    ",
+            "lineNumber": 220
+          },
+          {
+            "text": "    def _send_request(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 5.0) -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 221
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 222
+          },
+          {
+            "text": "        Send JSON-RPC request to MCP server.",
+            "lineNumber": 223
+          },
+          {
+            "text": "        ",
+            "lineNumber": 224
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 225
+          },
+          {
+            "text": "            method: JSON-RPC method name",
+            "lineNumber": 226
+          },
+          {
+            "text": "            params: Method parameters",
+            "lineNumber": 227
+          },
+          {
+            "text": "            timeout: Request timeout in seconds",
+            "lineNumber": 228
+          },
+          {
+            "text": "            ",
+            "lineNumber": 229
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 230
+          },
+          {
+            "text": "            Response dict or None if error/timeout",
+            "lineNumber": 231
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 232
+          },
+          {
+            "text": "        if not self._is_process_alive():",
+            "lineNumber": 233
+          },
+          {
+            "text": "            if not self._restart_process():",
+            "lineNumber": 234
+          },
+          {
+            "text": "                return None",
+            "lineNumber": 235
+          },
+          {
+            "text": "        ",
+            "lineNumber": 236
+          },
+          {
+            "text": "        request_id = self._get_next_id()",
+            "lineNumber": 237
+          },
+          {
+            "text": "        request = {",
+            "lineNumber": 238
+          },
+          {
+            "text": "            \"jsonrpc\": \"2.0\",",
+            "lineNumber": 239
+          },
+          {
+            "text": "            \"id\": request_id,",
+            "lineNumber": 240
+          },
+          {
+            "text": "            \"method\": method",
+            "lineNumber": 241
+          },
+          {
+            "text": "        }",
+            "lineNumber": 242
+          },
+          {
+            "text": "        if params:",
+            "lineNumber": 243
+          },
+          {
+            "text": "            request[\"params\"] = params",
+            "lineNumber": 244
+          },
+          {
+            "text": "        ",
+            "lineNumber": 245
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 246
+          },
+          {
+            "text": "            # Send request",
+            "lineNumber": 247
+          },
+          {
+            "text": "            request_json = json.dumps(request) + \"\\n\"",
+            "lineNumber": 248
+          },
+          {
+            "text": "            if not self.process or not self.process.stdin:",
+            "lineNumber": 249
+          },
+          {
+            "text": "                return None",
+            "lineNumber": 250
+          },
+          {
+            "text": "            ",
+            "lineNumber": 251
+          },
+          {
+            "text": "            self.process.stdin.write(request_json)",
+            "lineNumber": 252
+          },
+          {
+            "text": "            self.process.stdin.flush()",
+            "lineNumber": 253
+          },
+          {
+            "text": "            ",
+            "lineNumber": 254
+          },
+          {
+            "text": "            # Read response with timeout",
+            "lineNumber": 255
+          },
+          {
+            "text": "            if not self.process.stdout:",
+            "lineNumber": 256
+          },
+          {
+            "text": "                return None",
+            "lineNumber": 257
+          },
+          {
+            "text": "            ",
+            "lineNumber": 258
+          },
+          {
+            "text": "            # Read response line (with timeout handling via threading)",
+            "lineNumber": 259
+          },
+          {
+            "text": "            response_line = None",
+            "lineNumber": 260
+          },
+          {
+            "text": "            response_error = None",
+            "lineNumber": 261
+          },
+          {
+            "text": "            stderr_output = None",
+            "lineNumber": 262
+          },
+          {
+            "text": "            ",
+            "lineNumber": 263
+          },
+          {
+            "text": "            def read_response():",
+            "lineNumber": 264
+          },
+          {
+            "text": "                nonlocal",
+            "lineNumber": 265
+          }
+        ]
+      },
+      "score": 0.31293749809265137
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_client.py",
+        "range": {
+          "startPosition": {
+            "line": 27
+          },
+          "endPosition": {
+            "line": 601
+          }
+        },
+        "contents": "class MCPClient:\n\"\"\"\n    \n    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):\n        \"\"\"\n        Initialize MCP client.\n        \n        Args:\n            server_name: Name identifier for this server\n            command: Command to start MCP server (e.g., \"python\")\n            args: Command-line arguments for MCP server\n            env: Environment variables for the server process\n            cwd: Working directory for the server process (optional)\n        \"\"\"\n        self.server_name = server_name\n        self.command = command\n        self.args = args\n        self.env = env or {}\n        self.cwd = cwd\n        \n        self.process: Optional[subprocess.Popen] = None\n        self.initialized = False\n        self.capabilities: Dict[str, Any] = {}\n        self.last_error: Optional[tuple[float, str]] = None\n        self.retry_count = 0\n        self._request_id = 0\n        self._lock = threading.Lock()\n        \n        # Resource cache\n        self._resource_cache: Dict[str, Dict[str, Any]] = {}\n        self._resource_list_cache: Optional[Dict[str, Any]] = None\n        \n    def _get_next_id(self) -&gt; int:\n        \"\"\"Get next JSON-RPC request ID.\"\"\"\n        with self._lock:\n            self._request_id += 1\n            return self._request_id\n    \n    def _start_process(self) -&gt; bool:\n        \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 28,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 29,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPClient:",
+            "lineNumber": 28,
+            "isSignature": true
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 34
+          },
+          {
+            "text": "    ",
+            "lineNumber": 35
+          },
+          {
+            "text": "    def __init__(self, server_name: str, command: str, args: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[str] = None):",
+            "lineNumber": 36
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 37
+          },
+          {
+            "text": "        Initialize MCP client.",
+            "lineNumber": 38
+          },
+          {
+            "text": "        ",
+            "lineNumber": 39
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 40
+          },
+          {
+            "text": "            server_name: Name identifier for this server",
+            "lineNumber": 41
+          },
+          {
+            "text": "            command: Command to start MCP server (e.g., \"python\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "            args: Command-line arguments for MCP server",
+            "lineNumber": 43
+          },
+          {
+            "text": "            env: Environment variables for the server process",
+            "lineNumber": 44
+          },
+          {
+            "text": "            cwd: Working directory for the server process (optional)",
+            "lineNumber": 45
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 46
+          },
+          {
+            "text": "        self.server_name = server_name",
+            "lineNumber": 47
+          },
+          {
+            "text": "        self.command = command",
+            "lineNumber": 48
+          },
+          {
+            "text": "        self.args = args",
+            "lineNumber": 49
+          },
+          {
+            "text": "        self.env = env or {}",
+            "lineNumber": 50
+          },
+          {
+            "text": "        self.cwd = cwd",
+            "lineNumber": 51
+          },
+          {
+            "text": "        ",
+            "lineNumber": 52
+          },
+          {
+            "text": "        self.process: Optional[subprocess.Popen] = None",
+            "lineNumber": 53
+          },
+          {
+            "text": "        self.initialized = False",
+            "lineNumber": 54
+          },
+          {
+            "text": "        self.capabilities: Dict[str, Any] = {}",
+            "lineNumber": 55
+          },
+          {
+            "text": "        self.last_error: Optional[tuple[float, str]] = None",
+            "lineNumber": 56
+          },
+          {
+            "text": "        self.retry_count = 0",
+            "lineNumber": 57
+          },
+          {
+            "text": "        self._request_id = 0",
+            "lineNumber": 58
+          },
+          {
+            "text": "        self._lock = threading.Lock()",
+            "lineNumber": 59
+          },
+          {
+            "text": "        ",
+            "lineNumber": 60
+          },
+          {
+            "text": "        # Resource cache",
+            "lineNumber": 61
+          },
+          {
+            "text": "        self._resource_cache: Dict[str, Dict[str, Any]] = {}",
+            "lineNumber": 62
+          },
+          {
+            "text": "        self._resource_list_cache: Optional[Dict[str, Any]] = None",
+            "lineNumber": 63
+          },
+          {
+            "text": "        ",
+            "lineNumber": 64
+          },
+          {
+            "text": "    def _get_next_id(self) -&gt; int:",
+            "lineNumber": 65
+          },
+          {
+            "text": "        \"\"\"Get next JSON-RPC request ID.\"\"\"",
+            "lineNumber": 66
+          },
+          {
+            "text": "        with self._lock:",
+            "lineNumber": 67
+          },
+          {
+            "text": "            self._request_id += 1",
+            "lineNumber": 68
+          },
+          {
+            "text": "            return self._request_id",
+            "lineNumber": 69
+          },
+          {
+            "text": "    ",
+            "lineNumber": 70
+          },
+          {
+            "text": "    def _start_process(self) -&gt; bool:",
+            "lineNumber": 71
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 72
+          }
+        ]
+      },
+      "score": 0.30956199765205383
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/plan.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 26
+          }
+        },
+        "contents": "# Implementation Plan: MCP Server Integration\n\n**Branch**: &#96;010-mcp-server-integration&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)\n**Input**: Feature specification from &#96;/specs/010-mcp-server-integration/spec.md&#96;\n\n**Note**: This template is filled in by the &#96;/speckit.plan&#96; command. See &#96;.specify/templates/commands/plan.md&#96; for the execution workflow.\n\n## Summary\n\nIntegrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. Initial integration supports the meditation MCP server, providing access to meditation notes stored in a GitLab repository. The integration uses JSON-RPC 2.0 over stdio for communication, supports resource discovery/retrieval and tool invocation, and integrates MCP resources into conversation context. Implementation includes MCP client with subprocess management, configuration system, CLI commands for manual MCP operations, and automatic context integration for project-specific MCP servers.\n\n## Technical Context\n\n**Language/Version**: Python 3.10+ (existing project standard)  \n**Primary Dependencies**: Existing dependencies (psycopg2-binary, python-dotenv, openai, requests, gitpython), subprocess (stdlib), json (stdlib), asyncio (stdlib) or threading for async operations  \n**Storage**: N/A (MCP resources cached in memory, no persistent storage required)  \n**Testing**: Manual testing (consistent with project standards), integration tests for MCP client  \n**Target Platform**: macOS/Linux (same as existing project)  \n**Project Type**: Single project (CLI application with shared brain_core modules)  \n**Performance Goals**: MCP resource retrieval &lt;500ms, tool invocation &lt;1s, graceful degradation on failures  \n**Constraints**: Must not break existing functionality; handle MCP server failures gracefully; support async/background operations; cache MCP resources; respect rate limits  \n**Scale/Scope**: Support multiple MCP servers (initially 1: meditation-notes); handle 100+ resources per server; support 10+ concurrent tool invocations\n\n## Constitution Check\n\n*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Implementation Plan: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Branch**: &#96;010-mcp-server-integration&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Input**: Feature specification from &#96;/specs/010-mcp-server-integration/spec.md&#96;",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "**Note**: This template is filled in by the &#96;/speckit.plan&#96; command. See &#96;.specify/templates/commands/plan.md&#96; for the execution workflow.",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "## Summary",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "Integrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. Initial integration supports the meditation MCP server, providing access to meditation notes stored in a GitLab repository. The integration uses JSON-RPC 2.0 over stdio for communication, supports resource discovery/retrieval and tool invocation, and integrates MCP resources into conversation context. Implementation includes MCP client with subprocess management, configuration system, CLI commands for manual MCP operations, and automatic context integration for project-specific MCP servers.",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "## Technical Context",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Language/Version**: Python 3.10+ (existing project standard)  ",
+            "lineNumber": 14
+          },
+          {
+            "text": "**Primary Dependencies**: Existing dependencies (psycopg2-binary, python-dotenv, openai, requests, gitpython), subprocess (stdlib), json (stdlib), asyncio (stdlib) or threading for async operations  ",
+            "lineNumber": 15
+          },
+          {
+            "text": "**Storage**: N/A (MCP resources cached in memory, no persistent storage required)  ",
+            "lineNumber": 16
+          },
+          {
+            "text": "**Testing**: Manual testing (consistent with project standards), integration tests for MCP client  ",
+            "lineNumber": 17
+          },
+          {
+            "text": "**Target Platform**: macOS/Linux (same as existing project)  ",
+            "lineNumber": 18
+          },
+          {
+            "text": "**Project Type**: Single project (CLI application with shared brain_core modules)  ",
+            "lineNumber": 19
+          },
+          {
+            "text": "**Performance Goals**: MCP resource retrieval &lt;500ms, tool invocation &lt;1s, graceful degradation on failures  ",
+            "lineNumber": 20
+          },
+          {
+            "text": "**Constraints**: Must not break existing functionality; handle MCP server failures gracefully; support async/background operations; cache MCP resources; respect rate limits  ",
+            "lineNumber": 21
+          },
+          {
+            "text": "**Scale/Scope**: Support multiple MCP servers (initially 1: meditation-notes); handle 100+ resources per server; support 10+ concurrent tool invocations",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "## Constitution Check",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*",
+            "lineNumber": 26
+          }
+        ]
+      },
+      "score": 0.304439902305603
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 637
+          },
+          "endPosition": {
+            "line": 894
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str):\n\n        \n        elif subcmd == \"sync\":\n            server_name = parts[1] if len(parts) &gt; 1 else None\n            \n            if server_name:\n                # Sync specific server\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))\n                    return\n                \n                try:\n                    client = _get_mcp_client(server_name, server_config)\n                    if not client:\n                        print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))\n                        return\n                    \n                    print(color_text(f\"Syncing {server_name}...\", \"grey\"))\n                    result = client.call_tool(\"sync_repository\", {})\n                    if result and \"content\" in result:\n                        for content_item in result[\"content\"]:\n                            if content_item.get(\"type\") == \"text\":\n                                print(content_item.get(\"text\", \"\"))\n                        # Invalidate cache after sync\n                        client.invalidate_cache()\n                        print(color_text(\"✓ Sync complete\", \"green\"))\n                    else:\n                        print(color_text(\"Sync completed (no output)\", \"grey\"))\n                except Exception as e:\n                    print(color_text(f\"Error syncing: {e}\", \"orange\"))\n            else:\n                # Sync all servers\n                servers = mcp_config.get_all_servers()",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 638,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 639,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str):",
+            "lineNumber": 638,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 828
+          },
+          {
+            "text": "        ",
+            "lineNumber": 829
+          },
+          {
+            "text": "        elif subcmd == \"sync\":",
+            "lineNumber": 830
+          },
+          {
+            "text": "            server_name = parts[1] if len(parts) &gt; 1 else None",
+            "lineNumber": 831
+          },
+          {
+            "text": "            ",
+            "lineNumber": 832
+          },
+          {
+            "text": "            if server_name:",
+            "lineNumber": 833
+          },
+          {
+            "text": "                # Sync specific server",
+            "lineNumber": 834
+          },
+          {
+            "text": "                server_config = mcp_config.get_server_config(server_name)",
+            "lineNumber": 835
+          },
+          {
+            "text": "                if not server_config:",
+            "lineNumber": 836
+          },
+          {
+            "text": "                    print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))",
+            "lineNumber": 837
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 838
+          },
+          {
+            "text": "                ",
+            "lineNumber": 839
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 840
+          },
+          {
+            "text": "                    client = _get_mcp_client(server_name, server_config)",
+            "lineNumber": 841
+          },
+          {
+            "text": "                    if not client:",
+            "lineNumber": 842
+          },
+          {
+            "text": "                        print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))",
+            "lineNumber": 843
+          },
+          {
+            "text": "                        return",
+            "lineNumber": 844
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 845
+          },
+          {
+            "text": "                    print(color_text(f\"Syncing {server_name}...\", \"grey\"))",
+            "lineNumber": 846
+          },
+          {
+            "text": "                    result = client.call_tool(\"sync_repository\", {})",
+            "lineNumber": 847
+          },
+          {
+            "text": "                    if result and \"content\" in result:",
+            "lineNumber": 848
+          },
+          {
+            "text": "                        for content_item in result[\"content\"]:",
+            "lineNumber": 849
+          },
+          {
+            "text": "                            if content_item.get(\"type\") == \"text\":",
+            "lineNumber": 850
+          },
+          {
+            "text": "                                print(content_item.get(\"text\", \"\"))",
+            "lineNumber": 851
+          },
+          {
+            "text": "                        # Invalidate cache after sync",
+            "lineNumber": 852
+          },
+          {
+            "text": "                        client.invalidate_cache()",
+            "lineNumber": 853
+          },
+          {
+            "text": "                        print(color_text(\"✓ Sync complete\", \"green\"))",
+            "lineNumber": 854
+          },
+          {
+            "text": "                    else:",
+            "lineNumber": 855
+          },
+          {
+            "text": "                        print(color_text(\"Sync completed (no output)\", \"grey\"))",
+            "lineNumber": 856
+          },
+          {
+            "text": "                except Exception as e:",
+            "lineNumber": 857
+          },
+          {
+            "text": "                    print(color_text(f\"Error syncing: {e}\", \"orange\"))",
+            "lineNumber": 858
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 859
+          },
+          {
+            "text": "                # Sync all servers",
+            "lineNumber": 860
+          },
+          {
+            "text": "                servers = mcp_config.get_all_servers()",
+            "lineNumber": 861
+          }
+        ]
+      },
+      "score": 0.30417048931121826
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/mcp_config.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 95
+          }
+        },
+        "contents": "\"\"\"\nMCP (Model Context Protocol) server configuration management.\n\nHandles loading and managing MCP server configurations from JSON files\nand environment variables.\n\"\"\"\n\nimport json\nimport logging\nimport os\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nlogger = logging.getLogger(__name__)\n\n\ndef load_mcp_config(config_path: Optional[str] = None) -&gt; Dict[str, Any]:\n    \"\"\"\n    Load MCP server configuration from JSON file.\n    \n    Args:\n        config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root.\n        \n    Returns:\n        Dictionary with MCP server configurations\n    \"\"\"\n    if config_path is None:\n        # Look for mcp_config.json in project root\n        project_root = Path(__file__).parent.parent\n        config_path = project_root / \"mcp_config.json\"\n    \n    config_path = Path(config_path)\n    \n    if not config_path.exists():\n        logger.debug(f\"MCP config file not found at {config_path}\")\n        return {}\n    \n    try:\n        with open(config_path, 'r') as f:\n            config = json.load(f)\n        \n        servers = config.get(\"mcpServers\", {})\n        logger.info(f\"Loaded MCP configuration from {config_path}: {len(servers)} server(s)\")\n        return servers\n        \n    except json.JSONDecodeError as e:\n        logger.error(f\"Failed to parse MCP config file {config_path}: {e}\")\n        return {}\n    except Exception as e:\n        logger.error(f\"Error loading MCP config file {config_path}: {e}\")\n        return {}\n\n\ndef resolve_env_variables(server_config: Dict[str, Any], server_name: str) -&gt; Dict[str, Any]:\n    ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "MCP (Model Context Protocol) server configuration management.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Handles loading and managing MCP server configurations from JSON files",
+            "lineNumber": 4
+          },
+          {
+            "text": "and environment variables.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "import json",
+            "lineNumber": 8
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 9
+          },
+          {
+            "text": "import os",
+            "lineNumber": 10
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 11
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "def load_mcp_config(config_path: Optional[str] = None) -&gt; Dict[str, Any]:",
+            "lineNumber": 17,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "    Load MCP server configuration from JSON file.",
+            "lineNumber": 19
+          },
+          {
+            "text": "    ",
+            "lineNumber": 20
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 21
+          },
+          {
+            "text": "        config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root.",
+            "lineNumber": 22
+          },
+          {
+            "text": "        ",
+            "lineNumber": 23
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Dictionary with MCP server configurations",
+            "lineNumber": 25
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 26
+          },
+          {
+            "text": "    if config_path is None:",
+            "lineNumber": 27
+          },
+          {
+            "text": "        # Look for mcp_config.json in project root",
+            "lineNumber": 28
+          },
+          {
+            "text": "        project_root = Path(__file__).parent.parent",
+            "lineNumber": 29
+          },
+          {
+            "text": "        config_path = project_root / \"mcp_config.json\"",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    config_path = Path(config_path)",
+            "lineNumber": 32
+          },
+          {
+            "text": "    ",
+            "lineNumber": 33
+          },
+          {
+            "text": "    if not config_path.exists():",
+            "lineNumber": 34
+          },
+          {
+            "text": "        logger.debug(f\"MCP config file not found at {config_path}\")",
+            "lineNumber": 35
+          },
+          {
+            "text": "        return {}",
+            "lineNumber": 36
+          },
+          {
+            "text": "    ",
+            "lineNumber": 37
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 38
+          },
+          {
+            "text": "        with open(config_path, 'r') as f:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            config = json.load(f)",
+            "lineNumber": 40
+          },
+          {
+            "text": "        ",
+            "lineNumber": 41
+          },
+          {
+            "text": "        servers = config.get(\"mcpServers\", {})",
+            "lineNumber": 42
+          },
+          {
+            "text": "        logger.info(f\"Loaded MCP configuration from {config_path}: {len(servers)} server(s)\")",
+            "lineNumber": 43
+          },
+          {
+            "text": "        return servers",
+            "lineNumber": 44
+          },
+          {
+            "text": "        ",
+            "lineNumber": 45
+          },
+          {
+            "text": "    except json.JSONDecodeError as e:",
+            "lineNumber": 46
+          },
+          {
+            "text": "        logger.error(f\"Failed to parse MCP config file {config_path}: {e}\")",
+            "lineNumber": 47
+          },
+          {
+            "text": "        return {}",
+            "lineNumber": 48
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 49
+          },
+          {
+            "text": "        logger.error(f\"Error loading MCP config file {config_path}: {e}\")",
+            "lineNumber": 50
+          },
+          {
+            "text": "        return {}",
+            "lineNumber": 51,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "def resolve_env_variables(server_config: Dict[str, Any], server_name: str) -&gt; Dict[str, Any]:",
+            "lineNumber": 54,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 55
+          }
+        ]
+      },
+      "score": 0.3026880919933319
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "mcp_client|MCPClient|mcp_config|MCPConfig",
+  "path": "brain_core",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "mcp_client|MCPClient|mcp_config|MCPConfig",
+    "path": "brain_core",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "brain_core/context_builder.py",
+              "matches": [
+                {
+                  "lineNumber": 20,
+                  "content": "_mcp_clients: Dict[str, Any] = {}"
+                },
+                {
+                  "lineNumber": 21,
+                  "content": "_mcp_clients_lock = threading.Lock()"
+                },
+                {
+                  "lineNumber": 142,
+                  "content": "def _get_mcp_client(server_name: str, server_config: Dict[str, Any]):"
+                },
+                {
+                  "lineNumber": 151,
+                  "content": "        MCPClient instance or None if error"
+                },
+                {
+                  "lineNumber": 153,
+                  "content": "    global _mcp_clients"
+                },
+                {
+                  "lineNumber": 155,
+                  "content": "    with _mcp_clients_lock:"
+                },
+                {
+                  "lineNumber": 156,
+                  "content": "        if server_name in _mcp_clients:"
+                },
+                {
+                  "lineNumber": 157,
+                  "content": "            client = _mcp_clients[server_name]"
+                },
+                {
+                  "lineNumber": 162,
+                  "content": "            del _mcp_clients[server_name]"
+                },
+                {
+                  "lineNumber": 166,
+                  "content": "            from .mcp_client import MCPClient"
+                },
+                {
+                  "lineNumber": 167,
+                  "content": "            client = MCPClient("
+                },
+                {
+                  "lineNumber": 177,
+                  "content": "                _mcp_clients[server_name] = client"
+                },
+                {
+                  "lineNumber": 199,
+                  "content": "        from .mcp_config import get_mcp_config"
+                },
+                {
+                  "lineNumber": 201,
+                  "content": "        mcp_config = get_mcp_config()"
+                },
+                {
+                  "lineNumber": 202,
+                  "content": "        server_names = mcp_config.get_servers_for_project(project)"
+                },
+                {
+                  "lineNumber": 212,
+                  "content": "                server_config = mcp_config.get_server_config(server_name)"
+                },
+                {
+                  "lineNumber": 216,
+                  "content": "                client = _get_mcp_client(server_name, server_config)"
+                },
+                {
+                  "lineNumber": 268,
+                  "content": "        from .mcp_config import get_mcp_config"
+                },
+                {
+                  "lineNumber": 270,
+                  "content": "        mcp_config = get_mcp_config()"
+                },
+                {
+                  "lineNumber": 281,
+                  "content": "            server_config = mcp_config.get_server_config(server_name)"
+                },
+                {
+                  "lineNumber": 285,
+                  "content": "            client = _get_mcp_client(server_name, server_config)"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/mcp_config.py",
+              "matches": [
+                {
+                  "lineNumber": 17,
+                  "content": "def load_mcp_config(config_path: Optional[str] = None) -&gt; Dict[str, Any]:"
+                },
+                {
+                  "lineNumber": 22,
+                  "content": "        config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root."
+                },
+                {
+                  "lineNumber": 28,
+                  "content": "        # Look for mcp_config.json in project root"
+                },
+                {
+                  "lineNumber": 30,
+                  "content": "        config_path = project_root / \"mcp_config.json\""
+                },
+                {
+                  "lineNumber": 129,
+                  "content": "class MCPConfig:"
+                },
+                {
+                  "lineNumber": 142,
+                  "content": "            config_path: Path to mcp_config.json file. If None, looks for mcp_config.json in project root."
+                },
+                {
+                  "lineNumber": 151,
+                  "content": "        raw_config = load_mcp_config(self.config_path)"
+                },
+                {
+                  "lineNumber": 220,
+                  "content": "_mcp_config: Optional[MCPConfig] = None"
+                },
+                {
+                  "lineNumber": 223,
+                  "content": "def get_mcp_config() -&gt; MCPConfig:"
+                },
+                {
+                  "lineNumber": 228,
+                  "content": "        MCPConfig instance"
+                },
+                {
+                  "lineNumber": 230,
+                  "content": "    global _mcp_config"
+                },
+                {
+                  "lineNumber": 231,
+                  "content": "    if _mcp_config is None:"
+                },
+                {
+                  "lineNumber": 232,
+                  "content": "        _mcp_config = MCPConfig()"
+                },
+                {
+                  "lineNumber": 233,
+                  "content": "    return _mcp_config"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/mcp_client.py",
+              "matches": [
+                {
+                  "lineNumber": 28,
+                  "content": "class MCPClient:"
+                }
+              ]
+            }
+          ],
+          "totalLines": 36,
+          "totalMatchedLines": 36
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nProject context builder for injecting conversation memory into chat prompts.\nBuilds context directly from project_knowledge and conversation_index entries.\n\nFor DAAS project, uses custom retrieval rules:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport os\nimport threading\nfrom typing import Dict, List, Optional, Any\n\nfrom .db import get_conn\nfrom .memory import fetch_project_knowledge\n\nlogger = logging.getLogger(__name__)\n\n# MCP client manager (lazy initialization)\n_mcp_clients: Dict[str, Any] = {}\n_mcp_clients_lock = threading.Lock()\n\n\ndef extract_json_from_text(text: str) -&gt; str:\n    \"\"\"\n    Extract JSON object from text that may contain explanatory text.\n    \n    Looks for the first '{' and finds the matching closing '}' to extract\n    the JSON object, handling nested objects properly.\n    \n    Args:\n        text: Text that may contain JSON mixed with other text\n    \n    Returns:\n        Extracted JSON string\n    \n    Raises:\n        ValueError: If no valid JSON object is found\n    \"\"\"\n    text = text.strip()\n    \n    # Remove markdown code blocks if present\n    if text.startswith(\"&#96;&#96;&#96;\"):\n        lines = text.split(\"\\n\")\n        if len(lines) &gt; 2:\n            text = \"\\n\".join(lines[1:-1])\n    if text.startswith(\"&#96;&#96;&#96;json\"):\n        lines = text.split(\"\\n\")\n        if len(lines) &gt; 2:\n            text = \"\\n\".join(lines[1:-1])\n    \n    # Find the first '{' character\n    start_idx = text.find(\"{\")\n    if start_idx == -1:\n        raise ValueError(\"No JSON object found in response (no opening brace)\")\n    \n    # Find the matching closing '}' by counting braces\n    brace_count = 0\n    end_idx = start_idx\n    \n    for i in range(start_idx, len(text)):\n        if text[i] == \"{\":\n            brace_count += 1\n        elif text[i] == \"}\":\n            brace_count -= 1\n            if brace_count == 0:\n                end_idx = i\n                break\n    \n    if brace_count != 0:\n        raise ValueError(\"No complete JSON object found (unmatched braces)\")\n    \n    # Extract the JSON portion\n    json_text = text[start_idx:end_idx + 1]\n    \n    # Remove JSON comments (both // single-line and /* */ multi-line)\n    # JSON doesn't support comments, but Ollama sometimes adds them\n    lines = json_text.split(\"\\n\")\n    cleaned_lines = []\n    in_string = False\n    escape_next = False\n    \n    for line in lines:\n        cleaned_line = []\n        i = 0\n        while i &lt; len(line):\n            char = line[i]\n            \n            # Track string boundaries (handle escaped quotes)\n            if escape_next:\n                cleaned_line.append(char)\n                escape_next = False\n                i += 1\n                continue\n            \n            if char == \"\\\\\":\n                cleaned_line.append(char)\n                escape_next = True\n                i += 1\n                continue\n            \n            if char == '\"':\n                in_string = not in_string\n                cleaned_line.append(char)\n                i += 1\n                continue\n            \n            # If we're inside a string, keep everything\n            if in_string:\n                cleaned_line.append(char)\n                i += 1\n                continue\n            \n            # Outside strings, check for comments\n            # Single-line comment //\n            if char == \"/\" and i + 1 &lt; len(line) and line[i + 1] == \"/\":\n                # Found // comment, skip rest of line\n                break\n            \n            # Multi-line comment /*\n            if char == \"/\" and i + 1 &lt; len(line) and line[i + 1] == \"*\":\n                # Skip until */\n                i += 2\n                while i &lt; len(line) - 1:\n                    if line[i] == \"*\" and line[i + 1] == \"/\":\n                        i += 2\n                        break\n                    i += 1\n                continue\n            \n            cleaned_line.append(char)\n            i += 1\n        \n        cleaned_line_str = \"\".join(cleaned_line).rstrip()\n        if cleaned_line_str:  # Only add non-empty lines\n            cleaned_lines.append(cleaned_line_str)\n    \n    json_text = \"\\n\".join(cleaned_lines)\n    return json_text.strip()\n\n\ndef _get_mcp_client(server_name: str, server_config: Dict[str, Any]):\n    \"\"\"\n    Get or create MCP client for a server (thread-safe).\n    \n    Args:\n        server_name: Name of the MCP server\n        server_config: Server configuration dict\n        \n    Returns:\n        MCPClient instance or None if error\n    \"\"\"\n    global _mcp_clients\n    \n    with _mcp_clients_lock:\n        if server_name in _mcp_clients:\n            client = _mcp_clients[server_name]\n            # Check if client is still valid\n            if hasattr(client, '_is_process_alive') and client._is_process_alive():\n                return client\n            # Remove dead client\n            del _mcp_clients[server_name]\n        \n        # Create new client\n        try:\n            from .mcp_client import MCPClient\n            client = MCPClient(\n                server_name=server_name,\n                command=server_config[\"command\"],\n                args=server_config.get(\"args\", []),\n                env=server_config.get(\"env\", {}),\n                cwd=server_config.get(\"cwd\")\n            )\n            \n            # Initialize client\n            if client.initialize():\n                _mcp_clients[server_name] = client\n                return client\n            else:\n                logger.warning(f\"Failed to initialize MCP client for '{server_name}'\")\n                return None\n        except Exception as e:\n            logger.error(f\"Error creating MCP client for '{server_name}': {e}\")\n            return None\n\n\ndef _get_mcp_resources_for_project(project: str, user_message: str) -&gt; List[Dict[str, Any]]:\n    \"\"\"\n    Get relevant MCP resources for a project.\n    \n    Args:\n        project: Project tag\n        user_message: User message for keyword matching\n        \n    Returns:\n        List of relevant resource dicts\n    \"\"\"\n    try:\n        from .mcp_config import get_mcp_config\n        \n        mcp_config = get_mcp_config()\n        server_names = mcp_config.get_servers_for_project(project)\n        \n        if not server_names:\n            return []\n        \n        relevant_resources = []\n        user_words = set(user_message.lower().split())\n        \n        for server_name in server_names:\n            try:\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    continue\n                \n                client = _get_mcp_client(server_name, server_config)\n                if not client:\n                    continue\n                \n                # List resources\n                resources = client.list_resources()\n                \n                # Match resources by keywords\n                for resource in resources:\n                    resource_name = resource.get(\"name\", \"\").lower()\n                    resource_desc = resource.get(\"description\", \"\").lower()\n                    \n                    # Simple keyword matching\n                    resource_text = f\"{resource_name} {resource_desc}\"\n                    matches = sum(1 for word in user_words if word in resource_text)\n                    \n                    if matches &gt; 0:\n                        relevant_resources.append({\n                            \"server\": server_name,\n                            \"resource\": resource,\n                            \"score\": matches\n                        })\n            except Exception as e:\n                logger.warning(f\"Error getting MCP resources from '{server_name}': {e}\")\n                continue\n        \n        # Sort by relevance score and return top 5\n        relevant_resources.sort(key=lambda x: x[\"score\"], reverse=True)\n        return relevant_resources[:5]\n        \n    except Exception as e:\n        logger.warning(f\"Error getting MCP resources for project '{project}': {e}\")\n        return []\n\n\ndef _get_mcp_context_for_project(project: str, user_message: str) -&gt; Optional[str]:\n    \"\"\"\n    Get MCP context string for a project.\n    \n    Args:\n        project: Project tag\n        user_message: User message\n        \n    Returns:\n        Context string with MCP resources, or None\n    \"\"\"\n    resources = _get_mcp_resources_for_project(project, user_message)\n    \n    if not resources:\n        return None\n    \n    try:\n        from .mcp_config import get_mcp_config\n        \n        mcp_config = get_mcp_config()\n        context_parts = []\n        \n        for item in resources:\n            server_name = item[\"server\"]\n            resource = item[\"resource\"]\n            uri = resource.get(\"uri\")\n            \n            if not uri:\n                continue\n            \n            server_config = mcp_config.get_server_config(server_name)\n            if not server_config:\n                continue\n            \n            client = _get_mcp_client(server_name, server_config)\n            if not client:\n                continue\n            \n            # Read resource content\n            content = client.read_resource(uri)\n            if content:\n                resource_name = resource.get(\"name\", uri)\n                context_parts.append(f\"From {resource_name}:\\n{content[:1000]}...\")  # Limit content length\n        \n        if context_parts:\n            return \"\\n\\n---\\n\\n\".join(context_parts)\n        \n    except Exception as e:\n        logger.warning(f\"Error building MCP context for project '{project}': {e}\")\n    \n    return None\n\n\ndef build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get MCP resources for DAAS (e.g., meditation notes)\n            mcp_context = None\n            try:\n                mcp_context = _get_mcp_context_for_project(project, user_message)\n            except Exception as e:\n                logger.warning(f\"MCP context integration failed for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if daas_result.get('dreams'):\n                # Build context from DAAS retrieval result\n                context_parts = []\n                notes = []\n                \n                # Add MCP resources if available\n                if mcp_context:\n                    context_parts.append(f\"Here are relevant resources:\\n\\n{mcp_context}\")\n                    notes.append(\"MCP resources: Retrieved relevant external resources\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the DAAS project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add DAAS retrieval context\n                if daas_result.get('context'):\n                    if daas_result['mode'] == 'single':\n                        context_parts.append(f\"Here is the specific dream you asked about:\\n\\n{daas_result['context']}\")\n                        notes.append(f\"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}\")\n                    else:\n                        context_parts.append(f\"Here are relevant dreams from your dream history:\\n\\n{daas_result['context']}\")\n                        notes.extend([f\"Dream: {d.get('title', 'Unknown')}\" for d in daas_result['dreams'][:5]])\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information to answer my new question in a way that is:\\n\"\n                    context += \"- consistent with the project goals and constraints\\n\"\n                    context += \"- consistent with prior decisions where appropriate\\n\"\n                    context += \"- willing to say \\\"I don't know\\\" if something is unclear.\"\n                    context += \"- keep it short and concise.\"\n                    context += \"- keep it easy to understand.\"\n                    context += \"- if you think I made a mistake in my prompt, please share don't agree with me\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: code RAG pipeline\n    if project == 'THN':\n        try:\n            from .thn_code_retrieval import get_thn_code_context\n            \n            # Retrieve relevant code chunks\n            code_context = get_thn_code_context(user_message, top_k=5)\n            \n            # Get MCP resources for THN\n            mcp_context = None\n            try:\n                mcp_context = _get_mcp_context_for_project(project, user_message)\n            except Exception as e:\n                logger.warning(f\"MCP context integration failed for THN: {e}\")\n            \n            if code_context:\n                # Build context with code and project knowledge\n                context_parts = []\n                notes = []\n                \n                # Add MCP resources if available\n                if mcp_context:\n                    context_parts.append(f\"Here are relevant resources:\\n\\n{mcp_context}\")\n                    notes.append(\"MCP resources: Retrieved relevant external resources\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the THN project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add code context\n                context_parts.append(f\"Here is relevant code from the THN codebase:\\n\\n{code_context}\")\n                notes.append(\"THN code retrieval: Retrieved relevant code snippets\")\n                \n                # Also include conversation memories (fallback to default behavior for memories)\n                # But prioritize code context\n                context = \"\\n\\n\".join(context_parts)\n                context += \"\\n\\nUse this information to answer my question. Focus on the actual code when providing technical guidance.\"\n                context += \"\\n\\nWhen explaining technical concepts:\"\n                context += \"\\n- Use the actual code examples from the codebase\"\n                context += \"\\n- Explain how the code works, not just what it does\"\n                context += \"\\n- Identify patterns and best practices visible in the code\"\n                context += \"\\n- If asked for learning projects, suggest practical exercises based on the codebase patterns\"\n                context += \"\\n- If asked for lesson plans, structure them around the actual code examples\"\n                context += \"\\n\\nKeep responses:\\n\"\n                context += \"- short and concise\\n\"\n                context += \"- easy to understand\\n\"\n                context += \"- based on the actual codebase when possible\\n\"\n                context += \"- educational and helpful for learning\\n\"\n                context += \"- willing to say \\\"I don't know\\\" if something is unclear\"\n                \n                logger.debug(f\"Built THN context with code retrieval\")\n                return {\n                    \"context\": context,\n                    \"notes\": notes[:10]\n                }\n            else:\n                # No code found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the THN project:\\n{project_summary}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # No code or knowledge, fall through to default\n                    logger.debug(\"No THN code or knowledge found, using default context\")\n                    \n        except Exception as e:\n            logger.error(f\"THN code retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # MCP resource integration for project-specific servers\n    mcp_context = None\n    try:\n        mcp_context = _get_mcp_context_for_project(project, user_message)\n    except Exception as e:\n        logger.warning(f\"MCP context integration failed for project '{project}': {e}\")\n    \n    # Default behavior for non-DAAS/THN projects or fallback\n    # Fetch project_knowledge summaries (stable overview) - FIRST\n    knowledge_summaries = fetch_project_knowledge(project)\n    \n    # Query conversation_index for this project\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(\n                \"\"\"\n                SELECT session_id, title, tags, summary_short, summary_detailed,\n                       key_topics, memory_snippet, indexed_at\n                FROM conversation_index\n                WHERE project = %s\n                ORDER BY indexed_at DESC\n                LIMIT %s\n                \"\"\",\n                (project, limit_memories),\n            )\n            rows = cur.fetchall()\n    \n    top_memories = []\n    if rows:\n        # Simple relevance scoring: count word matches in tags, key_topics, summary_detailed\n        user_words = set(user_message.lower().split())\n        \n        scored_memories = []\n        for row in rows:\n            (session_id, title, tags, summary_short, summary_detailed,\n             key_topics, memory_snippet, indexed_at) = row\n            \n            # Extract text fields for matching\n            text_fields = []\n            if tags:\n                if isinstance(tags, list):\n                    text_fields.extend([str(t).lower() for t in tags])\n                elif isinstance(tags, dict):\n                    text_fields.extend([str(v).lower() for v in tags.values() if v])\n            \n            if key_topics:\n                if isinstance(key_topics, list):\n                    text_fields.extend([str(t).lower() for t in key_topics])\n                elif isinstance(key_topics, dict):\n                    text_fields.extend([str(v).lower() for v in key_topics.values() if v])\n            \n            if summary_detailed:\n                text_fields.append(summary_detailed.lower())\n            \n            # Count word matches\n            all_text = \" \".join(text_fields)\n            match_count = sum(1 for word in user_words if word in all_text)\n            \n            scored_memories.append((match_count, row))\n        \n        # Sort by relevance (descending) and take top N\n        scored_memories.sort(key=lambda x: x[0], reverse=True)\n        top_memories = [row for _, row in scored_memories[:top_n]]\n    \n    # If no project_knowledge and no memories, return empty\n    if not knowledge_summaries and not top_memories:\n        logger.debug(f\"No context data found for project {project}\")\n        return {}\n    \n    # Build context directly from project_knowledge and selected memories\n    context_parts = []\n    notes = []\n    \n    # Add MCP resources if available\n    if mcp_context:\n        context_parts.append(f\"Here are relevant resources from external sources:\\n\\n{mcp_context}\")\n        notes.append(\"MCP resources: Retrieved relevant external resources\")\n    \n    # Add project_knowledge overview (stable foundation) - uses summary column\n    if knowledge_summaries:\n        # Combine all summaries into a single project overview\n        project_summary = \"\\n\\n\".join(knowledge_summaries)\n        context_parts.append(f\"Here is a general summary of the project:\\n{project_summary}\")\n        # Add summaries as notes\n        notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n    \n    # Add relevant conversation memories (specific details) - SECOND\n    if top_memories:\n        memories_text = []\n        for row in top_memories:\n            (session_id, title, tags, summary_short, summary_detailed,\n             key_topics, memory_snippet, indexed_at) = row\n            \n            mem_parts = []\n            if title:\n                mem_parts.append(f\"Title: {title}\")\n            if summary_short:\n                mem_parts.append(f\"Summary: {summary_short}\")\n            if memory_snippet:\n                mem_parts.append(f\"Memory: {memory_snippet}\")\n            if key_topics:\n                topics_str = \", \".join(key_topics) if isinstance(key_topics, list) else str(key_topics)\n                mem_parts.append(f\"Topics: {topics_str}\")\n            \n            if mem_parts:\n                memories_text.append(\"\\n\".join(mem_parts))\n                # Add to notes\n                if summary_short:\n                    notes.append(f\"Previous conversation: {summary_short[:80]}...\" if len(summary_short) &gt; 80 else f\"Previous conversation: {summary_short}\")\n        \n        if memories_text:\n            memories_block = \"\\n\\n---\\n\\n\".join(memories_text)\n            context_parts.append(f\"Here are relevant memories from past conversations in this project:\\n\\n{memories_block}\")\n    \n    # Combine into final context\n    if not context_parts:\n        logger.debug(f\"No context data found for project {project}\")\n        return {}\n    \n    context = \"\\n\\n\".join(context_parts)\n    \n    # Add instruction text about how to use this information\n    context += \"\\n\\nUse this information to answer my new question in a way that is:\\n\"\n    context += \"- consistent with the project goals and constraints\\n\"\n    context += \"- consistent with prior decisions where appropriate\\n\"\n    context += \"- willing to say \\\"I don't know\\\" if something is unclear.\"\n    context += \"- keep it short and concise.\"\n    context += \"- keep it easy to understand.\"\n    context += \"- if you think I made a mistake in my prompt, please share don't agree with me\"\n    \n    logger.debug(f\"Built project context for {project} with {len(top_memories)} memories and {len(knowledge_summaries)} knowledge entries\")\n    \n    return {\n        \"context\": context,\n        \"notes\": notes[:10]  # Limit notes to top 10\n    }\n\n",
+  "totalLinesInFile": 627
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating a todo list and starting removal and implementation:
+
+
+---
+
+<tool-use data-tool-type="task" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [-] Remove external MCP client code (mcp_client.py, mcp_config.py)
+- [ ] Remove MCP client usage from context_builder.py
+- [ ] Remove MCP client usage from chat_cli.py
+- [ ] Remove or update mcp_config.json
+- [ ] Create internal MCP server structure (src/models, src/services, src/mcp)
+- [ ] Implement MCP server core (server.py, protocol.py, resources.py, tools.py)
+- [ ] Implement Git sync service and note parser
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 630,
+  "limit": 270,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        \"/exit\",\n    ]\n    print(color_text(\"Commands:\", \"grey\"))\n    for cmd in commands:\n        print(color_text(f\"  {cmd}\", \"grey\"))\n    print()\n\n\ndef _handle_mcp_command(args: str, current_project: str):\n    \"\"\"\n    Handle /mcp command with subcommands.\n    \n    Commands:\n    - /mcp status - Show status of all MCP servers\n    - /mcp list [server] - List resources from server(s)\n    - /mcp read &lt;uri&gt; - Read a specific resource\n    - /mcp search &lt;server&gt; &lt;query&gt; [limit] - Search resources\n    - /mcp sync [server] - Sync repository\n    \"\"\"\n    if not args:\n        print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"orange\"))\n        return\n    \n    parts = args.split()\n    subcmd = parts[0].lower() if parts else \"\"\n    \n    try:\n        from brain_core.mcp_config import get_mcp_config\n        from brain_core.mcp_client import MCPClient\n        from brain_core.context_builder import _get_mcp_client\n        \n        mcp_config = get_mcp_config()\n        \n        if subcmd == \"status\":\n            # Show status of all configured servers\n            servers = mcp_config.get_all_servers()\n            if not servers:\n                print(color_text(\"No MCP servers configured.\", \"grey\"))\n                return\n            \n            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))\n            print(color_text(\"=\" * 60, \"grey\"))\n            \n            for server_name in servers:\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    continue\n                \n                try:\n                    client = _get_mcp_client(server_name, server_config)\n                    if client:\n                        if hasattr(client, 'process') and client.process and client._is_process_alive():\n                            if client.initialized:\n                                # Count cached resources\n                                cache_count = len(client._resource_cache) if hasattr(client, '_resource_cache') else 0\n                                print(f\"{server_name}: {color_text('✓ Connected', 'green')} ({cache_count} resources cached)\")\n                            else:\n                                print(f\"{server_name}: {color_text('⚠ Process running but not initialized', 'orange')}\")\n                        else:\n                            error_msg = client.last_error[1] if client.last_error else \"Process not found\"\n                            print(f\"{server_name}: {color_text('✗ Disconnected', 'orange')} (Error: {error_msg})\")\n                    else:\n                        print(f\"{server_name}: {color_text('✗ Failed to create client', 'orange')}\")\n                except Exception as e:\n                    import traceback\n                    error_detail = str(e)\n                    print(f\"{server_name}: {color_text('✗ Error', 'orange')} ({error_detail})\")\n                    logger.debug(f\"Full error for {server_name}:\", exc_info=True)\n            \n            print(color_text(\"=\" * 60, \"grey\"))\n        \n        elif subcmd == \"list\":\n            # List resources from server(s)\n            server_name = parts[1] if len(parts) &gt; 1 else None\n            \n            if server_name:\n                # List from specific server\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))\n                    print(color_text(\"Use /mcp status to see available servers.\", \"grey\"))\n                    return\n                \n                try:\n                    client = _get_mcp_client(server_name, server_config)\n                    if not client:\n                        print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))\n                        return\n                    \n                    resources = client.list_resources()\n                    if not resources:\n                        print(color_text(f\"No resources found for '{server_name}'.\", \"grey\"))\n                        return\n                    \n                    print(color_text(f\"MCP Resources ({server_name}):\", \"cyan\", bold=True))\n                    for resource in resources:\n                        uri = resource.get(\"uri\", \"\")\n                        name = resource.get(\"name\", uri)\n                        print(f\"  {uri} - {name}\")\n                except Exception as e:\n                    print(color_text(f\"Error listing resources: {e}\", \"orange\"))\n            else:\n                # List from all servers\n                servers = mcp_config.get_all_servers()\n                if not servers:\n                    print(color_text(\"No MCP servers configured.\", \"grey\"))\n                    return\n                \n                for server_name in servers:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    try:\n                        client = _get_mcp_client(server_name, server_config)\n                        if not client:\n                            continue\n                        \n                        resources = client.list_resources()\n                        if resources:\n                            print(color_text(f\"MCP Resources ({server_name}):\", \"cyan\", bold=True))\n                            for resource in resources:\n                                uri = resource.get(\"uri\", \"\")\n                                name = resource.get(\"name\", uri)\n                                print(f\"  {uri} - {name}\")\n                            print()\n                    except Exception as e:\n                        logger.warning(f\"Error listing resources from '{server_name}': {e}\")\n        \n        elif subcmd == \"read\":\n            if len(parts) &lt; 2:\n                print(color_text(\"Usage: /mcp read &lt;uri&gt;\", \"orange\"))\n                return\n            \n            uri = parts[1]\n            \n            # Find which server has this resource\n            servers = mcp_config.get_all_servers()\n            resource_content = None\n            \n            for server_name in servers:\n                try:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    client = _get_mcp_client(server_name, server_config)\n                    if not client:\n                        continue\n                    \n                    # Try to read from this server\n                    content = client.read_resource(uri)\n                    if content:\n                        resource_content = content\n                        break\n                except Exception:\n                    continue\n            \n            if not resource_content:\n                print(color_text(f\"Error: Resource '{uri}' not found.\", \"orange\"))\n                return\n            \n            print(color_text(f\"Resource: {uri}\", \"cyan\", bold=True))\n            print(color_text(\"=\" * 60, \"grey\"))\n            print(resource_content)\n            print(color_text(\"=\" * 60, \"grey\"))\n        \n        elif subcmd == \"search\":\n            if len(parts) &lt; 3:\n                print(color_text(\"Usage: /mcp search &lt;server&gt; &lt;query&gt; [limit]\", \"orange\"))\n                return\n            \n            server_name = parts[1]\n            query = parts[2]\n            limit = int(parts[3]) if len(parts) &gt; 3 else 10\n            \n            server_config = mcp_config.get_server_config(server_name)\n            if not server_config:\n                print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))\n                return\n            \n            try:\n                client = _get_mcp_client(server_name, server_config)\n                if not client:\n                    print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))\n                    return\n                \n                result = client.call_tool(\"search_notes\", {\"query\": query, \"limit\": limit})\n                if result and \"content\" in result:\n                    for content_item in result[\"content\"]:\n                        if content_item.get(\"type\") == \"text\":\n                            print(color_text(f\"Search Results ({server_name}): \\\"{query}\\\"\", \"cyan\", bold=True))\n                            print(color_text(\"=\" * 60, \"grey\"))\n                            print(content_item.get(\"text\", \"\"))\n                            print(color_text(\"=\" * 60, \"grey\"))\n                else:\n                    print(color_text(f\"No results found for '{query}'.\", \"grey\"))\n            except Exception as e:\n                print(color_text(f\"Error searching: {e}\", \"orange\"))\n        \n        elif subcmd == \"sync\":\n            server_name = parts[1] if len(parts) &gt; 1 else None\n            \n            if server_name:\n                # Sync specific server\n                server_config = mcp_config.get_server_config(server_name)\n                if not server_config:\n                    print(color_text(f\"Error: MCP server '{server_name}' not configured.\", \"orange\"))\n                    return\n                \n                try:\n                    client = _get_mcp_client(server_name, server_config)\n                    if not client:\n                        print(color_text(f\"Error: MCP server '{server_name}' is not available.\", \"orange\"))\n                        return\n                    \n                    print(color_text(f\"Syncing {server_name}...\", \"grey\"))\n                    result = client.call_tool(\"sync_repository\", {})\n                    if result and \"content\" in result:\n                        for content_item in result[\"content\"]:\n                            if content_item.get(\"type\") == \"text\":\n                                print(content_item.get(\"text\", \"\"))\n                        # Invalidate cache after sync\n                        client.invalidate_cache()\n                        print(color_text(\"✓ Sync complete\", \"green\"))\n                    else:\n                        print(color_text(\"Sync completed (no output)\", \"grey\"))\n                except Exception as e:\n                    print(color_text(f\"Error syncing: {e}\", \"orange\"))\n            else:\n                # Sync all servers\n                servers = mcp_config.get_all_servers()\n                if not servers:\n                    print(color_text(\"No MCP servers configured.\", \"grey\"))\n                    return\n                \n                for server_name in servers:\n                    server_config = mcp_config.get_server_config(server_name)\n                    if not server_config:\n                        continue\n                    \n                    try:\n                        client = _get_mcp_client(server_name, server_config)\n                        if not client:\n                            continue\n                        \n                        print(color_text(f\"Syncing {server_name}...\", \"grey\"))\n                        result = client.call_tool(\"sync_repository\", {})\n                        if result and \"content\" in result:\n                            for content_item in result[\"content\"]:\n                                if content_item.get(\"type\") == \"text\":\n                                    print(content_item.get(\"text\", \"\"))\n                            client.invalidate_cache()\n                            print(color_text(f\"✓ {server_name} sync complete\", \"green\"))\n                    except Exception as e:\n                        print(color_text(f\"Error syncing {server_name}: {e}\", \"orange\"))\n        \n        else:\n            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))\n            print(color_text(\"Usage: /mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\", \"grey\"))\n    \n    except ImportError as e:\n        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))\n    except Exception as e:\n        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))\n        logger.exception(\"MCP command error\")\n\n\ndef show_project_memory_blurb(project: str, limit: int = 3):\n    \"\"\"",
+  "totalLinesInFile": 1721
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing external MCP client code:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="delete_file">
+<details><summary>Tool use: **delete_file**</summary>
+
+Explanation: undefined
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="delete_file">
+<details><summary>Tool use: **delete_file**</summary>
+
+Explanation: undefined
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="delete_file">
+<details><summary>Tool use: **delete_file**</summary>
+
+Explanation: undefined
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "2b5440a5-75e4-4a39-bed9-c430155fe60d"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "4b3e27c2-7365-4804-b91a-73857f104af8"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "618ab008-ee59-4f8a-8451-f95034ec7769"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "86c3f5db-dec9-4fb5-adb9-3b4f5bec049b"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "7d06727a-6f6f-4298-8b2c-495015210308"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "b43c18ad-a20f-4c54-83e1-6be0d7af5feb"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "2a10189d-e976-4d91-961b-115a3ae722d0"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing external MCP client usage from `chat_cli.py`:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "020bb4dd-fcd8-457a-a1bf-6d6052287c70"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="task" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [x] Remove external MCP client code (mcp_client.py, mcp_config.py)
+- [x] Remove MCP client usage from context_builder.py
+- [x] Remove MCP client usage from chat_cli.py
+- [x] Remove or update mcp_config.json
+- [-] Create internal MCP server structure (src/models, src/services, src/mcp)
+- [ ] Implement MCP server core (server.py, protocol.py, resources.py, tools.py)
+- [ ] Implement Git sync service and note parser
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking the project structure and creating the internal MCP server structure:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.cursor",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.cursor/commands",
+            "childrenFiles": [
+              {
+                "name": "speckit.analyze.md"
+              },
+              {
+                "name": "speckit.checklist.md"
+              },
+              {
+                "name": "speckit.clarify.md"
+              },
+              {
+                "name": "speckit.constitution.md"
+              },
+              {
+                "name": "speckit.implement.md"
+              },
+              {
+                "name": "speckit.plan.md"
+              },
+              {
+                "name": "speckit.specify.md"
+              },
+              {
+                "name": "speckit.tasks.md"
+              },
+              {
+                "name": "speckit.taskstoissues.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.cursor/rules",
+            "childrenFiles": [
+              {
+                "name": "specify-rules.mdc"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/memory",
+            "childrenFiles": [
+              {
+                "name": "constitution.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/scripts",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/scripts/bash",
+                "childrenFiles": [
+                  {
+                    "name": "check-prerequisites.sh"
+                  },
+                  {
+                    "name": "common.sh"
+                  },
+                  {
+                    "name": "create-new-feature.sh"
+                  },
+                  {
+                    "name": "setup-plan.sh"
+                  },
+                  {
+                    "name": "update-agent-context.sh"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/templates",
+            "childrenFiles": [
+              {
+                "name": "agent-file-template.md"
+              },
+              {
+                "name": "checklist-template.md"
+              },
+              {
+                "name": "plan-template.md"
+              },
+              {
+                "name": "spec-template.md"
+              },
+              {
+                "name": "tasks-template.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "constitution.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specstory",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specstory/history",
+            "childrenFiles": [
+              {
+                "name": "2025-11-24_16-54Z-establishing-code-quality-principles.md"
+              }
+            ],
+            "fullSubtreeExtensionCounts": {
+              ".md": 4
+            },
+            "numFiles": 4
+          }
+        ],
+        "fullSubtreeExtensionCounts": {
+          ".md": 4,
+          "": 1
+        },
+        "numFiles": 5
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+        "childrenFiles": [
+          {
+            "name": "__init__.py"
+          },
+          {
+            "name": "chat.py"
+          },
+          {
+            "name": "config.py"
+          },
+          {
+            "name": "context_builder.py"
+          },
+          {
+            "name": "conversation_indexer.py"
+          },
+          {
+            "name": "daas_retrieval.py"
+          },
+          {
+            "name": "db.py"
+          },
+          {
+            "name": "embedding_service.py"
+          },
+          {
+            "name": "memory.py"
+          },
+          {
+            "name": "mock_client.py"
+          },
+          {
+            "name": "ollama_client.py"
+          },
+          {
+            "name": "thn_code_indexer.py"
+          },
+          {
+            "name": "thn_code_retrieval.py"
+          },
+          {
+            "name": "usage_tracker.py"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/db",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/db/backups",
+            "childrenFiles": [
+              {
+                "name": ".gitkeep"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/db/migrations",
+            "childrenFiles": [
+              {
+                "name": "000_initial_schema_rollback.sql"
+              },
+              {
+                "name": "000_initial_schema.sql"
+              },
+              {
+                "name": "001_create_conversation_index_rollback.sql"
+              },
+              {
+                "name": "001_create_conversation_index.sql"
+              },
+              {
+                "name": "002_daas_embeddings_rollback.sql"
+              },
+              {
+                "name": "002_daas_embeddings.sql"
+              },
+              {
+                "name": "003_thn_code_index.sql"
+              },
+              {
+                "name": "README.md"
+              },
+              {
+                "name": "run_all_migrations.sh"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/db/seeds",
+            "childrenFiles": [
+              {
+                "name": "dev_seed.sql"
+              },
+              {
+                "name": "prod_seed.sql"
+              },
+              {
+                "name": "project_knowledge_seed.sql"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/scripts",
+        "childrenFiles": [
+          {
+            "name": "backfill_embeddings.py"
+          },
+          {
+            "name": "backfill_thn_embeddings.py"
+          },
+          {
+            "name": "backup_db.py"
+          },
+          {
+            "name": "fix_invalid_projects.py"
+          },
+          {
+            "name": "import_chatgpt_from_zip.py"
+          },
+          {
+            "name": "index_thn_code.py"
+          },
+          {
+            "name": "reindex_conversations.py"
+          },
+          {
+            "name": "setup_dev.py"
+          },
+          {
+            "name": "setup_prod_conversation_index.py"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "backup-script.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "environment-config.md"
+                  },
+                  {
+                    "name": "mock-client.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "ANALYSIS_REPORT.md"
+              },
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "api-input.md"
+                  },
+                  {
+                    "name": "cli-input.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli-exit.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "api.md"
+                  },
+                  {
+                    "name": "cli.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup/checklists",
+                "childrenFiles": [
+                  {
+                    "name": "requirements.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "init-db.md"
+                  },
+                  {
+                    "name": "setup-dev.md"
+                  },
+                  {
+                    "name": "setup-prod.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/004-fix-conversation-saving",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/004-fix-conversation-saving/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/005-conversation-audit-tool",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/005-conversation-audit-tool/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/006-fix-api-usage-and-pause-feature",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/006-fix-api-usage-and-pause-feature/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/007-fix-ollama-json-extraction",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/007-fix-ollama-json-extraction/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "api.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/008-thn-code-rag-pipeline",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/008-thn-code-rag-pipeline/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "api.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/009-refactor-script-organization",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/009-refactor-script-organization/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "file-moves.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/010-mcp-server-integration",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/010-mcp-server-integration/contracts",
+                "childrenFiles": [
+                  {
+                    "name": "cli.md"
+                  },
+                  {
+                    "name": "mcp-client.md"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "data-model.md"
+              },
+              {
+                "name": "plan.md"
+              },
+              {
+                "name": "quickstart.md"
+              },
+              {
+                "name": "research.md"
+              },
+              {
+                "name": "spec.md"
+              },
+              {
+                "name": "tasks.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/tools",
+        "childrenFiles": [
+          {
+            "name": "audit_conversations.py"
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenFiles": [
+      {
+        "name": ".cursorindexingignore"
+      },
+      {
+        "name": ".env.example"
+      },
+      {
+        "name": ".gitignore"
+      },
+      {
+        "name": "chat_cli.py"
+      },
+      {
+        "name": "DATABASE_SETUP.md"
+      },
+      {
+        "name": "init_db.py"
+      },
+      {
+        "name": "PRODUCTION_SETUP.md"
+      },
+      {
+        "name": "README.md"
+      },
+      {
+        "name": "requirements.txt"
+      }
+    ],
+    "fullSubtreeExtensionCounts": {
+      ".md": 4,
+      "": 1
+    },
+    "numFiles": 5
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/requirements.txt",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/requirements.txt"
+}
+```
+Result:
+
+```json
+{
+  "contents": "psycopg2-binary\npython-dotenv\nopenai\nrequests\ngitpython\n\n",
+  "totalLinesInFile": 7
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **0** result in **1** directory</summary>
+
+Directory: **undefined** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specstory/history/2025-12-07_00-29Z-meditation-notes-server-timeout-issue.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specstory/history/2025-12-07_00-29Z-meditation-notes-server-timeout-issue.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "",
+  "totalLinesInFile": 12981
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the internal MCP server structure. Starting with the directory structure and core files:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; mkdir -p src/models src/services src/mcp src/cli tests/contract tests/integration tests/unit",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "mkdir",
+        "args": [
+          {
+            "type": "word",
+            "value": "-p"
+          },
+          {
+            "type": "word",
+            "value": "src/models"
+          },
+          {
+            "type": "word",
+            "value": "src/services"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp"
+          },
+          {
+            "type": "word",
+            "value": "src/cli"
+          },
+          {
+            "type": "word",
+            "value": "tests/contract"
+          },
+          {
+            "type": "word",
+            "value": "tests/integration"
+          },
+          {
+            "type": "word",
+            "value": "tests/unit"
+          }
+        ],
+        "fullText": "mkdir -p src/models src/services src/mcp src/cli tests/contract tests/integration tests/unit"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/__init__.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "525b6e94-22cf-4432-accc-3bf3d7b16f77"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/__init__.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "08118015-ff8c-4740-9797-a8aea6c4ac45"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/note.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "015cff80-dd36-4e70-adbc-335584d26740"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "ac4d31fc-18ec-40b1-9dac-21e979851984"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/index.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "3b482ebf-249c-4735-bb4c-1dcb1defebd9"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the services layer:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/__init__.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "4523442d-89ed-4126-9389-21f43f0eb594"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/git_sync.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "d79d67f0-bdbd-4dff-92bc-212494f43341"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "49bf6181-3f86-4373-8ac8-7941e1daf9f9"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "32259790-f0cd-4e25-a41b-0927dfa59a8d"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing imports and implementing the MCP server core:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9ac55637-8aac-49ba-af2c-25ed9ef0d787"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/__init__.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "1a86a262-bd97-4ad7-9c66-a30ca7d8b07e"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/protocol.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "1daef75f-8894-4046-be34-f0294d8c5e1e"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/resources.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "5a08f8d1-b30b-444d-b7c6-a5fa25f83485"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/tools.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "d4dc3de2-7248-4b04-a3bb-e349a27776fc"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "ebd8d992-c216-44c6-9ceb-3c47dc898a49"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py",
+  "offset": 90,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    \"properties\": {},\n                    \"required\": []\n                }\n            }\n        ]\n    })\n    protocol.register_method(\"tools/call\", lambda params: _handle_tool_call(params, tools_handler))\n    \n    # Build initial index if repository exists\n    if repository.local_path.exists() and (repository.local_path / \".git\").exists():\n        logger.info(\"Building initial index from existing repository...\")\n        builder = IndexBuilder(repository, index)\n        try:\n            note_count = builder.rebuild_index()\n            logger.info(f\"Indexed {note_count} notes\")\n        except Exception as e:\n            logger.warning(f\"Failed to build initial index: {e}\")\n    \n    return protocol\n",
+  "totalLinesInFile": 140
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Fixing the missing import in server.py:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9d9bf797-1c6b-4696-837f-e74e2216191c"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/requirements.txt",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/requirements.txt"
+}
+```
+Result:
+
+```json
+{
+  "contents": "psycopg2-binary\npython-dotenv\nopenai\nrequests\ngitpython\n\n",
+  "totalLinesInFile": 7
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/requirements.txt"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "088db36f-e505-4553-a8ea-6c63e121ec2d"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="task" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [x] Remove external MCP client code (mcp_client.py, mcp_config.py)
+- [x] Remove MCP client usage from context_builder.py
+- [x] Remove MCP client usage from chat_cli.py
+- [x] Remove or update mcp_config.json
+- [x] Create internal MCP server structure (src/models, src/services, src/mcp)
+- [x] Implement MCP server core (server.py, protocol.py, resources.py, tools.py)
+- [x] Implement Git sync service and note parser
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the code compiles and fixing any issues:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile src/mcp/server.py src/models/note.py src/models/repository.py src/models/index.py src/services/git_sync.py src/services/note_parser.py src/services/index_builder.py src/mcp/protocol.py src/mcp/resources.py src/mcp/tools.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp/server.py"
+          },
+          {
+            "type": "word",
+            "value": "src/models/note.py"
+          },
+          {
+            "type": "word",
+            "value": "src/models/repository.py"
+          },
+          {
+            "type": "word",
+            "value": "src/models/index.py"
+          },
+          {
+            "type": "word",
+            "value": "src/services/git_sync.py"
+          },
+          {
+            "type": "word",
+            "value": "src/services/note_parser.py"
+          },
+          {
+            "type": "word",
+            "value": "src/services/index_builder.py"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp/protocol.py"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp/resources.py"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp/tools.py"
+          }
+        ],
+        "fullText": "python -m py_compile src/mcp/server.py src/models/note.py src/models/repository.py src/models/index.py src/services/git_sync.py src/services/note_parser.py src/services/index_builder.py src/mcp/protocol.py src/mcp/resources.py src/mcp/tools.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "src"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "src"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Code compiles. Summary:
+
+## Summary
+
+Removed external MCP client code and implemented an internal MCP server.
+
+### 1. Removed External MCP Client Code
+- Deleted `brain_core/mcp_client.py` (external client)
+- Deleted `brain_core/mcp_config.py` (external config)
+- Deleted `mcp_config.json` (external config file)
+- Removed all MCP client usage from `context_builder.py`
+- Simplified MCP command handler in `chat_cli.py`
+
+### 2. Created Internal MCP Server Structure
+
+**Models** (`src/models/`):
+- `note.py` - Note entity with slug, title, content, frontmatter
+- `repository.py` - Repository entity for GitLab sync state
+- `index.py` - In-memory index for fast O(1) note lookups
+
+**Services** (`src/services/`):
+- `git_sync.py` - GitLab repository sync (clone/pull)
+- `note_parser.py` - Obsidian markdown parser with YAML frontmatter
+- `index_builder.py` - Builds and rebuilds note index
+
+**MCP Protocol** (`src/mcp/`):
+- `server.py` - Main MCP server entry point
+- `protocol.py` - JSON-RPC 2.0 protocol handler over stdio
+- `resources.py` - Handles `resources/list` and `resources/read`
+- `tools.py` - Handles `search_notes` and `sync_repository` tools
+
+### 3. Updated Dependencies
+Added to `requirements.txt`:
+- `python-frontmatter` - For parsing YAML frontmatter
+- `markdown` - For markdown processing
+
+### Features Implemented
+
+- MCP Protocol: Full JSON-RPC 2.0 over stdio
+- Git Sync: Clone/pull from GitLab repository
+- Note Parsing: Obsidian markdown with YAML frontmatter
+- In-Memory Index: Fast O(1) lookups by slug/URI
+- Search: Simple text search through notes
+- Resource API: List and read meditation notes as MCP resources
+- Tools API: Search and sync tools
+
+### Usage
+
+The server can be run as:
+```bash
+python -m src.mcp.server
+```
+
+Configuration via environment variables:
+- `GITLAB_URL` - GitLab repository URL (default: http://192.168.119.200:8201/tumultymedia/meditations)
+- `REPO_PATH` - Local cache path (default: /tmp/meditation-mcp-repo)
+- `BRANCH` - Git branch to use (default: main)
+
+The server communicates via JSON-RPC 2.0 over stdin/stdout, compatible with MCP clients.
+
+Code compiles and is ready for testing. Next step: integrate this internal server with the project_chat system or test it independently.
+
+---
+
+_**User (2025-12-07 00:29Z)**_
+
+Okay now that you've created the mcp server within project_chat. What are the cmds to run it.
+
+In one window i ran python -m src.mcp.server and its running in a second window I started chat_cli.py and ran /mcp status and this i what i get 
+
+
+
+MCP integration is being migrated to internal server. 
+
+
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Creating a Python API wrapper for the internal MCP server and updating `chat_cli.py` to use it. The server runs via stdio, so we'll add a direct Python interface for `chat_cli.py`.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/server.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nMain MCP server entry point.\n\nSets up and runs the MCP server with all handlers.\n\"\"\"\nimport os\nimport sys\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any\n\nfrom .protocol import MCPProtocolHandler\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\n\n# Configure logging\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',\n    stream=sys.stderr  # Log to stderr so stdout is only for JSON-RPC\n)\n\nlogger = logging.getLogger(__name__)\n\n\ndef create_server() -&gt; MCPProtocolHandler:\n    \"\"\"\n    Create and configure MCP server.\n    \n    Returns:\n        Configured MCPProtocolHandler\n    \"\"\"\n    # Get configuration from environment\n    gitlab_url = os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n    repo_path = Path(os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\"))\n    branch = os.environ.get(\"BRANCH\", \"main\")\n    \n    logger.info(f\"Initializing MCP server with GitLab URL: {gitlab_url}\")\n    \n    # Create repository model\n    repository = Repository(\n        url=gitlab_url,\n        local_path=repo_path,\n        branch=branch\n    )\n    \n    # Create note index\n    index = NoteIndex()\n    \n    # Create handlers\n    resources_handler = ResourcesHandler(index)\n    tools_handler = ToolsHandler(index, repository)\n    \n    # Create protocol handler\n    protocol = MCPProtocolHandler()\n    \n    # Register resource methods\n    protocol.register_method(\"resources/list\", resources_handler.list_resources)\n    protocol.register_method(\"resources/read\", resources_handler.read_resource)\n    \n    # Register tool methods\n    protocol.register_method(\"tools/list\", lambda params: {\n        \"tools\": [\n            {\n                \"name\": \"search_notes\",\n                \"description\": \"Search meditation notes by keyword\",\n                \"inputSchema\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"query\": {\n                            \"type\": \"string\",\n                            \"description\": \"Search query\"\n                        },\n                        \"limit\": {\n                            \"type\": \"integer\",\n                            \"description\": \"Maximum number of results\",\n                            \"default\": 10\n                        }\n                    },\n                    \"required\": [\"query\"]\n                }\n            },\n            {\n                \"name\": \"sync_repository\",\n                \"description\": \"Sync meditation notes repository from GitLab\",\n                \"inputSchema\": {\n                    \"type\": \"object\",\n                    \"properties\": {},\n                    \"required\": []\n                }\n            }\n        ]\n    })\n    protocol.register_method(\"tools/call\", lambda params: _handle_tool_call(params, tools_handler))\n    \n    # Build initial index if repository exists\n    if repository.local_path.exists() and (repository.local_path / \".git\").exists():\n        logger.info(\"Building initial index from existing repository...\")\n        builder = IndexBuilder(repository, index)\n        try:\n            note_count = builder.rebuild_index()\n            logger.info(f\"Indexed {note_count} notes\")\n        except Exception as e:\n            logger.warning(f\"Failed to build initial index: {e}\")\n    \n    return protocol\n\n\ndef _handle_tool_call(params: Dict[str, Any], tools_handler: ToolsHandler) -&gt; Dict[str, Any]:\n    \"\"\"\n    Handle tools/call request by routing to appropriate tool.\n    \n    Args:\n        params: Tool call parameters with 'name' and 'arguments'\n        tools_handler: ToolsHandler instance\n        \n    Returns:\n        Tool result\n    \"\"\"\n    tool_name = params.get(\"name\")\n    arguments = params.get(\"arguments\", {})\n    \n    if tool_name == \"search_notes\":\n        return tools_handler.search_notes(arguments)\n    elif tool_name == \"sync_repository\":\n        return tools_handler.sync_repository(arguments)\n    else:\n        raise ValueError(f\"Unknown tool: {tool_name}\")\n\n\ndef main():\n    \"\"\"Main entry point for MCP server.\"\"\"\n    protocol = create_server()\n    protocol.run()\n\n\nif __name__ == \"__main__\":\n    main()",
+  "totalLinesInFile": 141
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/api.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "13521c33-0d03-47ee-a360-7d68b9de462a"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 638,
+  "limit": 5,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "def _handle_mcp_command(args: str, current_project: str):\n    \"\"\"\n    Handle /mcp command with subcommands.\n    \n    Note: MCP server is now internal to the project.",
+  "totalLinesInFile": 1472
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "44fa4d19-87fe-4f93-a199-1aab770bf25e"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile src/mcp/api.py chat_cli.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "src/mcp/api.py"
+          },
+          {
+            "type": "word",
+            "value": "chat_cli.py"
+          }
+        ],
+        "fullText": "python -m py_compile src/mcp/api.py chat_cli.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Integrated the MCP server directly into `chat_cli.py`. You don't need to run the server separately.
+
+## How It Works
+
+The MCP server has two interfaces:
+
+1. **Stdio server** (for external MCP clients): `python -m src.mcp.server`
+2. **Python API** (for direct use in chat_cli): Integrated via `src.mcp.api`
+
+## Usage
+
+Run `chat_cli.py` normally. The MCP server is integrated and initializes automatically:
+
+```bash
+python chat_cli.py
+```
+
+Then use these commands:
+
+- `/mcp status` - Show server status (repository URL, note count, last sync)
+- `/mcp list` - List all meditation note resources
+- `/mcp read <uri>` - Read a specific resource (e.g., `meditation://note/morning-meditation-2024-12-01`)
+- `/mcp search <query> [limit]` - Search notes (e.g., `/mcp search "morning routine" 5`)
+- `/mcp sync` - Sync repository from GitLab
+
+## Configuration
+
+Set environment variables (or use defaults):
+
+```bash
+export GITLAB_URL="http://192.168.119.200:8201/tumultymedia/meditations"
+export REPO_PATH="/tmp/meditation-mcp-repo"  # Optional, defaults to /tmp/meditation-mcp-repo
+export BRANCH="main"  # Optional, defaults to main
+```
+
+Or add to `.env` file:
+```
+GITLAB_URL=http://192.168.119.200:8201/tumultymedia/meditations
+REPO_PATH=/tmp/meditation-mcp-repo
+BRANCH=main
+```
+
+## First Run
+
+1. Start `chat_cli.py`
+2. Run `/mcp sync` to clone/pull the repository and build the index
+3. Use `/mcp list` to see available notes
+4. Use `/mcp search` to find notes
+
+The server initializes automatically when you first use an MCP command. No separate server process needed.
+
+---
+
+_**User (2025-12-07 00:29Z)**_
+
+Ran /mcp sync and got 
+
+
+
+@python3.10 (78-80) 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+The code assumes notes are in a `notes` subdirectory, but the repository may use a different layout. Checking the repository structure and updating the code to auto-detect markdown files:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nRepository entity for GitLab meditation notes repository.\n\nManages the local clone/pull state of the repository.\n\"\"\"\nfrom dataclasses import dataclass\nfrom typing import Optional\nfrom datetime import datetime\nfrom pathlib import Path\n\n\n@dataclass\nclass Repository:\n    \"\"\"Repository state and configuration.\"\"\"\n    \n    url: str\n    local_path: Path\n    branch: str = \"main\"\n    last_sync: Optional[datetime] = None\n    sync_error: Optional[str] = None\n    \n    @property\n    def notes_dir(self) -&gt; Path:\n        \"\"\"Path to notes directory within repository.\"\"\"\n        return self.local_path / \"notes\"\n    \n    def to_dict(self) -&gt; dict:\n        \"\"\"Convert repository to dictionary.\"\"\"\n        return {\n            \"url\": self.url,\n            \"local_path\": str(self.local_path),\n            \"branch\": self.branch,\n            \"last_sync\": self.last_sync.isoformat() if self.last_sync else None,\n            \"sync_error\": self.sync_error\n        }",
+  "totalLinesInFile": 35
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py",
+  "offset": 60,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            \n            # Parse frontmatter\n            post = frontmatter.loads(content)\n            frontmatter_data = post.metadata if post.metadata else {}\n            body = post.content\n            \n            # Generate slug from filename\n            slug = NoteParser.slug_from_filename(file_path.name)\n            \n            # Extract title from frontmatter or first heading or filename\n            title = frontmatter_data.get('title')\n            if not title:\n                # Try to extract from first heading\n                heading_match = re.search(r'^#\\s+(.+)$', body, re.MULTILINE)\n                if heading_match:\n                    title = heading_match.group(1).strip()\n                else:\n                    title = file_path.stem\n            \n            # Get relative file path\n            try:\n                relative_path = str(file_path.relative_to(repo_path))\n            except ValueError:\n                relative_path = str(file_path)\n            \n            # Get file modification time\n            try:\n                last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)\n            except (OSError, ValueError):\n                last_modified = None",
+  "totalLinesInFile": 129
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nIndex building service.\n\nBuilds and maintains the note index from repository files.\n\"\"\"\nimport logging\nfrom pathlib import Path\nfrom typing import Optional\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.note_parser import NoteParser\n\nlogger = logging.getLogger(__name__)\n\n\nclass IndexBuilder:\n    \"\"\"Service for building note index.\"\"\"\n    \n    def __init__(self, repository: Repository, index: NoteIndex):\n        \"\"\"\n        Initialize index builder.\n        \n        Args:\n            repository: Repository configuration\n            index: NoteIndex instance to populate\n        \"\"\"\n        self.repository = repository\n        self.index = index\n    \n    def rebuild_index(self) -&gt; int:\n        \"\"\"\n        Rebuild the note index from repository files.\n        \n        Returns:\n            Number of notes indexed\n        \"\"\"\n        logger.info(\"Rebuilding note index...\")\n        \n        # Clear existing index\n        self.index.clear()\n        \n        # Find and parse all notes\n        notes = NoteParser.find_notes(\n            self.repository.local_path,\n            self.repository.notes_dir\n        )\n        \n        # Add notes to index\n        for note in notes:\n            self.index.add(note)\n        \n        logger.info(f\"Index rebuilt with {self.index.count()} notes\")\n        return self.index.count()\n    \n    def sync_and_rebuild(self) -&gt; tuple[bool, int, Optional[str]]:\n        \"\"\"\n        Sync repository and rebuild index.\n        \n        Returns:\n            Tuple of (success: bool, note_count: int, error_message: Optional[str])\n        \"\"\"\n        from ..services.git_sync import GitSyncService\n        \n        # Sync repository\n        sync_service = GitSyncService(self.repository)\n        success, error = sync_service.sync()\n        \n        if not success:\n            return False, 0, error\n        \n        # Rebuild index\n        try:\n            note_count = self.rebuild_index()\n            return True, note_count, None\n        except Exception as e:\n            error_msg = f\"Failed to rebuild index: {str(e)}\"\n            logger.error(error_msg, exc_info=True)\n            return False, 0, error_msg",
+  "totalLinesInFile": 79
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "8eec157c-205b-436f-9496-83c52fa605e7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py",
+  "offset": 85,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            # Get file modification time\n            try:\n                last_modified = datetime.fromtimestamp(file_path.stat().st_mtime)\n            except (OSError, ValueError):\n                last_modified = None\n            \n            return Note(\n                slug=slug,\n                title=title,\n                content=body,\n                frontmatter=frontmatter_data,\n                file_path=relative_path,\n                last_modified=last_modified\n            )\n            \n        except Exception as e:\n            logger.warning(f\"Failed to parse note {file_path}: {e}\")\n            return None\n    \n    @staticmethod\n    def find_notes(repo_path: Path, notes_dir: Path) -&gt; list[Note]:\n        \"\"\"\n        Find and parse all markdown notes in repository.\n        \n        Args:",
+  "totalLinesInFile": 129
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "f8525fac-0122-4096-b75d-f8eb250fa924"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile src/models/repository.py src/services/note_parser.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "src/models/repository.py"
+          },
+          {
+            "type": "word",
+            "value": "src/services/note_parser.py"
+          }
+        ],
+        "fullText": "python -m py_compile src/models/repository.py src/services/note_parser.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the code to handle repositories where notes aren't in a `notes/` subdirectory. Changes:
+
+1. **Auto-detect notes location**: If `notes/` doesn't exist, it uses the repository root
+2. **Skip common files**: Excludes README.md, CHANGELOG.md, LICENSE.md
+3. **Skip system directories**: Excludes .git, __pycache__, node_modules, etc.
+
+Run `/mcp sync` again. It should:
+- Use the repository root if `notes/` doesn't exist
+- Find all `.md` files in the repository
+- Index them as meditation notes
+
+If it still finds 0 notes, check:
+1. The repository structure — where are the markdown files located?
+2. Run `/mcp status` to see the repository path
+3. Verify the repository was cloned correctly
+
+You can also check the repository structure:
+```bash
+ls -la /tmp/meditation-mcp-repo/
+```
+
+This shows where the markdown files are in the repository.
+
+---
+
+_**User (2025-12-07 00:29Z)**_
+
+Yeah there is no notes directory
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+The code should use the repository root. Adding better logging and verifying it's working:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py",
+  "offset": 104,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    @staticmethod\n    def find_notes(repo_path: Path, notes_dir: Path) -&gt; list[Note]:\n        \"\"\"\n        Find and parse all markdown notes in repository.\n        \n        Args:\n            repo_path: Repository root path\n            notes_dir: Directory containing notes (may be repo root)\n            \n        Returns:\n            List of Note entities\n        \"\"\"\n        notes = []\n        \n        if not notes_dir.exists():\n            logger.warning(f\"Notes directory does not exist: {notes_dir}\")\n            return notes\n        \n        # Find all .md files, but exclude common non-note files\n        exclude_dirs = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}\n        exclude_files = {'README.md', 'readme.md', 'CHANGELOG.md', 'LICENSE.md'}\n        \n        for md_file in notes_dir.rglob(\"*.md\"):\n            # Skip if in excluded directory\n            if any(excluded in md_file.parts for excluded in exclude_dirs):\n                continue\n            \n            # Skip common non-note files\n            if md_file.name in exclude_files:\n                continue",
+  "totalLinesInFile": 140
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "68e90703-9961-4273-9038-5cf9fddc2d54"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nRepository entity for GitLab meditation notes repository.\n\nManages the local clone/pull state of the repository.\n\"\"\"\nfrom dataclasses import dataclass\nfrom typing import Optional\nfrom datetime import datetime\nfrom pathlib import Path\n\n\n@dataclass\nclass Repository:\n    \"\"\"Repository state and configuration.\"\"\"\n    \n    url: str\n    local_path: Path\n    branch: str = \"main\"\n    last_sync: Optional[datetime] = None\n    sync_error: Optional[str] = None\n    \n    @property\n    def notes_dir(self) -&gt; Path:\n        \"\"\"\n        Path to notes directory within repository.\n        \n        Tries multiple common locations:\n        1. notes/ subdirectory\n        2. Root of repository (if notes/ doesn't exist)\n        \"\"\"\n        notes_subdir = self.local_path / \"notes\"\n        if notes_subdir.exists():\n            return notes_subdir\n        # If notes/ doesn't exist, use repository root\n        return self.local_path\n    \n    def to_dict(self) -&gt; dict:\n        \"\"\"Convert repository to dictionary.\"\"\"\n        return {\n            \"url\": self.url,\n            \"local_path\": str(self.local_path),\n            \"branch\": self.branch,\n            \"last_sync\": self.last_sync.isoformat() if self.last_sync else None,\n            \"sync_error\": self.sync_error\n        }",
+  "totalLinesInFile": 45
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "7e0f1976-1544-481a-8517-67b98dc0a920"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile src/models/repository.py src/services/note_parser.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "src/models/repository.py"
+          },
+          {
+            "type": "word",
+            "value": "src/services/note_parser.py"
+          }
+        ],
+        "fullText": "python -m py_compile src/models/repository.py src/services/note_parser.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the code to use the repository root when there's no `notes/` directory. Added logging to show what it finds.
+
+Run `/mcp sync` again. It should:
+1. Use the repository root (since `notes/` doesn't exist)
+2. Search recursively for all `.md` files
+3. Log what it finds
+
+The logs will show:
+- Which directory it's searching
+- How many markdown files it found
+- Which files it's parsing
+- Any files it skips (like README.md)
+
+If it still finds 0 notes, check:
+1. Are there `.md` files in the repository?
+2. What does the repository structure look like?
+
+You can also check manually:
+```bash
+find /tmp/meditation-mcp-repo -name "*.md" -not -path "*/.git/*"
+```
+
+This shows all markdown files in the repository (excluding .git). Share the output if you want help debugging further.
+
+---
+
