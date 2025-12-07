@@ -33736,7 +33736,6169 @@ Additional data:
   "codeblockId": "331e4727-cd4b-4399-9826-7ed4093ae065"
 }
 ```
-Status: **loading**
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py",
+  "offset": 40,
+  "limit": 45,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # Load conversation history\n    history = load_conversation_messages(conversation_id, limit=50)\n\n    # Build messages for OpenAI\n    messages = []\n\n    # Add indexed context if available (from conversation_index)\n    if indexed_context and indexed_context.get(\"context\"):\n        context_msg = (\n            f\"We're working on project {project} together. \"\n            f\"Here's relevant context from prior conversations and notes:\\n\\n\"\n            f\"{indexed_context['context']}\\n\\n\"\n            f\"Recall and reference this information naturally as our conversation progresses. \"\n            f\"Use it to answer questions, make connections, and maintain context throughout our dialogue.\"\n        )\n        if indexed_context.get(\"notes\"):\n            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                f\"- {note}\" for note in indexed_context[\"notes\"]\n            )\n        messages.append({\"role\": \"system\", \"content\": context_msg})\n\n    # Add existing project context (from memory.py)\n    if project_context:\n        messages.append({\"role\": \"system\", \"content\": project_context})\n\n    base_system = (\n        \"You are a conversational assistant helping the user with their personal projects \"\n        \"(THN, DAAS, FF, 700B, or general). This is a conversation between two people - \"\n        \"be natural, engaging, and thoughtful.\\n\\n\"\n        \"Important conversational qualities:\\n\"\n        \"- Be honest and direct - say what you think, don't hedge unnecessarily\\n\"\n        \"- Think deeply about questions before responding - consider multiple angles and implications\\n\"\n        \"- Inspire new ideas - help the user see connections and possibilities they might not have considered\\n\"\n        \"- Think logically - use clear reasoning and explain your thought process when helpful\\n\"\n        \"- Show empathy - understand the user's perspective and respond with care and understanding\\n\\n\"\n        \"When referencing information from meditation notes or prior conversations, do so naturally \"\n        \"as part of the conversation flow. Recall and reference relevant information when it's \"\n        \"helpful, and maintain awareness of context throughout the conversation.\"\n    )\n    messages.append({\"role\": \"system\", \"content\": base_system})\n    messages.extend(history)\n\n    # Query OpenAI\n    if stream:\n        # Streaming mode: yield chunks as they arrive",
+  "totalLinesInFile": 250
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "06bd42ce-f0c4-43d3-ab51-e271fff61bf7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "917332d8-d3eb-47d2-a90c-2161be6caac5"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python -m py_compile chat_cli.py brain_core/chat.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "chat_cli.py"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/chat.py"
+          }
+        ],
+        "fullText": "python -m py_compile chat_cli.py brain_core/chat.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updated the code so when you run `/mcp read`, the note is:
+
+1. **Displayed** (as before)
+2. **Saved to the conversation** as a system message with special metadata
+3. **Included in the AI's context** for the next message
+
+**Your workflow now:**
+1. Run `/mcp read meditation://note/popcorn-zoo` (or `/mcp read "Popcorn Zoo"`)
+2. The note is displayed and saved to conversation context
+3. Ask "What is the contents of this note?" or "Let's discuss this note"
+4. The AI will have access to the full note content and can reference it
+
+The note content is automatically included in the conversation context for subsequent messages, so you can discuss it naturally without re-reading it.
+
+**Note:** The note stays in context for the conversation. If you read multiple notes, the most recent one is prioritized.
+
+---
+
+_**User (2025-12-07 00:29Z)**_
+
+So when I save a note I don't want to have to put in my user name and password for github each time. Can you have it pull from a .env so the save note experience is much nicer
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking the current Git configuration and adding .env support for GitLab credentials:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_saver.py",
+  "offset": 210,
+  "limit": 60,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_saver.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            logger.info(f\"Created note file: {file_path}\")\n            \n            # Get relative path for repository\n            try:\n                relative_path = str(file_path.relative_to(self.repository.local_path))\n            except ValueError:\n                relative_path = str(file_path)\n            \n            # Git operations\n            if not (self.repository.local_path / \".git\").exists():\n                error_msg = \"Repository not initialized. Run /mcp sync first.\"\n                logger.error(error_msg)\n                return False, None, error_msg\n            \n            repo = Repo(self.repository.local_path)\n            \n            # Check if repository is out of sync (has remote changes)\n            try:\n                repo.remotes.origin.fetch()\n                local_sha = repo.head.commit.hexsha\n                remote_sha = repo.remotes.origin.refs[0].commit.hexsha\n                if local_sha != remote_sha:\n                    logger.info(\"Repository out of sync, pulling latest changes...\")\n                    try:\n                        repo.git.pull('origin', self.repository.branch)\n                    except GitCommandError as e:\n                        # Handle merge conflicts - abort and report\n                        if \"merge conflict\" in str(e).lower() or \"CONFLICT\" in str(e):\n                            logger.error(\"Merge conflict detected. Aborting save operation.\")\n                            repo.git.merge('--abort')\n                            return False, None, \"Repository has conflicts. Please resolve manually and try again.\"\n                        raise\n            except Exception as e:\n                logger.warning(f\"Could not check/pull remote changes: {e}\")\n                # Continue anyway - might be network issue, but local save should still work\n            \n            # Stage file\n            repo.index.add([relative_path])\n            \n            # Commit\n            commit_message = f\"Add conversation note: {conversation_note.title}\"\n            repo.index.commit(commit_message)\n            logger.info(f\"Committed note: {commit_message}\")\n            \n            # Push to remote\n            try:\n                repo.remotes.origin.push(self.repository.branch)\n                logger.info(f\"Pushed note to remote repository\")\n            except GitCommandError as e:\n                error_msg = f\"Failed to push to repository: {str(e)}\"\n                logger.error(error_msg)\n                # Handle specific error cases\n                if \"permission denied\" in str(e).lower() or \"authentication\" in str(e).lower():\n                    error_msg = \"Permission denied. Check GitLab credentials.\"\n                elif \"network\" in str(e).lower() or \"connection\" in str(e).lower():\n                    error_msg = \"Network error. Note saved locally but not pushed.\"\n                # Note is still saved locally and committed, just not pushed\n                # Return success but with warning\n                return True, relative_path, f\"Note saved but push failed: {error_msg}\"\n            ",
+  "totalLinesInFile": 285
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+Path '/Users/petertumulty/Documents/Sites/project_chat/project_chat/.env.example' exists but is filtered out by globalignore
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "GITLAB|gitlab|GIT|git",
+  "path": ".env.example",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "GITLAB|gitlab|GIT|git",
+    "path": ".env.example",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {}
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/git_sync.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/git_sync.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nGitLab repository sync service.\n\nHandles cloning and pulling meditation notes from GitLab repository.\n\"\"\"\nimport logging\nimport os\nfrom pathlib import Path\nfrom typing import Optional\nfrom datetime import datetime\n\nimport git\nfrom git import Repo, GitCommandError\n\nfrom ..models.repository import Repository\n\nlogger = logging.getLogger(__name__)\n\n\nclass GitSyncService:\n    \"\"\"Service for syncing GitLab repository.\"\"\"\n    \n    def __init__(self, repository: Repository):\n        \"\"\"\n        Initialize Git sync service.\n        \n        Args:\n            repository: Repository configuration\n        \"\"\"\n        self.repository = repository\n    \n    def sync(self) -&gt; tuple[bool, Optional[str]]:\n        \"\"\"\n        Sync repository (clone if needed, pull if exists).\n        \n        Returns:\n            Tuple of (success: bool, error_message: Optional[str])\n        \"\"\"\n        try:\n            if self.repository.local_path.exists() and (self.repository.local_path / \".git\").exists():\n                # Repository exists, pull latest changes\n                logger.info(f\"Pulling repository from {self.repository.url}\")\n                repo = Repo(self.repository.local_path)\n                \n                # Fetch latest changes\n                repo.remotes.origin.fetch()\n                \n                # Pull current branch\n                repo.git.pull('origin', self.repository.branch)\n                \n                logger.info(f\"Repository synced successfully\")\n                self.repository.last_sync = datetime.now()\n                self.repository.sync_error = None\n                return True, None\n            else:\n                # Repository doesn't exist, clone it\n                logger.info(f\"Cloning repository from {self.repository.url}\")\n                \n                # Create parent directory if needed\n                self.repository.local_path.parent.mkdir(parents=True, exist_ok=True)\n                \n                # Clone repository\n                repo = Repo.clone_from(\n                    self.repository.url,\n                    str(self.repository.local_path),\n                    branch=self.repository.branch\n                )\n                \n                logger.info(f\"Repository cloned successfully\")\n                self.repository.last_sync = datetime.now()\n                self.repository.sync_error = None\n                return True, None\n                \n        except GitCommandError as e:\n            error_msg = f\"Git error: {str(e)}\"\n            logger.error(error_msg)\n            self.repository.sync_error = error_msg\n            return False, error_msg\n        except Exception as e:\n            error_msg = f\"Unexpected error during sync: {str(e)}\"\n            logger.error(error_msg, exc_info=True)\n            self.repository.sync_error = error_msg\n            return False, error_msg",
+  "totalLinesInFile": 83
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How are GitLab credentials configured for Git operations?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 311
+          }
+        },
+        "contents": "\"\"\"\nPython API for MCP server.\n\nProvides direct Python interface to MCP server functionality\nwithout requiring stdio communication.\n\"\"\"\nimport os\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any, List, Optional\nfrom datetime import datetime\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\nfrom ..services.project_filter import ProjectDirectoryMapper\nfrom ..services.note_saver import ConversationNote, NoteSaver\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\n\nlogger = logging.getLogger(__name__)\n\n\nclass MCPApi:\n    \"\"\"Python API for accessing MCP server functionality.\"\"\"\n    \n    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):\n        \"\"\"\n        Initialize MCP API.\n        \n        Args:\n            gitlab_url: GitLab repository URL (defaults to env var or default)\n            repo_path: Local repository path (defaults to env var or default)\n            branch: Git branch (defaults to env var or 'main')\n        \"\"\"\n        # Get configuration from parameters or environment\n        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")\n        self.repo_path = Path(repo_path_str)\n        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")\n        \n        # Create repository model\n        self.repository = Repository(\n            url=self.gitlab_url,\n            local_path=self.repo_path,\n            branch=self.branch\n        )\n        \n        # Create note index\n        self.index = NoteIndex()\n        \n        # Create project directory mapper\n        self.project_mapper = ProjectDirectoryMapper()\n        \n        # Create handlers\n        self.resources_handler = ResourcesHandler(self.index)\n        self.tools_handler = ToolsHandler(self.index, self.repository)\n        \n        # Create note saver\n        self.note_saver = NoteSaver(self.repository, self.index)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Python API for MCP server.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides direct Python interface to MCP server functionality",
+            "lineNumber": 4
+          },
+          {
+            "text": "without requiring stdio communication.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "text": "import os",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 9
+          },
+          {
+            "text": "from typing import Dict, Any, List, Optional",
+            "lineNumber": 10
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 13
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 14
+          },
+          {
+            "text": "from ..services.index_builder import IndexBuilder",
+            "lineNumber": 15
+          },
+          {
+            "text": "from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 16
+          },
+          {
+            "text": "from ..services.note_saver import ConversationNote, NoteSaver",
+            "lineNumber": 17
+          },
+          {
+            "text": "from .resources import ResourcesHandler",
+            "lineNumber": 18
+          },
+          {
+            "text": "from .tools import ToolsHandler",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Python API for accessing MCP server functionality.\"\"\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    ",
+            "lineNumber": 26
+          },
+          {
+            "text": "    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):",
+            "lineNumber": 27
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 28
+          },
+          {
+            "text": "        Initialize MCP API.",
+            "lineNumber": 29
+          },
+          {
+            "text": "        ",
+            "lineNumber": 30
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 31
+          },
+          {
+            "text": "            gitlab_url: GitLab repository URL (defaults to env var or default)",
+            "lineNumber": 32
+          },
+          {
+            "text": "            repo_path: Local repository path (defaults to env var or default)",
+            "lineNumber": 33
+          },
+          {
+            "text": "            branch: Git branch (defaults to env var or 'main')",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        # Get configuration from parameters or environment",
+            "lineNumber": 36
+          },
+          {
+            "text": "        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")",
+            "lineNumber": 37
+          },
+          {
+            "text": "        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")",
+            "lineNumber": 38
+          },
+          {
+            "text": "        self.repo_path = Path(repo_path_str)",
+            "lineNumber": 39
+          },
+          {
+            "text": "        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")",
+            "lineNumber": 40
+          },
+          {
+            "text": "        ",
+            "lineNumber": 41
+          },
+          {
+            "text": "        # Create repository model",
+            "lineNumber": 42
+          },
+          {
+            "text": "        self.repository = Repository(",
+            "lineNumber": 43
+          },
+          {
+            "text": "            url=self.gitlab_url,",
+            "lineNumber": 44
+          },
+          {
+            "text": "            local_path=self.repo_path,",
+            "lineNumber": 45
+          },
+          {
+            "text": "            branch=self.branch",
+            "lineNumber": 46
+          },
+          {
+            "text": "        )",
+            "lineNumber": 47
+          },
+          {
+            "text": "        ",
+            "lineNumber": 48
+          },
+          {
+            "text": "        # Create note index",
+            "lineNumber": 49
+          },
+          {
+            "text": "        self.index = NoteIndex()",
+            "lineNumber": 50
+          },
+          {
+            "text": "        ",
+            "lineNumber": 51
+          },
+          {
+            "text": "        # Create project directory mapper",
+            "lineNumber": 52
+          },
+          {
+            "text": "        self.project_mapper = ProjectDirectoryMapper()",
+            "lineNumber": 53
+          },
+          {
+            "text": "        ",
+            "lineNumber": 54
+          },
+          {
+            "text": "        # Create handlers",
+            "lineNumber": 55
+          },
+          {
+            "text": "        self.resources_handler = ResourcesHandler(self.index)",
+            "lineNumber": 56
+          },
+          {
+            "text": "        self.tools_handler = ToolsHandler(self.index, self.repository)",
+            "lineNumber": 57
+          },
+          {
+            "text": "        ",
+            "lineNumber": 58
+          },
+          {
+            "text": "        # Create note saver",
+            "lineNumber": 59
+          },
+          {
+            "text": "        self.note_saver = NoteSaver(self.repository, self.index)",
+            "lineNumber": 60
+          }
+        ]
+      },
+      "score": 0.38226866722106934
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/server.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 133
+          }
+        },
+        "contents": "\"\"\"\nMain MCP server entry point.\n\nSets up and runs the MCP server with all handlers.\n\"\"\"\nimport os\nimport sys\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any\n\nfrom .protocol import MCPProtocolHandler\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\n\n# Configure logging\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',\n    stream=sys.stderr  # Log to stderr so stdout is only for JSON-RPC\n)\n\nlogger = logging.getLogger(__name__)\n\n\ndef create_server() -&gt; MCPProtocolHandler:\n    \"\"\"\n    Create and configure MCP server.\n    \n    Returns:\n        Configured MCPProtocolHandler\n    \"\"\"\n    # Get configuration from environment\n    gitlab_url = os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n    repo_path = Path(os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\"))\n    branch = os.environ.get(\"BRANCH\", \"main\")\n    \n    logger.info(f\"Initializing MCP server with GitLab URL: {gitlab_url}\")\n    \n    # Create repository model\n    repository = Repository(\n        url=gitlab_url,\n        local_path=repo_path,\n        branch=branch\n    )\n    \n    # Create note index\n    index = NoteIndex()\n    \n    # Create handlers\n    resources_handler = ResourcesHandler(index)\n    tools_handler = ToolsHandler(index, repository)\n    \n    # Create protocol handler\n    protocol = MCPProtocolHandler()\n    \n    # Register resource methods\n    protocol.register_method(\"resources/list\", resources_handler.list_resources)\n    protocol.register_method(\"resources/read\", resources_handler.read_resource)\n    \n    # Register tool methods\n    protocol.register_method",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Main MCP server entry point.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Sets up and runs the MCP server with all handlers.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "import os",
+            "lineNumber": 6
+          },
+          {
+            "text": "import sys",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 9
+          },
+          {
+            "text": "from typing import Dict, Any",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "from .protocol import MCPProtocolHandler",
+            "lineNumber": 12
+          },
+          {
+            "text": "from .resources import ResourcesHandler",
+            "lineNumber": 13
+          },
+          {
+            "text": "from .tools import ToolsHandler",
+            "lineNumber": 14
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 15
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 16
+          },
+          {
+            "text": "from ..services.index_builder import IndexBuilder",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "# Configure logging",
+            "lineNumber": 19
+          },
+          {
+            "text": "logging.basicConfig(",
+            "lineNumber": 20
+          },
+          {
+            "text": "    level=logging.INFO,",
+            "lineNumber": 21
+          },
+          {
+            "text": "    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',",
+            "lineNumber": 22
+          },
+          {
+            "text": "    stream=sys.stderr  # Log to stderr so stdout is only for JSON-RPC",
+            "lineNumber": 23
+          },
+          {
+            "text": ")",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "def create_server() -&gt; MCPProtocolHandler:",
+            "lineNumber": 29,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 30
+          },
+          {
+            "text": "    Create and configure MCP server.",
+            "lineNumber": 31
+          },
+          {
+            "text": "    ",
+            "lineNumber": 32
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 33
+          },
+          {
+            "text": "        Configured MCPProtocolHandler",
+            "lineNumber": 34
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "    # Get configuration from environment",
+            "lineNumber": 36
+          },
+          {
+            "text": "    gitlab_url = os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")",
+            "lineNumber": 37
+          },
+          {
+            "text": "    repo_path = Path(os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\"))",
+            "lineNumber": 38
+          },
+          {
+            "text": "    branch = os.environ.get(\"BRANCH\", \"main\")",
+            "lineNumber": 39
+          },
+          {
+            "text": "    ",
+            "lineNumber": 40
+          },
+          {
+            "text": "    logger.info(f\"Initializing MCP server with GitLab URL: {gitlab_url}\")",
+            "lineNumber": 41
+          },
+          {
+            "text": "    ",
+            "lineNumber": 42
+          },
+          {
+            "text": "    # Create repository model",
+            "lineNumber": 43
+          },
+          {
+            "text": "    repository = Repository(",
+            "lineNumber": 44
+          },
+          {
+            "text": "        url=gitlab_url,",
+            "lineNumber": 45
+          },
+          {
+            "text": "        local_path=repo_path,",
+            "lineNumber": 46
+          },
+          {
+            "text": "        branch=branch",
+            "lineNumber": 47
+          },
+          {
+            "text": "    )",
+            "lineNumber": 48
+          },
+          {
+            "text": "    ",
+            "lineNumber": 49
+          },
+          {
+            "text": "    # Create note index",
+            "lineNumber": 50
+          },
+          {
+            "text": "    index = NoteIndex()",
+            "lineNumber": 51
+          },
+          {
+            "text": "    ",
+            "lineNumber": 52
+          },
+          {
+            "text": "    # Create handlers",
+            "lineNumber": 53
+          },
+          {
+            "text": "    resources_handler = ResourcesHandler(index)",
+            "lineNumber": 54
+          },
+          {
+            "text": "    tools_handler = ToolsHandler(index, repository)",
+            "lineNumber": 55
+          },
+          {
+            "text": "    ",
+            "lineNumber": 56
+          },
+          {
+            "text": "    # Create protocol handler",
+            "lineNumber": 57
+          },
+          {
+            "text": "    protocol = MCPProtocolHandler()",
+            "lineNumber": 58
+          },
+          {
+            "text": "    ",
+            "lineNumber": 59
+          },
+          {
+            "text": "    # Register resource methods",
+            "lineNumber": 60
+          },
+          {
+            "text": "    protocol.register_method(\"resources/list\", resources_handler.list_resources)",
+            "lineNumber": 61
+          },
+          {
+            "text": "    protocol.register_method(\"resources/read\", resources_handler.read_resource)",
+            "lineNumber": 62
+          },
+          {
+            "text": "    ",
+            "lineNumber": 63
+          },
+          {
+            "text": "    # Register tool methods",
+            "lineNumber": 64
+          },
+          {
+            "text": "    protocol.register_method",
+            "lineNumber": 65
+          }
+        ]
+      },
+      "score": 0.35699281096458435
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/git_sync.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 82
+          }
+        },
+        "contents": "\"\"\"\nGitLab repository sync service.\n\nHandles cloning and pulling meditation notes from GitLab repository.\n\"\"\"\nimport logging\nimport os\nfrom pathlib import Path\nfrom typing import Optional\nfrom datetime import datetime\n\nimport git\nfrom git import Repo, GitCommandError\n\nfrom ..models.repository import Repository\n\nlogger = logging.getLogger(__name__)\n\n\nclass GitSyncService:\n    \"\"\"Service for syncing GitLab repository.\"\"\"\n    \n    def __init__(self, repository: Repository):\n        \"\"\"\n        Initialize Git sync service.\n        \n        Args:\n            repository: Repository configuration\n        \"\"\"\n        self.repository = repository\n    \n    def sync(self) -&gt; tuple[bool, Optional[str]]:\n        \"\"\"\n        Sync repository (clone if needed, pull if exists).\n        \n        Returns:\n            Tuple of (success: bool, error_message: Optional[str])\n        \"\"\"\n        try:\n            if self.repository.local_path.exists() and",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "GitLab repository sync service.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Handles cloning and pulling meditation notes from GitLab repository.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 6
+          },
+          {
+            "text": "import os",
+            "lineNumber": 7
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 8
+          },
+          {
+            "text": "from typing import Optional",
+            "lineNumber": 9
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "import git",
+            "lineNumber": 12
+          },
+          {
+            "text": "from git import Repo, GitCommandError",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "class GitSyncService:",
+            "lineNumber": 20,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Service for syncing GitLab repository.\"\"\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "    ",
+            "lineNumber": 22
+          },
+          {
+            "text": "    def __init__(self, repository: Repository):",
+            "lineNumber": 23
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Initialize Git sync service.",
+            "lineNumber": 25
+          },
+          {
+            "text": "        ",
+            "lineNumber": 26
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 27
+          },
+          {
+            "text": "            repository: Repository configuration",
+            "lineNumber": 28
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 29
+          },
+          {
+            "text": "        self.repository = repository",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    def sync(self) -&gt; tuple[bool, Optional[str]]:",
+            "lineNumber": 32
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 33
+          },
+          {
+            "text": "        Sync repository (clone if needed, pull if exists).",
+            "lineNumber": 34
+          },
+          {
+            "text": "        ",
+            "lineNumber": 35
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 36
+          },
+          {
+            "text": "            Tuple of (success: bool, error_message: Optional[str])",
+            "lineNumber": 37
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 38
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            if self.repository.local_path.exists() and",
+            "lineNumber": 40
+          }
+        ]
+      },
+      "score": 0.3286857604980469
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 107
+          }
+        },
+        "contents": "# Quickstart: MCP Server Integration\n\n## Overview\n\nThis guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.\n\n## Prerequisites\n\n1. Meditation MCP server installed and accessible\n2. GitLab repository accessible (for meditation notes)\n3. Python 3.10+ (existing requirement)\n\n## Configuration\n\n### Step 1: Create MCP Configuration File\n\nCreate &#96;mcp_config.json&#96; in project root:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### Step 2: Set Environment Variables (Optional)\n\nIf you need to pass additional environment variables:\n\n&#96;&#96;&#96;bash\nexport MCP_MEDITATION_GITLAB_TOKEN=your-token-here\nexport MCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\nOr add to &#96;.env&#96; file:\n&#96;&#96;&#96;\nMCP_MEDITATION_GITLAB_TOKEN=your-token-here\nMCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\n### Step 3: Verify Configuration\n\nStart project_chat and check MCP status:\n\n&#96;&#96;&#96;bash\npython3 chat_cli.py\n&#96;&#96;&#96;\n\nIn chat, run:\n&#96;&#96;&#96;\n/mcp status\n&#96;&#96;&#96;\n\nExpected output:\n&#96;&#96;&#96;\nMCP Server Status:\n==================================================\nmeditation-notes: ✓ Connected (42 resources cached)\n&#96;&#96;&#96;\n\n## Usage Examples\n\n### Example 1: List Meditation Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp list meditation-notes\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nMCP Resources (meditation-notes):\n  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1\n  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1\n  ...\n&#96;&#96;&#96;\n\n### Example 2: Read a Specific Note\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nResource: meditation://note/morning-meditation-2024-12-01\n==================================================\n\n# Morning Meditation\n\nToday's meditation focused on...\n&#96;&#96;&#96;\n\n### Example 3: Search Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"\n&#96;&#96;&#96;\n\nOutput:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "1. Meditation MCP server installed and accessible",
+            "lineNumber": 9
+          },
+          {
+            "text": "2. GitLab repository accessible (for meditation notes)",
+            "lineNumber": 10
+          },
+          {
+            "text": "3. Python 3.10+ (existing requirement)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "## Configuration",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "### Step 1: Create MCP Configuration File",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "Create &#96;mcp_config.json&#96; in project root:",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 19
+          },
+          {
+            "text": "{",
+            "lineNumber": 20
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 21
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 23
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 24
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 25
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 26
+          },
+          {
+            "text": "      },",
+            "lineNumber": 27
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 28
+          },
+          {
+            "text": "    }",
+            "lineNumber": 29
+          },
+          {
+            "text": "  }",
+            "lineNumber": 30
+          },
+          {
+            "text": "}",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Step 2: Set Environment Variables (Optional)",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "If you need to pass additional environment variables:",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 38
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 39
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "Or add to &#96;.env&#96; file:",
+            "lineNumber": 43
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 44
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 45
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### Step 3: Verify Configuration",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "Start project_chat and check MCP status:",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 53
+          },
+          {
+            "text": "python3 chat_cli.py",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "In chat, run:",
+            "lineNumber": 57
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 58
+          },
+          {
+            "text": "/mcp status",
+            "lineNumber": 59
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "Expected output:",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "text": "MCP Server Status:",
+            "lineNumber": 64
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 65
+          },
+          {
+            "text": "meditation-notes: ✓ Connected (42 resources cached)",
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Usage Examples",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### Example 1: List Meditation Notes",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 73
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp list meditation-notes",
+            "lineNumber": 74
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 77
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 78
+          },
+          {
+            "text": "MCP Resources (meditation-notes):",
+            "lineNumber": 79
+          },
+          {
+            "text": "  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1",
+            "lineNumber": 80
+          },
+          {
+            "text": "  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1",
+            "lineNumber": 81
+          },
+          {
+            "text": "  ...",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### Example 2: Read a Specific Note",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 87
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 88
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 91
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 92
+          },
+          {
+            "text": "Resource: meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 93
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 94
+          },
+          {
+            "lineNumber": 95
+          },
+          {
+            "text": "# Morning Meditation",
+            "lineNumber": 96
+          },
+          {
+            "lineNumber": 97
+          },
+          {
+            "text": "Today's meditation focused on...",
+            "lineNumber": 98
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "### Example 3: Search Notes",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 103
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"",
+            "lineNumber": 104
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 107
+          }
+        ]
+      },
+      "score": 0.326759397983551
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/git_sync.py",
+        "range": {
+          "startPosition": {
+            "line": 19
+          },
+          "endPosition": {
+            "line": 82,
+            "column": 35
+          }
+        },
+        "contents": "class GitSyncService:\ndef sync(self) -&gt; tuple[bool, Optional[str]]:\n\"\"\"\n        try:\n            if self.repository.local_path.exists() and (self.repository.local_path / \".git\").exists():\n                # Repository exists, pull latest changes\n                logger.info(f\"Pulling repository from {self.repository.url}\")\n                repo = Repo(self.repository.local_path)\n                \n                # Fetch latest changes\n                repo.remotes.origin.fetch()\n                \n                # Pull current branch\n                repo.git.pull('origin', self.repository.branch)\n                \n                logger.info(f\"Repository synced successfully\")\n                self.repository.last_sync = datetime.now()\n                self.repository.sync_error = None\n                return True, None\n            else:\n                # Repository doesn't exist, clone it\n                logger.info(f\"Cloning repository from {self.repository.url}\")\n                \n                # Create parent directory if needed\n                self.repository.local_path.parent.mkdir(parents=True, exist_ok=True)\n                \n                # Clone repository\n                repo = Repo.clone_from(\n                    self.repository.url,\n                    str(self.repository.local_path),\n                    branch=self.repository.branch\n                )\n                \n                logger.info(f\"Repository cloned successfully\")\n                self.repository.last_sync = datetime.now()\n                self.repository.sync_error = None\n                return True, None\n                \n        except GitCommandError as e:\n            error_msg = f\"Git error: {str(e)}\"\n            logger.error(error_msg)\n            self.repository.sync_error = error_msg\n            return False, error_msg\n        except Exception as e:\n            error_msg = f\"Unexpected error during sync: {str(e)}\"\n            logger.error(error_msg, exc_info=True)\n            self.repository.sync_error = error_msg\n            return False, error_msg",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 20,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 21,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 32,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 33,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class GitSyncService:",
+            "lineNumber": 20,
+            "isSignature": true
+          },
+          {
+            "text": "def sync(self) -&gt; tuple[bool, Optional[str]]:",
+            "lineNumber": 32
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 38
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            if self.repository.local_path.exists() and (self.repository.local_path / \".git\").exists():",
+            "lineNumber": 40
+          },
+          {
+            "text": "                # Repository exists, pull latest changes",
+            "lineNumber": 41
+          },
+          {
+            "text": "                logger.info(f\"Pulling repository from {self.repository.url}\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "                repo = Repo(self.repository.local_path)",
+            "lineNumber": 43
+          },
+          {
+            "text": "                ",
+            "lineNumber": 44
+          },
+          {
+            "text": "                # Fetch latest changes",
+            "lineNumber": 45
+          },
+          {
+            "text": "                repo.remotes.origin.fetch()",
+            "lineNumber": 46
+          },
+          {
+            "text": "                ",
+            "lineNumber": 47
+          },
+          {
+            "text": "                # Pull current branch",
+            "lineNumber": 48
+          },
+          {
+            "text": "                repo.git.pull('origin', self.repository.branch)",
+            "lineNumber": 49
+          },
+          {
+            "text": "                ",
+            "lineNumber": 50
+          },
+          {
+            "text": "                logger.info(f\"Repository synced successfully\")",
+            "lineNumber": 51
+          },
+          {
+            "text": "                self.repository.last_sync = datetime.now()",
+            "lineNumber": 52
+          },
+          {
+            "text": "                self.repository.sync_error = None",
+            "lineNumber": 53
+          },
+          {
+            "text": "                return True, None",
+            "lineNumber": 54
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 55
+          },
+          {
+            "text": "                # Repository doesn't exist, clone it",
+            "lineNumber": 56
+          },
+          {
+            "text": "                logger.info(f\"Cloning repository from {self.repository.url}\")",
+            "lineNumber": 57
+          },
+          {
+            "text": "                ",
+            "lineNumber": 58
+          },
+          {
+            "text": "                # Create parent directory if needed",
+            "lineNumber": 59
+          },
+          {
+            "text": "                self.repository.local_path.parent.mkdir(parents=True, exist_ok=True)",
+            "lineNumber": 60
+          },
+          {
+            "text": "                ",
+            "lineNumber": 61
+          },
+          {
+            "text": "                # Clone repository",
+            "lineNumber": 62
+          },
+          {
+            "text": "                repo = Repo.clone_from(",
+            "lineNumber": 63
+          },
+          {
+            "text": "                    self.repository.url,",
+            "lineNumber": 64
+          },
+          {
+            "text": "                    str(self.repository.local_path),",
+            "lineNumber": 65
+          },
+          {
+            "text": "                    branch=self.repository.branch",
+            "lineNumber": 66
+          },
+          {
+            "text": "                )",
+            "lineNumber": 67
+          },
+          {
+            "text": "                ",
+            "lineNumber": 68
+          },
+          {
+            "text": "                logger.info(f\"Repository cloned successfully\")",
+            "lineNumber": 69
+          },
+          {
+            "text": "                self.repository.last_sync = datetime.now()",
+            "lineNumber": 70
+          },
+          {
+            "text": "                self.repository.sync_error = None",
+            "lineNumber": 71
+          },
+          {
+            "text": "                return True, None",
+            "lineNumber": 72
+          },
+          {
+            "text": "                ",
+            "lineNumber": 73
+          },
+          {
+            "text": "        except GitCommandError as e:",
+            "lineNumber": 74
+          },
+          {
+            "text": "            error_msg = f\"Git error: {str(e)}\"",
+            "lineNumber": 75
+          },
+          {
+            "text": "            logger.error(error_msg)",
+            "lineNumber": 76
+          },
+          {
+            "text": "            self.repository.sync_error = error_msg",
+            "lineNumber": 77
+          },
+          {
+            "text": "            return False, error_msg",
+            "lineNumber": 78
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 79
+          },
+          {
+            "text": "            error_msg = f\"Unexpected error during sync: {str(e)}\"",
+            "lineNumber": 80
+          },
+          {
+            "text": "            logger.error(error_msg, exc_info=True)",
+            "lineNumber": 81
+          },
+          {
+            "text": "            self.repository.sync_error = error_msg",
+            "lineNumber": 82
+          },
+          {
+            "text": "            return False, error_msg",
+            "lineNumber": 83,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.3054455518722534
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/models/repository.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 44,
+            "column": 9
+          }
+        },
+        "contents": "\"\"\"\nRepository entity for GitLab meditation notes repository.\n\nManages the local clone/pull state of the repository.\n\"\"\"\nfrom dataclasses import dataclass\nfrom typing import Optional\nfrom datetime import datetime\nfrom pathlib import Path\n\n\n@dataclass\nclass Repository:\n    \"\"\"Repository state and configuration.\"\"\"\n    \n    url: str\n    local_path: Path\n    branch: str = \"main\"\n    last_sync: Optional[datetime] = None\n    sync_error: Optional[str] = None\n    \n    @property\n    def notes_dir(self) -&gt; Path:\n        \"\"\"\n        Path to notes directory within repository.\n        \n        Tries multiple common locations:\n        1. notes/ subdirectory\n        2. Root of repository (if notes/ doesn't exist)\n        \"\"\"\n        notes_subdir = self.local_path / \"notes\"\n        if notes_subdir.exists() and notes_subdir.is_dir():\n            return notes_subdir\n        # If notes/ doesn't exist, use repository root\n        return self.local_path\n    \n    def to_dict(self) -&gt; dict:\n        \"\"\"Convert repository to dictionary.\"\"\"\n        return {\n            \"url\": self.url,\n            \"local_path\": str(self.local_path),\n            \"branch\": self.branch,\n            \"last_sync\": self.last_sync.isoformat() if self.last_sync else None,\n            \"sync_error\": self.sync_error\n        }",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Repository entity for GitLab meditation notes repository.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Manages the local clone/pull state of the repository.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "from dataclasses import dataclass",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Optional",
+            "lineNumber": 7
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 8
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "@dataclass",
+            "lineNumber": 12
+          },
+          {
+            "text": "class Repository:",
+            "lineNumber": 13,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Repository state and configuration.\"\"\"",
+            "lineNumber": 14
+          },
+          {
+            "text": "    ",
+            "lineNumber": 15
+          },
+          {
+            "text": "    url: str",
+            "lineNumber": 16
+          },
+          {
+            "text": "    local_path: Path",
+            "lineNumber": 17
+          },
+          {
+            "text": "    branch: str = \"main\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "    last_sync: Optional[datetime] = None",
+            "lineNumber": 19
+          },
+          {
+            "text": "    sync_error: Optional[str] = None",
+            "lineNumber": 20
+          },
+          {
+            "text": "    ",
+            "lineNumber": 21
+          },
+          {
+            "text": "    @property",
+            "lineNumber": 22
+          },
+          {
+            "text": "    def notes_dir(self) -&gt; Path:",
+            "lineNumber": 23
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Path to notes directory within repository.",
+            "lineNumber": 25
+          },
+          {
+            "text": "        ",
+            "lineNumber": 26
+          },
+          {
+            "text": "        Tries multiple common locations:",
+            "lineNumber": 27
+          },
+          {
+            "text": "        1. notes/ subdirectory",
+            "lineNumber": 28
+          },
+          {
+            "text": "        2. Root of repository (if notes/ doesn't exist)",
+            "lineNumber": 29
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 30
+          },
+          {
+            "text": "        notes_subdir = self.local_path / \"notes\"",
+            "lineNumber": 31
+          },
+          {
+            "text": "        if notes_subdir.exists() and notes_subdir.is_dir():",
+            "lineNumber": 32
+          },
+          {
+            "text": "            return notes_subdir",
+            "lineNumber": 33
+          },
+          {
+            "text": "        # If notes/ doesn't exist, use repository root",
+            "lineNumber": 34
+          },
+          {
+            "text": "        return self.local_path",
+            "lineNumber": 35
+          },
+          {
+            "text": "    ",
+            "lineNumber": 36
+          },
+          {
+            "text": "    def to_dict(self) -&gt; dict:",
+            "lineNumber": 37
+          },
+          {
+            "text": "        \"\"\"Convert repository to dictionary.\"\"\"",
+            "lineNumber": 38
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 39
+          },
+          {
+            "text": "            \"url\": self.url,",
+            "lineNumber": 40
+          },
+          {
+            "text": "            \"local_path\": str(self.local_path),",
+            "lineNumber": 41
+          },
+          {
+            "text": "            \"branch\": self.branch,",
+            "lineNumber": 42
+          },
+          {
+            "text": "            \"last_sync\": self.last_sync.isoformat() if self.last_sync else None,",
+            "lineNumber": 43
+          },
+          {
+            "text": "            \"sync_error\": self.sync_error",
+            "lineNumber": 44
+          },
+          {
+            "text": "        }",
+            "lineNumber": 45,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.2983585596084595
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/config.py",
+        "range": {
+          "startPosition": {
+            "line": 29,
+            "column": 27
+          },
+          "endPosition": {
+            "line": 78,
+            "column": 48
+          }
+        },
+        "contents": "_raw_env_mode = os.getenv(\"ENV_MODE\", \"production\")\nENV_MODE = _normalize_env_mode(_raw_env_mode)\n\n# Mock mode: automatically enabled in development mode\n# In production, always use real OpenAI SDK\nMOCK_MODE = ENV_MODE == \"development\"\n\n# Database configuration\n# In development mode, use separate dev database\nif ENV_MODE == \"development\":\n    DB_CONFIG = {\n        \"host\": os.getenv(\"DEV_DB_HOST\", os.getenv(\"DB_HOST\", \"127.0.0.1\")),\n        \"port\": int(os.getenv(\"DEV_DB_PORT\", os.getenv(\"DB_PORT\", \"5432\"))),\n        \"dbname\": os.getenv(\"DEV_DB_NAME\", \"ongoing_projects_dev\"),\n        \"user\": os.getenv(\"DEV_DB_USER\", os.getenv(\"DB_USER\", \"thn_user\")),\n        \"password\": os.getenv(\"DEV_DB_PASSWORD\", os.getenv(\"DB_PASSWORD\", \"\")),\n    }\nelse:\n    DB_CONFIG = {\n        \"host\": os.getenv(\"DB_HOST\", \"127.0.0.1\"),\n        \"port\": int(os.getenv(\"DB_PORT\", \"5432\")),\n        \"dbname\": os.getenv(\"DB_NAME\", \"ongoing_projects\"),\n        \"user\": os.getenv(\"DB_USER\", \"thn_user\"),\n        \"password\": os.getenv(\"DB_PASSWORD\", \"\"),\n    }\n\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4.1\")\n\n# Ollama configuration\nOLLAMA_BASE_URL = os.getenv(\"OLLAMA_BASE_URL\", \"http://localhost:11434\")\n# Default Ollama model for conversation organization\nOLLAMA_MODEL = os.getenv(\"OLLAMA_MODEL\", \"llama3:8b\")\n# Current version of the conversation indexer prompt/schema\nCONVERSATION_INDEX_VERSION = int(os.getenv(\"CONVERSATION_INDEX_VERSION\", \"1\"))\n# Timeout for Ollama API calls (indexing operations may take longer)\nOLLAMA_TIMEOUT = int(os.getenv(\"OLLAMA_TIMEOUT\", \"300\"))  # 5 minutes default for indexing\n\n# DAAS semantic retrieval configuration\n# Number of top-k most relevant dreams to retrieve for pattern-based queries\nDAAS_VECTOR_TOP_K = int(os.getenv(\"DAAS_VECTOR_TOP_K\", \"5\"))\n\n# Log configuration on startup\nlogger.info(f\"Environment mode: {ENV_MODE}\")\nlogger.info(f\"Mock mode: {MOCK_MODE}\")\nlogger.info(f\"Database: {DB_CONFIG['dbname']} @ {DB_CONFIG['host']}:{DB_CONFIG['port']}\")\nif not MOCK_MODE:\n    logger.info(f\"OpenAI model: {OPENAI_MODEL}\")",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "_raw_env_mode = os.getenv(\"ENV_MODE\", \"production\")",
+            "lineNumber": 33
+          },
+          {
+            "text": "ENV_MODE = _normalize_env_mode(_raw_env_mode)",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "# Mock mode: automatically enabled in development mode",
+            "lineNumber": 36
+          },
+          {
+            "text": "# In production, always use real OpenAI SDK",
+            "lineNumber": 37
+          },
+          {
+            "text": "MOCK_MODE = ENV_MODE == \"development\"",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "# Database configuration",
+            "lineNumber": 40
+          },
+          {
+            "text": "# In development mode, use separate dev database",
+            "lineNumber": 41
+          },
+          {
+            "text": "if ENV_MODE == \"development\":",
+            "lineNumber": 42
+          },
+          {
+            "text": "    DB_CONFIG = {",
+            "lineNumber": 43
+          },
+          {
+            "text": "        \"host\": os.getenv(\"DEV_DB_HOST\", os.getenv(\"DB_HOST\", \"127.0.0.1\")),",
+            "lineNumber": 44
+          },
+          {
+            "text": "        \"port\": int(os.getenv(\"DEV_DB_PORT\", os.getenv(\"DB_PORT\", \"5432\"))),",
+            "lineNumber": 45
+          },
+          {
+            "text": "        \"dbname\": os.getenv(\"DEV_DB_NAME\", \"ongoing_projects_dev\"),",
+            "lineNumber": 46
+          },
+          {
+            "text": "        \"user\": os.getenv(\"DEV_DB_USER\", os.getenv(\"DB_USER\", \"thn_user\")),",
+            "lineNumber": 47
+          },
+          {
+            "text": "        \"password\": os.getenv(\"DEV_DB_PASSWORD\", os.getenv(\"DB_PASSWORD\", \"\")),",
+            "lineNumber": 48
+          },
+          {
+            "text": "    }",
+            "lineNumber": 49
+          },
+          {
+            "text": "else:",
+            "lineNumber": 50
+          },
+          {
+            "text": "    DB_CONFIG = {",
+            "lineNumber": 51
+          },
+          {
+            "text": "        \"host\": os.getenv(\"DB_HOST\", \"127.0.0.1\"),",
+            "lineNumber": 52
+          },
+          {
+            "text": "        \"port\": int(os.getenv(\"DB_PORT\", \"5432\")),",
+            "lineNumber": 53
+          },
+          {
+            "text": "        \"dbname\": os.getenv(\"DB_NAME\", \"ongoing_projects\"),",
+            "lineNumber": 54
+          },
+          {
+            "text": "        \"user\": os.getenv(\"DB_USER\", \"thn_user\"),",
+            "lineNumber": 55
+          },
+          {
+            "text": "        \"password\": os.getenv(\"DB_PASSWORD\", \"\"),",
+            "lineNumber": 56
+          },
+          {
+            "text": "    }",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "OPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4.1\")",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "# Ollama configuration",
+            "lineNumber": 61
+          },
+          {
+            "text": "OLLAMA_BASE_URL = os.getenv(\"OLLAMA_BASE_URL\", \"http://localhost:11434\")",
+            "lineNumber": 62
+          },
+          {
+            "text": "# Default Ollama model for conversation organization",
+            "lineNumber": 63
+          },
+          {
+            "text": "OLLAMA_MODEL = os.getenv(\"OLLAMA_MODEL\", \"llama3:8b\")",
+            "lineNumber": 64
+          },
+          {
+            "text": "# Current version of the conversation indexer prompt/schema",
+            "lineNumber": 65
+          },
+          {
+            "text": "CONVERSATION_INDEX_VERSION = int(os.getenv(\"CONVERSATION_INDEX_VERSION\", \"1\"))",
+            "lineNumber": 66
+          },
+          {
+            "text": "# Timeout for Ollama API calls (indexing operations may take longer)",
+            "lineNumber": 67
+          },
+          {
+            "text": "OLLAMA_TIMEOUT = int(os.getenv(\"OLLAMA_TIMEOUT\", \"300\"))  # 5 minutes default for indexing",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "# DAAS semantic retrieval configuration",
+            "lineNumber": 70
+          },
+          {
+            "text": "# Number of top-k most relevant dreams to retrieve for pattern-based queries",
+            "lineNumber": 71
+          },
+          {
+            "text": "DAAS_VECTOR_TOP_K = int(os.getenv(\"DAAS_VECTOR_TOP_K\", \"5\"))",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "# Log configuration on startup",
+            "lineNumber": 74
+          },
+          {
+            "text": "logger.info(f\"Environment mode: {ENV_MODE}\")",
+            "lineNumber": 75
+          },
+          {
+            "text": "logger.info(f\"Mock mode: {MOCK_MODE}\")",
+            "lineNumber": 76
+          },
+          {
+            "text": "logger.info(f\"Database: {DB_CONFIG['dbname']} @ {DB_CONFIG['host']}:{DB_CONFIG['port']}\")",
+            "lineNumber": 77
+          },
+          {
+            "text": "if not MOCK_MODE:",
+            "lineNumber": 78
+          },
+          {
+            "text": "    logger.info(f\"OpenAI model: {OPENAI_MODEL}\")",
+            "lineNumber": 79
+          }
+        ]
+      },
+      "score": 0.2982136607170105
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-dev-environment/contracts/environment-config.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 61
+          }
+        },
+        "contents": "# Environment Configuration Contract\n\n**Feature**: Development Environment  \n**Date**: 2025-01-27\n\n## Overview\n\nThis contract defines how the application determines its operating mode and loads configuration.\n\n## Configuration Sources\n\n### Priority Order (highest to lowest)\n1. Environment variables (system/environment)\n2. &#96;.env.local&#96; file (development-specific)\n3. &#96;.env&#96; file (production/default)\n4. Hard-coded defaults\n\n## Environment Variables\n\n### Required for Development Mode\n\n| Variable | Type | Default | Description |\n|----------|------|---------|-------------|\n| &#96;ENV_MODE&#96; | string | &#96;\"production\"&#96; | Operating mode: \"development\" or \"production\" |\n| &#96;DEV_DB_HOST&#96; | string | &#96;DB_HOST&#96; | Development database host |\n| &#96;DEV_DB_PORT&#96; | integer | &#96;DB_PORT&#96; | Development database port |\n| &#96;DEV_DB_NAME&#96; | string | &#96;DB_NAME + \"_dev\"&#96; | Development database name |\n| &#96;DEV_DB_USER&#96; | string | &#96;DB_USER&#96; | Development database user |\n| &#96;DEV_DB_PASSWORD&#96; | string | &#96;DB_PASSWORD&#96; | Development database password |\n\n### Required for Production Mode\n\n| Variable | Type | Default | Description |\n|----------|------|---------|-------------|\n| &#96;DB_HOST&#96; | string | &#96;\"127.0.0.1\"&#96; | Production database host |\n| &#96;DB_PORT&#96; | integer | &#96;5432&#96; | Production database port |\n| &#96;DB_NAME&#96; | string | &#96;\"ongoing_projects\"&#96; | Production database name |\n| &#96;DB_USER&#96; | string | &#96;\"thn_user\"&#96; | Production database user |\n| &#96;DB_PASSWORD&#96; | string | &#96;\"\"&#96; | Production database password |\n\n### Optional\n\n| Variable | Type | Default | Description |\n|----------|------|---------|-------------|\n| &#96;MOCK_MODE&#96; | boolean | &#96;auto&#96; | Force mock mode (auto-enabled in development) |\n| &#96;OPENAI_MODEL&#96; | string | &#96;\"gpt-4.1\"&#96; | OpenAI model identifier |\n\n## Configuration Loading Behavior\n\n### On Application Start\n\n1. Load &#96;.env&#96; file (if exists)\n2. Load &#96;.env.local&#96; file (if exists, overrides &#96;.env&#96;)\n3. Override with environment variables (if set)\n4. Validate configuration\n5. Set operating mode\n6. Initialize database connection\n7. Initialize AI client (mock or real)\n\n### Validation Rules",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Environment Configuration Contract",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature**: Development Environment  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "This contract defines how the application determines its operating mode and loads configuration.",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "## Configuration Sources",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "### Priority Order (highest to lowest)",
+            "lineNumber": 12
+          },
+          {
+            "text": "1. Environment variables (system/environment)",
+            "lineNumber": 13
+          },
+          {
+            "text": "2. &#96;.env.local&#96; file (development-specific)",
+            "lineNumber": 14
+          },
+          {
+            "text": "3. &#96;.env&#96; file (production/default)",
+            "lineNumber": 15
+          },
+          {
+            "text": "4. Hard-coded defaults",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "## Environment Variables",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "### Required for Development Mode",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "| Variable | Type | Default | Description |",
+            "lineNumber": 22
+          },
+          {
+            "text": "|----------|------|---------|-------------|",
+            "lineNumber": 23
+          },
+          {
+            "text": "| &#96;ENV_MODE&#96; | string | &#96;\"production\"&#96; | Operating mode: \"development\" or \"production\" |",
+            "lineNumber": 24
+          },
+          {
+            "text": "| &#96;DEV_DB_HOST&#96; | string | &#96;DB_HOST&#96; | Development database host |",
+            "lineNumber": 25
+          },
+          {
+            "text": "| &#96;DEV_DB_PORT&#96; | integer | &#96;DB_PORT&#96; | Development database port |",
+            "lineNumber": 26
+          },
+          {
+            "text": "| &#96;DEV_DB_NAME&#96; | string | &#96;DB_NAME + \"_dev\"&#96; | Development database name |",
+            "lineNumber": 27
+          },
+          {
+            "text": "| &#96;DEV_DB_USER&#96; | string | &#96;DB_USER&#96; | Development database user |",
+            "lineNumber": 28
+          },
+          {
+            "text": "| &#96;DEV_DB_PASSWORD&#96; | string | &#96;DB_PASSWORD&#96; | Development database password |",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "### Required for Production Mode",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "| Variable | Type | Default | Description |",
+            "lineNumber": 33
+          },
+          {
+            "text": "|----------|------|---------|-------------|",
+            "lineNumber": 34
+          },
+          {
+            "text": "| &#96;DB_HOST&#96; | string | &#96;\"127.0.0.1\"&#96; | Production database host |",
+            "lineNumber": 35
+          },
+          {
+            "text": "| &#96;DB_PORT&#96; | integer | &#96;5432&#96; | Production database port |",
+            "lineNumber": 36
+          },
+          {
+            "text": "| &#96;DB_NAME&#96; | string | &#96;\"ongoing_projects\"&#96; | Production database name |",
+            "lineNumber": 37
+          },
+          {
+            "text": "| &#96;DB_USER&#96; | string | &#96;\"thn_user\"&#96; | Production database user |",
+            "lineNumber": 38
+          },
+          {
+            "text": "| &#96;DB_PASSWORD&#96; | string | &#96;\"\"&#96; | Production database password |",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "### Optional",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "| Variable | Type | Default | Description |",
+            "lineNumber": 43
+          },
+          {
+            "text": "|----------|------|---------|-------------|",
+            "lineNumber": 44
+          },
+          {
+            "text": "| &#96;MOCK_MODE&#96; | boolean | &#96;auto&#96; | Force mock mode (auto-enabled in development) |",
+            "lineNumber": 45
+          },
+          {
+            "text": "| &#96;OPENAI_MODEL&#96; | string | &#96;\"gpt-4.1\"&#96; | OpenAI model identifier |",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "## Configuration Loading Behavior",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "### On Application Start",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "1. Load &#96;.env&#96; file (if exists)",
+            "lineNumber": 52
+          },
+          {
+            "text": "2. Load &#96;.env.local&#96; file (if exists, overrides &#96;.env&#96;)",
+            "lineNumber": 53
+          },
+          {
+            "text": "3. Override with environment variables (if set)",
+            "lineNumber": 54
+          },
+          {
+            "text": "4. Validate configuration",
+            "lineNumber": 55
+          },
+          {
+            "text": "5. Set operating mode",
+            "lineNumber": 56
+          },
+          {
+            "text": "6. Initialize database connection",
+            "lineNumber": 57
+          },
+          {
+            "text": "7. Initialize AI client (mock or real)",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "### Validation Rules",
+            "lineNumber": 60
+          }
+        ]
+      },
+      "score": 0.28696730732917786
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/note_saver.py",
+        "range": {
+          "startPosition": {
+            "line": 148
+          },
+          "endPosition": {
+            "line": 283,
+            "column": 41
+          }
+        },
+        "contents": "class NoteSaver:\ndef save_conversation(self, conversation_note: ConversationNote) -&gt; tuple[bool, Optional[str], Optional[str]]:\n\n            \n            # Push to remote\n            try:\n                repo.remotes.origin.push(self.repository.branch)\n                logger.info(f\"Pushed note to remote repository\")\n            except GitCommandError as e:\n                error_msg = f\"Failed to push to repository: {str(e)}\"\n                logger.error(error_msg)\n                # Handle specific error cases\n                if \"permission denied\" in str(e).lower() or \"authentication\" in str(e).lower():\n                    error_msg = \"Permission denied. Check GitLab credentials.\"\n                elif \"network\" in str(e).lower() or \"connection\" in str(e).lower():\n                    error_msg = \"Network error. Note saved locally but not pushed.\"\n                # Note is still saved locally and committed, just not pushed\n                # Return success but with warning\n                return True, relative_path, f\"Note saved but push failed: {error_msg}\"\n            \n            # Parse and add note to index\n            try:\n                parsed_note = NoteParser.parse_note(file_path, self.repository.local_path)\n                if parsed_note:\n                    self.index.add(parsed_note)\n                    logger.info(f\"Added note to index: {parsed_note.slug}\")\n            except Exception as e:\n                logger.warning(f\"Failed to add note to index: {e}\")\n            \n            return True, relative_path, None\n            \n        except Exception as e:\n            error_msg = f\"Failed to save conversation note: {str(e)}\"\n            logger.error(error_msg, exc_info=True)\n            return False, None, error_msg",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 149,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 150,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 164,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 165,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteSaver:",
+            "lineNumber": 149,
+            "isSignature": true
+          },
+          {
+            "text": "def save_conversation(self, conversation_note: ConversationNote) -&gt; tuple[bool, Optional[str], Optional[str]]:",
+            "lineNumber": 164
+          },
+          {
+            "lineNumber": 252
+          },
+          {
+            "text": "            ",
+            "lineNumber": 253
+          },
+          {
+            "text": "            # Push to remote",
+            "lineNumber": 254
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 255
+          },
+          {
+            "text": "                repo.remotes.origin.push(self.repository.branch)",
+            "lineNumber": 256
+          },
+          {
+            "text": "                logger.info(f\"Pushed note to remote repository\")",
+            "lineNumber": 257
+          },
+          {
+            "text": "            except GitCommandError as e:",
+            "lineNumber": 258
+          },
+          {
+            "text": "                error_msg = f\"Failed to push to repository: {str(e)}\"",
+            "lineNumber": 259
+          },
+          {
+            "text": "                logger.error(error_msg)",
+            "lineNumber": 260
+          },
+          {
+            "text": "                # Handle specific error cases",
+            "lineNumber": 261
+          },
+          {
+            "text": "                if \"permission denied\" in str(e).lower() or \"authentication\" in str(e).lower():",
+            "lineNumber": 262
+          },
+          {
+            "text": "                    error_msg = \"Permission denied. Check GitLab credentials.\"",
+            "lineNumber": 263
+          },
+          {
+            "text": "                elif \"network\" in str(e).lower() or \"connection\" in str(e).lower():",
+            "lineNumber": 264
+          },
+          {
+            "text": "                    error_msg = \"Network error. Note saved locally but not pushed.\"",
+            "lineNumber": 265
+          },
+          {
+            "text": "                # Note is still saved locally and committed, just not pushed",
+            "lineNumber": 266
+          },
+          {
+            "text": "                # Return success but with warning",
+            "lineNumber": 267
+          },
+          {
+            "text": "                return True, relative_path, f\"Note saved but push failed: {error_msg}\"",
+            "lineNumber": 268
+          },
+          {
+            "text": "            ",
+            "lineNumber": 269
+          },
+          {
+            "text": "            # Parse and add note to index",
+            "lineNumber": 270
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 271
+          },
+          {
+            "text": "                parsed_note = NoteParser.parse_note(file_path, self.repository.local_path)",
+            "lineNumber": 272
+          },
+          {
+            "text": "                if parsed_note:",
+            "lineNumber": 273
+          },
+          {
+            "text": "                    self.index.add(parsed_note)",
+            "lineNumber": 274
+          },
+          {
+            "text": "                    logger.info(f\"Added note to index: {parsed_note.slug}\")",
+            "lineNumber": 275
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 276
+          },
+          {
+            "text": "                logger.warning(f\"Failed to add note to index: {e}\")",
+            "lineNumber": 277
+          },
+          {
+            "text": "            ",
+            "lineNumber": 278
+          },
+          {
+            "text": "            return True, relative_path, None",
+            "lineNumber": 279
+          },
+          {
+            "text": "            ",
+            "lineNumber": 280
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 281
+          },
+          {
+            "text": "            error_msg = f\"Failed to save conversation note: {str(e)}\"",
+            "lineNumber": 282
+          },
+          {
+            "text": "            logger.error(error_msg, exc_info=True)",
+            "lineNumber": 283
+          },
+          {
+            "text": "            return False, None, error_msg",
+            "lineNumber": 284,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.263278603553772
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 91
+          }
+        },
+        "contents": "# Data Model: MCP Server Integration\n\n## Overview\n\nThis integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.\n\n## Configuration Entities\n\n### MCP Server Configuration\n\n**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;\n\n**Structure**:\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects\n    }\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- &#96;command&#96;: Executable command to start MCP server\n- &#96;args&#96;: Command-line arguments\n- &#96;env&#96;: Environment variables for the server process\n- &#96;projects&#96;: Optional list of project tags that should use this server\n\n## In-Memory Entities\n\n### MCP Client State\n\n**Purpose**: Track active MCP server processes and connections\n\n**Fields**:\n- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")\n- &#96;process&#96;: subprocess.Popen instance\n- &#96;initialized&#96;: Boolean (has initialize been called)\n- &#96;capabilities&#96;: Dict of server capabilities\n- &#96;last_error&#96;: Timestamp and error message of last failure\n- &#96;retry_count&#96;: Number of consecutive failures\n\n### MCP Resource Cache\n\n**Purpose**: Cache MCP resources to reduce latency\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"meditation://note/morning-meditation-2024-12-01\": {\n    \"content\": \"...\",\n    \"mimeType\": \"text/markdown\",\n    \"cached_at\": timestamp,\n    \"ttl\": 300  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- Resource URI as key\n- &#96;content&#96;: Resource content (text)\n- &#96;mimeType&#96;: MIME type of content\n- &#96;cached_at&#96;: Timestamp when cached\n- &#96;ttl&#96;: Time-to-live in seconds\n\n### MCP Resource List Cache\n\n**Purpose**: Cache list of available resources\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"server_name\": {\n    \"resources\": [...],\n    \"cached_at\": timestamp,\n    \"ttl\": 60  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n## No Database Changes\n\n- No new tables required\n- No schema modifications\n- Configuration stored in files, not database",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Configuration Entities",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 13
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 14
+          },
+          {
+            "text": "{",
+            "lineNumber": 15
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 16
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 17
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 18
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 19
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 20
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "      },",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects",
+            "lineNumber": 23
+          },
+          {
+            "text": "    }",
+            "lineNumber": 24
+          },
+          {
+            "text": "  }",
+            "lineNumber": 25
+          },
+          {
+            "text": "}",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 29
+          },
+          {
+            "text": "- &#96;command&#96;: Executable command to start MCP server",
+            "lineNumber": 30
+          },
+          {
+            "text": "- &#96;args&#96;: Command-line arguments",
+            "lineNumber": 31
+          },
+          {
+            "text": "- &#96;env&#96;: Environment variables for the server process",
+            "lineNumber": 32
+          },
+          {
+            "text": "- &#96;projects&#96;: Optional list of project tags that should use this server",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "## In-Memory Entities",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "### MCP Client State",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Purpose**: Track active MCP server processes and connections",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 41
+          },
+          {
+            "text": "- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "- &#96;process&#96;: subprocess.Popen instance",
+            "lineNumber": 43
+          },
+          {
+            "text": "- &#96;initialized&#96;: Boolean (has initialize been called)",
+            "lineNumber": 44
+          },
+          {
+            "text": "- &#96;capabilities&#96;: Dict of server capabilities",
+            "lineNumber": 45
+          },
+          {
+            "text": "- &#96;last_error&#96;: Timestamp and error message of last failure",
+            "lineNumber": 46
+          },
+          {
+            "text": "- &#96;retry_count&#96;: Number of consecutive failures",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### MCP Resource Cache",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Purpose**: Cache MCP resources to reduce latency",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 53
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 54
+          },
+          {
+            "text": "{",
+            "lineNumber": 55
+          },
+          {
+            "text": "  \"meditation://note/morning-meditation-2024-12-01\": {",
+            "lineNumber": 56
+          },
+          {
+            "text": "    \"content\": \"...\",",
+            "lineNumber": 57
+          },
+          {
+            "text": "    \"mimeType\": \"text/markdown\",",
+            "lineNumber": 58
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 59
+          },
+          {
+            "text": "    \"ttl\": 300  # seconds",
+            "lineNumber": 60
+          },
+          {
+            "text": "  }",
+            "lineNumber": 61
+          },
+          {
+            "text": "}",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 65
+          },
+          {
+            "text": "- Resource URI as key",
+            "lineNumber": 66
+          },
+          {
+            "text": "- &#96;content&#96;: Resource content (text)",
+            "lineNumber": 67
+          },
+          {
+            "text": "- &#96;mimeType&#96;: MIME type of content",
+            "lineNumber": 68
+          },
+          {
+            "text": "- &#96;cached_at&#96;: Timestamp when cached",
+            "lineNumber": 69
+          },
+          {
+            "text": "- &#96;ttl&#96;: Time-to-live in seconds",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "### MCP Resource List Cache",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "**Purpose**: Cache list of available resources",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 76
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 77
+          },
+          {
+            "text": "{",
+            "lineNumber": 78
+          },
+          {
+            "text": "  \"server_name\": {",
+            "lineNumber": 79
+          },
+          {
+            "text": "    \"resources\": [...],",
+            "lineNumber": 80
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 81
+          },
+          {
+            "text": "    \"ttl\": 60  # seconds",
+            "lineNumber": 82
+          },
+          {
+            "text": "  }",
+            "lineNumber": 83
+          },
+          {
+            "text": "}",
+            "lineNumber": 84
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "## No Database Changes",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "- No new tables required",
+            "lineNumber": 89
+          },
+          {
+            "text": "- No schema modifications",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Configuration stored in files, not database",
+            "lineNumber": 91
+          }
+        ]
+      },
+      "score": 0.2611958980560303
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./README.md",
+        "range": {
+          "startPosition": {
+            "line": 338
+          },
+          "endPosition": {
+            "line": 393
+          }
+        },
+        "contents": "You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?\n🔵 Thinking for GENERAL...\nAI (GENERAL) 🔵: [Streaming response...]\n\nYou (GENERAL) 🔵: /exit\n✓ Indexed: The Hobbit Discussion [general]\n[Usage summary]\nBye.\n&#96;&#96;&#96;\n\n### Streaming Responses\n\nResponses appear progressively, word-by-word, mimicking ChatGPT's experience. The text cascades down the screen as it's generated, providing immediate feedback.\n\n---\n\n## Integrations\n\n- **Web API/PWA**: Tiny Flask/FastAPI endpoint can be enabled for web journal apps\n- **Shell**: Add an alias to your &#96;.zshrc&#96;/&#96;.bash_profile&#96; for easier launch\n\n---\n\n## Configuration\n\n### Environment Variables\n\nCreate a &#96;.env&#96; or &#96;.env.local&#96; file (see &#96;.env.example&#96; for template):\n\n- **Database**: &#96;DB_HOST&#96;, &#96;DB_PORT&#96;, &#96;DB_NAME&#96;, &#96;DB_USER&#96;, &#96;DB_PASSWORD&#96;\n- **OpenAI**: &#96;OPENAI_API_KEY&#96;, &#96;OPENAI_MODEL&#96; (default: &#96;gpt-4.1&#96;)\n- **Ollama**: &#96;OLLAMA_BASE_URL&#96;, &#96;OLLAMA_MODEL&#96; (for conversation indexing)\n- **DAAS**: &#96;DAAS_VECTOR_TOP_K&#96; (default: &#96;5&#96;) - Number of dreams to retrieve for pattern queries\n\n### Customization\n\n- Edit &#96;brain_core/config.py&#96; to change default project tags and UI colors/emojis\n- Adjust streaming speed by modifying the &#96;min_delay&#96; in &#96;chat_cli.py&#96; (default: 30ms per character)\n- Customize project styles in &#96;chat_cli.py&#96; &#96;PROJECT_STYLE&#96; dictionary\n\n---\n\n## License\n\nMIT or similar (edit as appropriate).\n\n---\n\n## Credits\n\nInspired by productivity workflows, home-lab privacy, and local knowledge management.\n\n---\n\n**Feel free to edit and expand—let me know if you want this tuned for a specific stack or workflow!**",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?",
+            "lineNumber": 339
+          },
+          {
+            "text": "🔵 Thinking for GENERAL...",
+            "lineNumber": 340
+          },
+          {
+            "text": "AI (GENERAL) 🔵: [Streaming response...]",
+            "lineNumber": 341
+          },
+          {
+            "lineNumber": 342
+          },
+          {
+            "text": "You (GENERAL) 🔵: /exit",
+            "lineNumber": 343
+          },
+          {
+            "text": "✓ Indexed: The Hobbit Discussion [general]",
+            "lineNumber": 344
+          },
+          {
+            "text": "[Usage summary]",
+            "lineNumber": 345
+          },
+          {
+            "text": "Bye.",
+            "lineNumber": 346
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 347
+          },
+          {
+            "lineNumber": 348
+          },
+          {
+            "text": "### Streaming Responses",
+            "lineNumber": 349
+          },
+          {
+            "lineNumber": 350
+          },
+          {
+            "text": "Responses appear progressively, word-by-word, mimicking ChatGPT's experience. The text cascades down the screen as it's generated, providing immediate feedback.",
+            "lineNumber": 351
+          },
+          {
+            "lineNumber": 352
+          },
+          {
+            "text": "---",
+            "lineNumber": 353
+          },
+          {
+            "lineNumber": 354
+          },
+          {
+            "text": "## Integrations",
+            "lineNumber": 355
+          },
+          {
+            "lineNumber": 356
+          },
+          {
+            "text": "- **Web API/PWA**: Tiny Flask/FastAPI endpoint can be enabled for web journal apps",
+            "lineNumber": 357
+          },
+          {
+            "text": "- **Shell**: Add an alias to your &#96;.zshrc&#96;/&#96;.bash_profile&#96; for easier launch",
+            "lineNumber": 358
+          },
+          {
+            "lineNumber": 359
+          },
+          {
+            "text": "---",
+            "lineNumber": 360
+          },
+          {
+            "lineNumber": 361
+          },
+          {
+            "text": "## Configuration",
+            "lineNumber": 362
+          },
+          {
+            "lineNumber": 363
+          },
+          {
+            "text": "### Environment Variables",
+            "lineNumber": 364
+          },
+          {
+            "lineNumber": 365
+          },
+          {
+            "text": "Create a &#96;.env&#96; or &#96;.env.local&#96; file (see &#96;.env.example&#96; for template):",
+            "lineNumber": 366
+          },
+          {
+            "lineNumber": 367
+          },
+          {
+            "text": "- **Database**: &#96;DB_HOST&#96;, &#96;DB_PORT&#96;, &#96;DB_NAME&#96;, &#96;DB_USER&#96;, &#96;DB_PASSWORD&#96;",
+            "lineNumber": 368
+          },
+          {
+            "text": "- **OpenAI**: &#96;OPENAI_API_KEY&#96;, &#96;OPENAI_MODEL&#96; (default: &#96;gpt-4.1&#96;)",
+            "lineNumber": 369
+          },
+          {
+            "text": "- **Ollama**: &#96;OLLAMA_BASE_URL&#96;, &#96;OLLAMA_MODEL&#96; (for conversation indexing)",
+            "lineNumber": 370
+          },
+          {
+            "text": "- **DAAS**: &#96;DAAS_VECTOR_TOP_K&#96; (default: &#96;5&#96;) - Number of dreams to retrieve for pattern queries",
+            "lineNumber": 371
+          },
+          {
+            "lineNumber": 372
+          },
+          {
+            "text": "### Customization",
+            "lineNumber": 373
+          },
+          {
+            "lineNumber": 374
+          },
+          {
+            "text": "- Edit &#96;brain_core/config.py&#96; to change default project tags and UI colors/emojis",
+            "lineNumber": 375
+          },
+          {
+            "text": "- Adjust streaming speed by modifying the &#96;min_delay&#96; in &#96;chat_cli.py&#96; (default: 30ms per character)",
+            "lineNumber": 376
+          },
+          {
+            "text": "- Customize project styles in &#96;chat_cli.py&#96; &#96;PROJECT_STYLE&#96; dictionary",
+            "lineNumber": 377
+          },
+          {
+            "lineNumber": 378
+          },
+          {
+            "text": "---",
+            "lineNumber": 379
+          },
+          {
+            "lineNumber": 380
+          },
+          {
+            "text": "## License",
+            "lineNumber": 381
+          },
+          {
+            "lineNumber": 382
+          },
+          {
+            "text": "MIT or similar (edit as appropriate).",
+            "lineNumber": 383
+          },
+          {
+            "lineNumber": 384
+          },
+          {
+            "text": "---",
+            "lineNumber": 385
+          },
+          {
+            "lineNumber": 386
+          },
+          {
+            "text": "## Credits",
+            "lineNumber": 387
+          },
+          {
+            "lineNumber": 388
+          },
+          {
+            "text": "Inspired by productivity workflows, home-lab privacy, and local knowledge management.",
+            "lineNumber": 389
+          },
+          {
+            "lineNumber": 390
+          },
+          {
+            "text": "---",
+            "lineNumber": 391
+          },
+          {
+            "lineNumber": 392
+          },
+          {
+            "text": "**Feel free to edit and expand—let me know if you want this tuned for a specific stack or workflow!**",
+            "lineNumber": 393
+          }
+        ]
+      },
+      "score": 0.25746670365333557
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/research.md",
+        "range": {
+          "startPosition": {
+            "line": 41
+          },
+          "endPosition": {
+            "line": 117
+          }
+        },
+        "contents": "**Format structure**:\n\n&#96;&#96;&#96;markdown\n---\ntitle: Conversation Title\nproject: DAAS\ncreated: 2025-12-07T10:30:00Z\ntags: [conversation, ai-chat]\n---\n\n# Conversation Title\n\n## User Message (10:30 AM)\n\nUser's message content here...\n\n## Assistant Response (10:31 AM)\n\nAssistant's response here...\n\n## User Message (10:32 AM)\n\n...\n&#96;&#96;&#96;\n\n**Alternatives considered**:\n\n- Plain markdown without frontmatter: Rejected - loses metadata that could be useful\n- JSON format: Rejected - not readable in Obsidian, defeats purpose of integration\n\n## Git Operations for Saving Notes\n\n### Decision: Commit and push via GitPython\n\n**Rationale**: Notes must be saved to the GitLab repository. GitPython is already a dependency and provides programmatic Git operations. We need to:\n\n1. Create/update the markdown file\n2. Stage the file (&#96;git add&#96;)\n3. Commit with a descriptive message\n4. Push to remote repository\n\n**Implementation approach**:\n\n- Use GitPython's Repo class to get repository handle\n- Create file in appropriate project directory\n- Use &#96;repo.index.add()&#96; and &#96;repo.index.commit()&#96;\n- Use &#96;repo.remotes.origin.push()&#96; to push changes\n\n**Error handling**:\n\n- Handle case where repository is out of sync (pull first, then push)\n- Handle merge conflicts (abort and report error)\n- Handle permission issues (report clearly)\n\n**Alternatives considered**:\n\n- Shell out to git command: Rejected - less reliable, harder error handling\n- Only commit locally: Rejected - user requirement is to save to repository (implies push)\n\n## Filename Generation\n\n### Decision: Slug from title with timestamp fallback\n\n**Rationale**: Filenames should be readable and unique. Use the conversation title to generate a slug, with timestamp as fallback if no title provided.\n\n**Implementation approach**:\n\n- If title provided: convert to slug (lowercase, hyphens, alphanumeric)\n- If no title: generate from first user message or use timestamp\n- Format: &#96;{slug}.md&#96; or &#96;conversation-{timestamp}.md&#96;\n- Handle duplicate filenames by appending number: &#96;{slug}-2.md&#96;\n\n**Alternatives considered**:\n\n- UUID-based filenames: Rejected - not human-readable in Obsidian",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Format structure**:",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "&#96;&#96;&#96;markdown",
+            "lineNumber": 45
+          },
+          {
+            "text": "---",
+            "lineNumber": 46
+          },
+          {
+            "text": "title: Conversation Title",
+            "lineNumber": 47
+          },
+          {
+            "text": "project: DAAS",
+            "lineNumber": 48
+          },
+          {
+            "text": "created: 2025-12-07T10:30:00Z",
+            "lineNumber": 49
+          },
+          {
+            "text": "tags: [conversation, ai-chat]",
+            "lineNumber": 50
+          },
+          {
+            "text": "---",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "# Conversation Title",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "## User Message (10:30 AM)",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "User's message content here...",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Assistant Response (10:31 AM)",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "Assistant's response here...",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "## User Message (10:32 AM)",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "...",
+            "lineNumber": 65
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "- Plain markdown without frontmatter: Rejected - loses metadata that could be useful",
+            "lineNumber": 70
+          },
+          {
+            "text": "- JSON format: Rejected - not readable in Obsidian, defeats purpose of integration",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "## Git Operations for Saving Notes",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "### Decision: Commit and push via GitPython",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "**Rationale**: Notes must be saved to the GitLab repository. GitPython is already a dependency and provides programmatic Git operations. We need to:",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "1. Create/update the markdown file",
+            "lineNumber": 79
+          },
+          {
+            "text": "2. Stage the file (&#96;git add&#96;)",
+            "lineNumber": 80
+          },
+          {
+            "text": "3. Commit with a descriptive message",
+            "lineNumber": 81
+          },
+          {
+            "text": "4. Push to remote repository",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85
+          },
+          {
+            "text": "- Use GitPython's Repo class to get repository handle",
+            "lineNumber": 86
+          },
+          {
+            "text": "- Create file in appropriate project directory",
+            "lineNumber": 87
+          },
+          {
+            "text": "- Use &#96;repo.index.add()&#96; and &#96;repo.index.commit()&#96;",
+            "lineNumber": 88
+          },
+          {
+            "text": "- Use &#96;repo.remotes.origin.push()&#96; to push changes",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "**Error handling**:",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "- Handle case where repository is out of sync (pull first, then push)",
+            "lineNumber": 93
+          },
+          {
+            "text": "- Handle merge conflicts (abort and report error)",
+            "lineNumber": 94
+          },
+          {
+            "text": "- Handle permission issues (report clearly)",
+            "lineNumber": 95
+          },
+          {
+            "lineNumber": 96
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 97
+          },
+          {
+            "lineNumber": 98
+          },
+          {
+            "text": "- Shell out to git command: Rejected - less reliable, harder error handling",
+            "lineNumber": 99
+          },
+          {
+            "text": "- Only commit locally: Rejected - user requirement is to save to repository (implies push)",
+            "lineNumber": 100
+          },
+          {
+            "lineNumber": 101
+          },
+          {
+            "text": "## Filename Generation",
+            "lineNumber": 102
+          },
+          {
+            "lineNumber": 103
+          },
+          {
+            "text": "### Decision: Slug from title with timestamp fallback",
+            "lineNumber": 104
+          },
+          {
+            "lineNumber": 105
+          },
+          {
+            "text": "**Rationale**: Filenames should be readable and unique. Use the conversation title to generate a slug, with timestamp as fallback if no title provided.",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 108
+          },
+          {
+            "lineNumber": 109
+          },
+          {
+            "text": "- If title provided: convert to slug (lowercase, hyphens, alphanumeric)",
+            "lineNumber": 110
+          },
+          {
+            "text": "- If no title: generate from first user message or use timestamp",
+            "lineNumber": 111
+          },
+          {
+            "text": "- Format: &#96;{slug}.md&#96; or &#96;conversation-{timestamp}.md&#96;",
+            "lineNumber": 112
+          },
+          {
+            "text": "- Handle duplicate filenames by appending number: &#96;{slug}-2.md&#96;",
+            "lineNumber": 113
+          },
+          {
+            "lineNumber": 114
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 115
+          },
+          {
+            "lineNumber": 116
+          },
+          {
+            "text": "- UUID-based filenames: Rejected - not human-readable in Obsidian",
+            "lineNumber": 117
+          }
+        ]
+      },
+      "score": 0.25525474548339844
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/note_saver.py",
+        "range": {
+          "startPosition": {
+            "line": 148
+          },
+          "endPosition": {
+            "line": 283
+          }
+        },
+        "contents": "class NoteSaver:\ndef save_conversation(self, conversation_note: ConversationNote) -&gt; tuple[bool, Optional[str], Optional[str]]:\n\n            \n            # Git operations\n            if not (self.repository.local_path / \".git\").exists():\n                error_msg = \"Repository not initialized. Run /mcp sync first.\"\n                logger.error(error_msg)\n                return False, None, error_msg\n            \n            repo = Repo(self.repository.local_path)\n            \n            # Check if repository is out of sync (has remote changes)\n            try:\n                repo.remotes.origin.fetch()\n                local_sha = repo.head.commit.hexsha\n                remote_sha = repo.remotes.origin.refs[0].commit.hexsha\n                if local_sha != remote_sha:\n                    logger.info(\"Repository out of sync, pulling latest changes...\")\n                    try:\n                        repo.git.pull('origin', self.repository.branch)\n                    except GitCommandError as e:\n                        # Handle merge conflicts - abort and report\n                        if \"merge conflict\" in str(e).lower() or \"CONFLICT\" in str(e):\n                            logger.error(\"Merge conflict detected. Aborting save operation.\")\n                            repo.git.merge('--abort')\n                            return False, None, \"Repository has conflicts. Please resolve manually and try again.\"\n                        raise\n            except Exception as e:\n                logger.warning(f\"Could not check/pull remote changes: {e}\")\n                # Continue anyway - might be network issue, but local save should still work\n            \n            # Stage file\n            repo.index.add([relative_path])\n            \n            # Commit\n            commit_message = f\"Add conversation note: {conversation_note.title}\"\n            repo.index.commit(commit_message)\n            logger.info(f\"Committed note: {commit_message}\")\n            \n            # Push to remote\n            try:",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 149,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 150,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 164,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 165,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteSaver:",
+            "lineNumber": 149,
+            "isSignature": true
+          },
+          {
+            "text": "def save_conversation(self, conversation_note: ConversationNote) -&gt; tuple[bool, Optional[str], Optional[str]]:",
+            "lineNumber": 164
+          },
+          {
+            "lineNumber": 216
+          },
+          {
+            "text": "            ",
+            "lineNumber": 217
+          },
+          {
+            "text": "            # Git operations",
+            "lineNumber": 218
+          },
+          {
+            "text": "            if not (self.repository.local_path / \".git\").exists():",
+            "lineNumber": 219
+          },
+          {
+            "text": "                error_msg = \"Repository not initialized. Run /mcp sync first.\"",
+            "lineNumber": 220
+          },
+          {
+            "text": "                logger.error(error_msg)",
+            "lineNumber": 221
+          },
+          {
+            "text": "                return False, None, error_msg",
+            "lineNumber": 222
+          },
+          {
+            "text": "            ",
+            "lineNumber": 223
+          },
+          {
+            "text": "            repo = Repo(self.repository.local_path)",
+            "lineNumber": 224
+          },
+          {
+            "text": "            ",
+            "lineNumber": 225
+          },
+          {
+            "text": "            # Check if repository is out of sync (has remote changes)",
+            "lineNumber": 226
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 227
+          },
+          {
+            "text": "                repo.remotes.origin.fetch()",
+            "lineNumber": 228
+          },
+          {
+            "text": "                local_sha = repo.head.commit.hexsha",
+            "lineNumber": 229
+          },
+          {
+            "text": "                remote_sha = repo.remotes.origin.refs[0].commit.hexsha",
+            "lineNumber": 230
+          },
+          {
+            "text": "                if local_sha != remote_sha:",
+            "lineNumber": 231
+          },
+          {
+            "text": "                    logger.info(\"Repository out of sync, pulling latest changes...\")",
+            "lineNumber": 232
+          },
+          {
+            "text": "                    try:",
+            "lineNumber": 233
+          },
+          {
+            "text": "                        repo.git.pull('origin', self.repository.branch)",
+            "lineNumber": 234
+          },
+          {
+            "text": "                    except GitCommandError as e:",
+            "lineNumber": 235
+          },
+          {
+            "text": "                        # Handle merge conflicts - abort and report",
+            "lineNumber": 236
+          },
+          {
+            "text": "                        if \"merge conflict\" in str(e).lower() or \"CONFLICT\" in str(e):",
+            "lineNumber": 237
+          },
+          {
+            "text": "                            logger.error(\"Merge conflict detected. Aborting save operation.\")",
+            "lineNumber": 238
+          },
+          {
+            "text": "                            repo.git.merge('--abort')",
+            "lineNumber": 239
+          },
+          {
+            "text": "                            return False, None, \"Repository has conflicts. Please resolve manually and try again.\"",
+            "lineNumber": 240
+          },
+          {
+            "text": "                        raise",
+            "lineNumber": 241
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 242
+          },
+          {
+            "text": "                logger.warning(f\"Could not check/pull remote changes: {e}\")",
+            "lineNumber": 243
+          },
+          {
+            "text": "                # Continue anyway - might be network issue, but local save should still work",
+            "lineNumber": 244
+          },
+          {
+            "text": "            ",
+            "lineNumber": 245
+          },
+          {
+            "text": "            # Stage file",
+            "lineNumber": 246
+          },
+          {
+            "text": "            repo.index.add([relative_path])",
+            "lineNumber": 247
+          },
+          {
+            "text": "            ",
+            "lineNumber": 248
+          },
+          {
+            "text": "            # Commit",
+            "lineNumber": 249
+          },
+          {
+            "text": "            commit_message = f\"Add conversation note: {conversation_note.title}\"",
+            "lineNumber": 250
+          },
+          {
+            "text": "            repo.index.commit(commit_message)",
+            "lineNumber": 251
+          },
+          {
+            "text": "            logger.info(f\"Committed note: {commit_message}\")",
+            "lineNumber": 252
+          },
+          {
+            "text": "            ",
+            "lineNumber": 253
+          },
+          {
+            "text": "            # Push to remote",
+            "lineNumber": 254
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 255
+          }
+        ]
+      },
+      "score": 0.25512170791625977
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/008-thn-code-rag-pipeline/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 87
+          }
+        },
+        "contents": "# Quickstart: THN Code RAG Pipeline Implementation\n\n**Feature**: 008-thn-code-rag-pipeline  \n**Date**: 2025-01-27\n\n## Prerequisites\n\n1. **PostgreSQL with pgvector extension** (already installed for DAAS)\n   &#96;&#96;&#96;bash\n   # Verify pgvector is installed\n   psql -d project_chat -c \"SELECT * FROM pg_extension WHERE extname = 'vector';\"\n   &#96;&#96;&#96;\n\n2. **Python dependencies**\n   &#96;&#96;&#96;bash\n   pip install gitpython psycopg2-binary openai python-dotenv\n   # Note: pgvector, openai already installed for DAAS\n   &#96;&#96;&#96;\n\n3. **OpenAI API key** (already configured for DAAS)\n   - Verify in &#96;.env&#96;: &#96;OPENAI_API_KEY=sk-...&#96;\n\n4. **Git access to THN repositories**\n   - SSH keys configured for GitLab access\n   - Or HTTPS with credentials\n\n## Implementation Steps\n\n### Step 1: Database Schema Migration\n\n&#96;&#96;&#96;sql\n-- Create code_index table\nCREATE TABLE IF NOT EXISTS code_index (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    repository_name TEXT NOT NULL,\n    file_path TEXT NOT NULL,\n    language TEXT NOT NULL,\n    chunk_text TEXT NOT NULL,\n    chunk_metadata JSONB,\n    embedding vector(1536),\n    production_targets TEXT[],\n    indexed_at TIMESTAMPTZ NOT NULL DEFAULT now(),\n    last_updated TIMESTAMPTZ\n);\n\n-- Create indexes\nCREATE INDEX idx_code_index_embedding \nON code_index \nUSING ivfflat (embedding vector_cosine_ops) \nWITH (lists = 100)\nWHERE embedding IS NOT NULL;\n\nCREATE INDEX idx_code_index_repo_lang \nON code_index (repository_name, language);\n\nCREATE INDEX idx_code_index_file_path \nON code_index (file_path);\n\nCREATE INDEX idx_code_index_production_targets \nON code_index USING GIN (production_targets);\n&#96;&#96;&#96;\n\n### Step 2: Create Repository Directory\n\n&#96;&#96;&#96;bash\nmkdir -p repos\nmkdir -p repos/.metadata\n&#96;&#96;&#96;\n\n### Step 3: Clone THN Repositories\n\n&#96;&#96;&#96;bash\n# Example: Clone a THN repository\npython3 -c \"\nfrom brain_core.thn_code_indexer import clone_repository\npath = clone_repository(\n    'git@gitlab.local:user/thn-automation.git',\n    'thn-automation'\n)\nprint(f'Cloned to: {path}')\n\"\n&#96;&#96;&#96;\n\nOr manually:\n&#96;&#96;&#96;bash\ncd repos\ngit clone git@gitlab.local:user/thn-automation.git",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: THN Code RAG Pipeline Implementation",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature**: 008-thn-code-rag-pipeline  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "1. **PostgreSQL with pgvector extension** (already installed for DAAS)",
+            "lineNumber": 8
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 9
+          },
+          {
+            "text": "   # Verify pgvector is installed",
+            "lineNumber": 10
+          },
+          {
+            "text": "   psql -d project_chat -c \"SELECT * FROM pg_extension WHERE extname = 'vector';\"",
+            "lineNumber": 11
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "2. **Python dependencies**",
+            "lineNumber": 14
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 15
+          },
+          {
+            "text": "   pip install gitpython psycopg2-binary openai python-dotenv",
+            "lineNumber": 16
+          },
+          {
+            "text": "   # Note: pgvector, openai already installed for DAAS",
+            "lineNumber": 17
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "3. **OpenAI API key** (already configured for DAAS)",
+            "lineNumber": 20
+          },
+          {
+            "text": "   - Verify in &#96;.env&#96;: &#96;OPENAI_API_KEY=sk-...&#96;",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "4. **Git access to THN repositories**",
+            "lineNumber": 23
+          },
+          {
+            "text": "   - SSH keys configured for GitLab access",
+            "lineNumber": 24
+          },
+          {
+            "text": "   - Or HTTPS with credentials",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "## Implementation Steps",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "### Step 1: Database Schema Migration",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 31
+          },
+          {
+            "text": "-- Create code_index table",
+            "lineNumber": 32
+          },
+          {
+            "text": "CREATE TABLE IF NOT EXISTS code_index (",
+            "lineNumber": 33
+          },
+          {
+            "text": "    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "lineNumber": 34
+          },
+          {
+            "text": "    repository_name TEXT NOT NULL,",
+            "lineNumber": 35
+          },
+          {
+            "text": "    file_path TEXT NOT NULL,",
+            "lineNumber": 36
+          },
+          {
+            "text": "    language TEXT NOT NULL,",
+            "lineNumber": 37
+          },
+          {
+            "text": "    chunk_text TEXT NOT NULL,",
+            "lineNumber": 38
+          },
+          {
+            "text": "    chunk_metadata JSONB,",
+            "lineNumber": 39
+          },
+          {
+            "text": "    embedding vector(1536),",
+            "lineNumber": 40
+          },
+          {
+            "text": "    production_targets TEXT[],",
+            "lineNumber": 41
+          },
+          {
+            "text": "    indexed_at TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            "lineNumber": 42
+          },
+          {
+            "text": "    last_updated TIMESTAMPTZ",
+            "lineNumber": 43
+          },
+          {
+            "text": ");",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "-- Create indexes",
+            "lineNumber": 46
+          },
+          {
+            "text": "CREATE INDEX idx_code_index_embedding ",
+            "lineNumber": 47
+          },
+          {
+            "text": "ON code_index ",
+            "lineNumber": 48
+          },
+          {
+            "text": "USING ivfflat (embedding vector_cosine_ops) ",
+            "lineNumber": 49
+          },
+          {
+            "text": "WITH (lists = 100)",
+            "lineNumber": 50
+          },
+          {
+            "text": "WHERE embedding IS NOT NULL;",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "CREATE INDEX idx_code_index_repo_lang ",
+            "lineNumber": 53
+          },
+          {
+            "text": "ON code_index (repository_name, language);",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "CREATE INDEX idx_code_index_file_path ",
+            "lineNumber": 56
+          },
+          {
+            "text": "ON code_index (file_path);",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "CREATE INDEX idx_code_index_production_targets ",
+            "lineNumber": 59
+          },
+          {
+            "text": "ON code_index USING GIN (production_targets);",
+            "lineNumber": 60
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "### Step 2: Create Repository Directory",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 65
+          },
+          {
+            "text": "mkdir -p repos",
+            "lineNumber": 66
+          },
+          {
+            "text": "mkdir -p repos/.metadata",
+            "lineNumber": 67
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "### Step 3: Clone THN Repositories",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 72
+          },
+          {
+            "text": "# Example: Clone a THN repository",
+            "lineNumber": 73
+          },
+          {
+            "text": "python3 -c \"",
+            "lineNumber": 74
+          },
+          {
+            "text": "from brain_core.thn_code_indexer import clone_repository",
+            "lineNumber": 75
+          },
+          {
+            "text": "path = clone_repository(",
+            "lineNumber": 76
+          },
+          {
+            "text": "    'git@gitlab.local:user/thn-automation.git',",
+            "lineNumber": 77
+          },
+          {
+            "text": "    'thn-automation'",
+            "lineNumber": 78
+          },
+          {
+            "text": ")",
+            "lineNumber": 79
+          },
+          {
+            "text": "print(f'Cloned to: {path}')",
+            "lineNumber": 80
+          },
+          {
+            "text": "\"",
+            "lineNumber": 81
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "Or manually:",
+            "lineNumber": 84
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 85
+          },
+          {
+            "text": "cd repos",
+            "lineNumber": 86
+          },
+          {
+            "text": "git clone git@gitlab.local:user/thn-automation.git",
+            "lineNumber": 87
+          }
+        ]
+      },
+      "score": 0.25382089614868164
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./PRODUCTION_SETUP.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 89
+          }
+        },
+        "contents": "# Production Setup Guide\n\nSimple guide for setting up project_chat in a production environment.\n\n## Prerequisites\n\n- PostgreSQL 14+ installed and running\n- Python 3.10+ installed\n- pgvector extension installed (for DAAS semantic search)\n- ChatGPT export zip file ready\n\n## Setup Steps\n\n### 1. Configure Environment\n\nCreate &#96;.env&#96; or &#96;.env.local&#96; with your production database settings:\n\n&#96;&#96;&#96;bash\n# Database Configuration\nDB_HOST=127.0.0.1\nDB_PORT=5432\nDB_NAME=your_production_db_name\nDB_USER=your_db_user\nDB_PASSWORD=your_db_password\n\n# OpenAI (required for DAAS embeddings)\nOPENAI_API_KEY=your_openai_api_key\n\n# Ollama (optional, for conversation indexing)\nOLLAMA_BASE_URL=http://localhost:11434\nOLLAMA_MODEL=llama3:8b\n&#96;&#96;&#96;\n\n### 2. Initialize Database\n\n&#96;&#96;&#96;bash\n# Create database if it doesn't exist\npython3 init_db.py\n\n# Or manually:\ncreatedb your_production_db_name\n&#96;&#96;&#96;\n\n### 3. Run Migrations\n\n&#96;&#96;&#96;bash\n# Run all migrations at once\n./db/migrations/run_all_migrations.sh your_production_db_name\n\n# Or manually:\npsql -d your_production_db_name -f db/migrations/000_initial_schema.sql\npsql -d your_production_db_name -f db/migrations/001_create_conversation_index.sql\npsql -d your_production_db_name -c \"CREATE EXTENSION IF NOT EXISTS vector;\"\npsql -d your_production_db_name -f db/migrations/002_daas_embeddings.sql\n&#96;&#96;&#96;\n\n### 4. Load Project Knowledge\n\n&#96;&#96;&#96;bash\npsql -d your_production_db_name -f db/seeds/project_knowledge_seed.sql\n&#96;&#96;&#96;\n\n### 5. Import ChatGPT Conversations\n\n&#96;&#96;&#96;bash\n# Test import first (dry-run)\npython3 import_chatgpt_from_zip.py chatgpt_export.zip --dry-run\n\n# Actually import\npython3 import_chatgpt_from_zip.py chatgpt_export.zip\n&#96;&#96;&#96;\n\n### 6. Index Conversations (Optional)\n\nIf you have Ollama running and want to organize conversations:\n\n&#96;&#96;&#96;bash\n# Verify table structure\npython3 setup_prod_conversation_index.py --verify\n\n# Index all conversations\npython3 setup_prod_conversation_index.py --index-all\n&#96;&#96;&#96;\n\n### 7. Generate Embeddings for DAAS\n\n&#96;&#96;&#96;bash\n# Generate embeddings for DAAS dream entries\npython3 backfill_embeddings.py",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Production Setup Guide",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "Simple guide for setting up project_chat in a production environment.",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "- PostgreSQL 14+ installed and running",
+            "lineNumber": 7
+          },
+          {
+            "text": "- Python 3.10+ installed",
+            "lineNumber": 8
+          },
+          {
+            "text": "- pgvector extension installed (for DAAS semantic search)",
+            "lineNumber": 9
+          },
+          {
+            "text": "- ChatGPT export zip file ready",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "## Setup Steps",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "### 1. Configure Environment",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "Create &#96;.env&#96; or &#96;.env.local&#96; with your production database settings:",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 18
+          },
+          {
+            "text": "# Database Configuration",
+            "lineNumber": 19
+          },
+          {
+            "text": "DB_HOST=127.0.0.1",
+            "lineNumber": 20
+          },
+          {
+            "text": "DB_PORT=5432",
+            "lineNumber": 21
+          },
+          {
+            "text": "DB_NAME=your_production_db_name",
+            "lineNumber": 22
+          },
+          {
+            "text": "DB_USER=your_db_user",
+            "lineNumber": 23
+          },
+          {
+            "text": "DB_PASSWORD=your_db_password",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "# OpenAI (required for DAAS embeddings)",
+            "lineNumber": 26
+          },
+          {
+            "text": "OPENAI_API_KEY=your_openai_api_key",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "# Ollama (optional, for conversation indexing)",
+            "lineNumber": 29
+          },
+          {
+            "text": "OLLAMA_BASE_URL=http://localhost:11434",
+            "lineNumber": 30
+          },
+          {
+            "text": "OLLAMA_MODEL=llama3:8b",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### 2. Initialize Database",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 36
+          },
+          {
+            "text": "# Create database if it doesn't exist",
+            "lineNumber": 37
+          },
+          {
+            "text": "python3 init_db.py",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "# Or manually:",
+            "lineNumber": 40
+          },
+          {
+            "text": "createdb your_production_db_name",
+            "lineNumber": 41
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "### 3. Run Migrations",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 46
+          },
+          {
+            "text": "# Run all migrations at once",
+            "lineNumber": 47
+          },
+          {
+            "text": "./db/migrations/run_all_migrations.sh your_production_db_name",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "# Or manually:",
+            "lineNumber": 50
+          },
+          {
+            "text": "psql -d your_production_db_name -f db/migrations/000_initial_schema.sql",
+            "lineNumber": 51
+          },
+          {
+            "text": "psql -d your_production_db_name -f db/migrations/001_create_conversation_index.sql",
+            "lineNumber": 52
+          },
+          {
+            "text": "psql -d your_production_db_name -c \"CREATE EXTENSION IF NOT EXISTS vector;\"",
+            "lineNumber": 53
+          },
+          {
+            "text": "psql -d your_production_db_name -f db/migrations/002_daas_embeddings.sql",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "### 4. Load Project Knowledge",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 59
+          },
+          {
+            "text": "psql -d your_production_db_name -f db/seeds/project_knowledge_seed.sql",
+            "lineNumber": 60
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "### 5. Import ChatGPT Conversations",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 65
+          },
+          {
+            "text": "# Test import first (dry-run)",
+            "lineNumber": 66
+          },
+          {
+            "text": "python3 import_chatgpt_from_zip.py chatgpt_export.zip --dry-run",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "# Actually import",
+            "lineNumber": 69
+          },
+          {
+            "text": "python3 import_chatgpt_from_zip.py chatgpt_export.zip",
+            "lineNumber": 70
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "### 6. Index Conversations (Optional)",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "If you have Ollama running and want to organize conversations:",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 77
+          },
+          {
+            "text": "# Verify table structure",
+            "lineNumber": 78
+          },
+          {
+            "text": "python3 setup_prod_conversation_index.py --verify",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "# Index all conversations",
+            "lineNumber": 81
+          },
+          {
+            "text": "python3 setup_prod_conversation_index.py --index-all",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### 7. Generate Embeddings for DAAS",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 87
+          },
+          {
+            "text": "# Generate embeddings for DAAS dream entries",
+            "lineNumber": 88
+          },
+          {
+            "text": "python3 backfill_embeddings.py",
+            "lineNumber": 89
+          }
+        ]
+      },
+      "score": 0.24642179906368256
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/config.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 32,
+            "column": 51
+          }
+        },
+        "contents": "# brain_core/config.py\nimport logging\nimport os\nfrom dotenv import load_dotenv\nfrom openai import OpenAI\n\nlogger = logging.getLogger(__name__)\n\n# Load .env.local first (development), then .env (production/default)\n# .env.local takes precedence if it exists\nif os.path.exists(\".env.local\"):\n    load_dotenv(\".env.local\")\nload_dotenv()\n\n# Environment mode: \"development\" or \"production\"\n# Validate and normalize the mode value\ndef _normalize_env_mode(raw_value: str) -&gt; str:\n    \"\"\"Normalize and validate environment mode value.\"\"\"\n    normalized = raw_value.lower()\n    if normalized in (\"development\", \"dev\"):\n        return \"development\"\n    elif normalized in (\"production\", \"prod\"):\n        return \"production\"\n    else:\n        # Invalid mode - default to production with error message\n        logger.error(\n            f\"Invalid ENV_MODE value: '{raw_value}'. \"\n            \"Must be 'development' or 'production'. Defaulting to 'production'.\"\n        )\n        return \"production\"\n\n\n_raw_env_mode = os.getenv(\"ENV_MODE\", \"production\")",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# brain_core/config.py",
+            "lineNumber": 1
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 2
+          },
+          {
+            "text": "import os",
+            "lineNumber": 3
+          },
+          {
+            "text": "from dotenv import load_dotenv",
+            "lineNumber": 4
+          },
+          {
+            "text": "from openai import OpenAI",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "# Load .env.local first (development), then .env (production/default)",
+            "lineNumber": 9
+          },
+          {
+            "text": "# .env.local takes precedence if it exists",
+            "lineNumber": 10
+          },
+          {
+            "text": "if os.path.exists(\".env.local\"):",
+            "lineNumber": 11
+          },
+          {
+            "text": "    load_dotenv(\".env.local\")",
+            "lineNumber": 12
+          },
+          {
+            "text": "load_dotenv()",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "# Environment mode: \"development\" or \"production\"",
+            "lineNumber": 15
+          },
+          {
+            "text": "# Validate and normalize the mode value",
+            "lineNumber": 16
+          },
+          {
+            "text": "def _normalize_env_mode(raw_value: str) -&gt; str:",
+            "lineNumber": 17,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Normalize and validate environment mode value.\"\"\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "    normalized = raw_value.lower()",
+            "lineNumber": 19
+          },
+          {
+            "text": "    if normalized in (\"development\", \"dev\"):",
+            "lineNumber": 20
+          },
+          {
+            "text": "        return \"development\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "    elif normalized in (\"production\", \"prod\"):",
+            "lineNumber": 22
+          },
+          {
+            "text": "        return \"production\"",
+            "lineNumber": 23
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 24
+          },
+          {
+            "text": "        # Invalid mode - default to production with error message",
+            "lineNumber": 25
+          },
+          {
+            "text": "        logger.error(",
+            "lineNumber": 26
+          },
+          {
+            "text": "            f\"Invalid ENV_MODE value: '{raw_value}'. \"",
+            "lineNumber": 27
+          },
+          {
+            "text": "            \"Must be 'development' or 'production'. Defaulting to 'production'.\"",
+            "lineNumber": 28
+          },
+          {
+            "text": "        )",
+            "lineNumber": 29
+          },
+          {
+            "text": "        return \"production\"",
+            "lineNumber": 30,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "_raw_env_mode = os.getenv(\"ENV_MODE\", \"production\")",
+            "lineNumber": 33
+          }
+        ]
+      },
+      "score": 0.24026340246200562
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./requirements.txt",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 8
+          }
+        },
+        "contents": "psycopg2-binary\npython-dotenv\nopenai\nrequests\ngitpython\npython-frontmatter\nmarkdown",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "psycopg2-binary",
+            "lineNumber": 1
+          },
+          {
+            "text": "python-dotenv",
+            "lineNumber": 2
+          },
+          {
+            "text": "openai",
+            "lineNumber": 3
+          },
+          {
+            "text": "requests",
+            "lineNumber": 4
+          },
+          {
+            "text": "gitpython",
+            "lineNumber": 5
+          },
+          {
+            "text": "python-frontmatter",
+            "lineNumber": 6
+          },
+          {
+            "text": "markdown",
+            "lineNumber": 7
+          }
+        ]
+      },
+      "score": 0.2355547994375229
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/003-seamless-setup/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 87
+          }
+        },
+        "contents": "# Quickstart: Seamless Environment Setup\n\n**Feature**: 003-seamless-setup  \n**Date**: 2025-01-27\n\n## Overview\n\nThis feature provides single-command setup procedures for both development and production environments. New developers can get started in under 15 minutes, and production deployments are automated and reliable.\n\n## Development Setup (New Developer)\n\n### Prerequisites\n\n- Python 3.10+ installed\n- PostgreSQL server running locally\n- Git repository cloned\n\n### Step 1: Install Python Dependencies\n\n&#96;&#96;&#96;bash\npip install -r requirements.txt\n&#96;&#96;&#96;\n\n### Step 2: Configure Environment\n\nCreate a &#96;.env.local&#96; file in the project root:\n\n&#96;&#96;&#96;bash\n# Development environment\nENV_MODE=development\nDEV_DB_NAME=project_chat_dev\nDEV_DB_HOST=127.0.0.1\nDEV_DB_PORT=5432\nDEV_DB_USER=your_postgres_user\nDEV_DB_PASSWORD=your_postgres_password\n&#96;&#96;&#96;\n\n### Step 3: Run Setup Script\n\n&#96;&#96;&#96;bash\npython3 setup_dev.py\n&#96;&#96;&#96;\n\nThis will:\n- Initialize the development database using &#96;init_db.py&#96; (reads from &#96;.env.local&#96;)\n- Apply all migrations in order (000 → 001 → 002)\n- Load development seed data (in order):\n  - Shared project knowledge (FF, DAAS, THN, 700B) - loaded first as foundational data for RAG\n  - Sample conversations (3 conversations across different projects) - loaded after project knowledge\n\n### Step 4: Verify Setup\n\n&#96;&#96;&#96;bash\n# Start the chat CLI\npython3 chat_cli.py\n\n# Or verify database directly\npsql -d project_chat_dev -c \"SELECT COUNT(*) FROM conversations;\"\n&#96;&#96;&#96;\n\nExpected output: At least 3 conversations from seed data.\n\n## Production Setup\n\n### Prerequisites\n\n- Python 3.10+ installed\n- PostgreSQL server running and accessible\n- Production database already created\n- Production environment variables configured\n\n### Step 1: Configure Environment\n\nSet production environment variables (via &#96;.env&#96; file or environment):\n\n&#96;&#96;&#96;bash\nENV_MODE=production\nDB_NAME=ongoing_projects\nDB_HOST=your_production_host\nDB_PORT=5432\nDB_USER=your_production_user\nDB_PASSWORD=your_production_password\n&#96;&#96;&#96;\n\n### Step 2: Initialize Production Database\n\n&#96;&#96;&#96;bash",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: Seamless Environment Setup",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature**: 003-seamless-setup  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "This feature provides single-command setup procedures for both development and production environments. New developers can get started in under 15 minutes, and production deployments are automated and reliable.",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "## Development Setup (New Developer)",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "### Prerequisites",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "- Python 3.10+ installed",
+            "lineNumber": 14
+          },
+          {
+            "text": "- PostgreSQL server running locally",
+            "lineNumber": 15
+          },
+          {
+            "text": "- Git repository cloned",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "### Step 1: Install Python Dependencies",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 20
+          },
+          {
+            "text": "pip install -r requirements.txt",
+            "lineNumber": 21
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "### Step 2: Configure Environment",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "Create a &#96;.env.local&#96; file in the project root:",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 28
+          },
+          {
+            "text": "# Development environment",
+            "lineNumber": 29
+          },
+          {
+            "text": "ENV_MODE=development",
+            "lineNumber": 30
+          },
+          {
+            "text": "DEV_DB_NAME=project_chat_dev",
+            "lineNumber": 31
+          },
+          {
+            "text": "DEV_DB_HOST=127.0.0.1",
+            "lineNumber": 32
+          },
+          {
+            "text": "DEV_DB_PORT=5432",
+            "lineNumber": 33
+          },
+          {
+            "text": "DEV_DB_USER=your_postgres_user",
+            "lineNumber": 34
+          },
+          {
+            "text": "DEV_DB_PASSWORD=your_postgres_password",
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "### Step 3: Run Setup Script",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 40
+          },
+          {
+            "text": "python3 setup_dev.py",
+            "lineNumber": 41
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "This will:",
+            "lineNumber": 44
+          },
+          {
+            "text": "- Initialize the development database using &#96;init_db.py&#96; (reads from &#96;.env.local&#96;)",
+            "lineNumber": 45
+          },
+          {
+            "text": "- Apply all migrations in order (000 → 001 → 002)",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Load development seed data (in order):",
+            "lineNumber": 47
+          },
+          {
+            "text": "  - Shared project knowledge (FF, DAAS, THN, 700B) - loaded first as foundational data for RAG",
+            "lineNumber": 48
+          },
+          {
+            "text": "  - Sample conversations (3 conversations across different projects) - loaded after project knowledge",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "### Step 4: Verify Setup",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 53
+          },
+          {
+            "text": "# Start the chat CLI",
+            "lineNumber": 54
+          },
+          {
+            "text": "python3 chat_cli.py",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "# Or verify database directly",
+            "lineNumber": 57
+          },
+          {
+            "text": "psql -d project_chat_dev -c \"SELECT COUNT(*) FROM conversations;\"",
+            "lineNumber": 58
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "Expected output: At least 3 conversations from seed data.",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "## Production Setup",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "### Prerequisites",
+            "lineNumber": 65
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "- Python 3.10+ installed",
+            "lineNumber": 67
+          },
+          {
+            "text": "- PostgreSQL server running and accessible",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Production database already created",
+            "lineNumber": 69
+          },
+          {
+            "text": "- Production environment variables configured",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "### Step 1: Configure Environment",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "Set production environment variables (via &#96;.env&#96; file or environment):",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 76
+          },
+          {
+            "text": "ENV_MODE=production",
+            "lineNumber": 77
+          },
+          {
+            "text": "DB_NAME=ongoing_projects",
+            "lineNumber": 78
+          },
+          {
+            "text": "DB_HOST=your_production_host",
+            "lineNumber": 79
+          },
+          {
+            "text": "DB_PORT=5432",
+            "lineNumber": 80
+          },
+          {
+            "text": "DB_USER=your_production_user",
+            "lineNumber": 81
+          },
+          {
+            "text": "DB_PASSWORD=your_production_password",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### Step 2: Initialize Production Database",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 87
+          }
+        ]
+      },
+      "score": 0.2326716035604477
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/thn_code_indexer.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 70
+          }
+        },
+        "contents": "\"\"\"\nTHN code indexing module for parsing and embedding repository code.\n\nProvides functions to:\n- Clone and manage THN repositories\n- Parse code files (Python, shell, config)\n- Generate embeddings for code chunks\n- Store chunks and embeddings in code_index table\n\"\"\"\nimport ast\nimport json\nimport logging\nimport os\nimport re\nimport uuid\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\ntry:\n    import git\nexcept ImportError:\n    git = None\n    logging.warning(\"GitPython not installed. Repository cloning will not work.\")\n\nfrom psycopg2.extras import Json\n\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n# Repository metadata storage path\nMETADATA_DIR = Path(\"../repos/.metadata\")\n\n\ndef clone_repository(repository_url: str, repository_name: str, target_dir: str = \"../repos\") -&gt; str:\n    \"\"\"\n    Clone a Git repository into the repos directory.\n    \n    Args:\n        repository_url: Git repository URL (SSH or HTTPS)\n        repository_name: Name identifier for the repository\n        target_dir: Base directory for repositories (default: \"repos\")\n    \n    Returns:\n        Local path to cloned repository\n    \n    Raises:\n        ValueError: If repository_url is invalid or git is not available\n        Exception: If clone fails (network, authentication, etc.)\n    \"\"\"\n    if git is None:\n        raise ValueError(\"GitPython not installed. Install with: pip install gitpython\")\n    \n    target_path = Path(target_dir) / repository_name\n    \n    if target_path.exists():\n        logger.warning(f\"Repository {repository_name} already exists at {target_path}\")\n        return str(target_path)\n    \n    try:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "THN code indexing module for parsing and embedding repository code.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides functions to:",
+            "lineNumber": 4
+          },
+          {
+            "text": "- Clone and manage THN repositories",
+            "lineNumber": 5
+          },
+          {
+            "text": "- Parse code files (Python, shell, config)",
+            "lineNumber": 6
+          },
+          {
+            "text": "- Generate embeddings for code chunks",
+            "lineNumber": 7
+          },
+          {
+            "text": "- Store chunks and embeddings in code_index table",
+            "lineNumber": 8
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 9
+          },
+          {
+            "text": "import ast",
+            "lineNumber": 10
+          },
+          {
+            "text": "import json",
+            "lineNumber": 11
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 12
+          },
+          {
+            "text": "import os",
+            "lineNumber": 13
+          },
+          {
+            "text": "import re",
+            "lineNumber": 14
+          },
+          {
+            "text": "import uuid",
+            "lineNumber": 15
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 16
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "try:",
+            "lineNumber": 19
+          },
+          {
+            "text": "    import git",
+            "lineNumber": 20
+          },
+          {
+            "text": "except ImportError:",
+            "lineNumber": 21
+          },
+          {
+            "text": "    git = None",
+            "lineNumber": 22
+          },
+          {
+            "text": "    logging.warning(\"GitPython not installed. Repository cloning will not work.\")",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "from psycopg2.extras import Json",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 27
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "# Repository metadata storage path",
+            "lineNumber": 32
+          },
+          {
+            "text": "METADATA_DIR = Path(\"../repos/.metadata\")",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "def clone_repository(repository_url: str, repository_name: str, target_dir: str = \"../repos\") -&gt; str:",
+            "lineNumber": 36,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 37
+          },
+          {
+            "text": "    Clone a Git repository into the repos directory.",
+            "lineNumber": 38
+          },
+          {
+            "text": "    ",
+            "lineNumber": 39
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 40
+          },
+          {
+            "text": "        repository_url: Git repository URL (SSH or HTTPS)",
+            "lineNumber": 41
+          },
+          {
+            "text": "        repository_name: Name identifier for the repository",
+            "lineNumber": 42
+          },
+          {
+            "text": "        target_dir: Base directory for repositories (default: \"repos\")",
+            "lineNumber": 43
+          },
+          {
+            "text": "    ",
+            "lineNumber": 44
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 45
+          },
+          {
+            "text": "        Local path to cloned repository",
+            "lineNumber": 46
+          },
+          {
+            "text": "    ",
+            "lineNumber": 47
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 48
+          },
+          {
+            "text": "        ValueError: If repository_url is invalid or git is not available",
+            "lineNumber": 49
+          },
+          {
+            "text": "        Exception: If clone fails (network, authentication, etc.)",
+            "lineNumber": 50
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 51
+          },
+          {
+            "text": "    if git is None:",
+            "lineNumber": 52
+          },
+          {
+            "text": "        raise ValueError(\"GitPython not installed. Install with: pip install gitpython\")",
+            "lineNumber": 53
+          },
+          {
+            "text": "    ",
+            "lineNumber": 54
+          },
+          {
+            "text": "    target_path = Path(target_dir) / repository_name",
+            "lineNumber": 55
+          },
+          {
+            "text": "    ",
+            "lineNumber": 56
+          },
+          {
+            "text": "    if target_path.exists():",
+            "lineNumber": 57
+          },
+          {
+            "text": "        logger.warning(f\"Repository {repository_name} already exists at {target_path}\")",
+            "lineNumber": 58
+          },
+          {
+            "text": "        return str(target_path)",
+            "lineNumber": 59
+          },
+          {
+            "text": "    ",
+            "lineNumber": 60
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 61
+          }
+        ]
+      },
+      "score": 0.23029300570487976
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./.cursor/commands/speckit.implement.md",
+        "range": {
+          "startPosition": {
+            "line": 45
+          },
+          "endPosition": {
+            "line": 83
+          }
+        },
+        "contents": "     - Automatically proceed to step 3\n\n3. Load and analyze the implementation context:\n   - **REQUIRED**: Read tasks.md for the complete task list and execution plan\n   - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure\n   - **IF EXISTS**: Read data-model.md for entities and relationships\n   - **IF EXISTS**: Read contracts/ for API specifications and test requirements\n   - **IF EXISTS**: Read research.md for technical decisions and constraints\n   - **IF EXISTS**: Read quickstart.md for integration scenarios\n\n4. **Project Setup Verification**:\n   - **REQUIRED**: Create/verify ignore files based on actual project setup:\n\n   **Detection &amp; Creation Logic**:\n   - Check if the following command succeeds to determine if the repository is a git repo (create/verify .gitignore if so):\n\n     &#96;&#96;&#96;sh\n     git rev-parse --git-dir 2&gt;/dev/null\n     &#96;&#96;&#96;\n\n   - Check if Dockerfile* exists or Docker in plan.md → create/verify .dockerignore\n   - Check if .eslintrc* exists → create/verify .eslintignore\n   - Check if eslint.config.* exists → ensure the config's &#96;ignores&#96; entries cover required patterns\n   - Check if .prettierrc* exists → create/verify .prettierignore\n   - Check if .npmrc or package.json exists → create/verify .npmignore (if publishing)\n   - Check if terraform files (*.tf) exist → create/verify .terraformignore\n   - Check if .helmignore needed (helm charts present) → create/verify .helmignore\n\n   **If ignore file already exists**: Verify it contains essential patterns, append missing critical patterns only\n   **If ignore file missing**: Create with full pattern set for detected technology\n\n   **Common Patterns by Technology** (from plan.md tech stack):\n   - **Node.js/JavaScript/TypeScript**: &#96;node_modules/&#96;, &#96;dist/&#96;, &#96;build/&#96;, &#96;*.log&#96;, &#96;.env*&#96;\n   - **Python**: &#96;__pycache__/&#96;, &#96;*.pyc&#96;, &#96;.venv/&#96;, &#96;venv/&#96;, &#96;dist/&#96;, &#96;*.egg-info/&#96;\n   - **Java**: &#96;target/&#96;, &#96;*.class&#96;, &#96;*.jar&#96;, &#96;.gradle/&#96;, &#96;build/&#96;\n   - **C#/.NET**: &#96;bin/&#96;, &#96;obj/&#96;, &#96;*.user&#96;, &#96;*.suo&#96;, &#96;packages/&#96;\n   - **Go**: &#96;*.exe&#96;, &#96;*.test&#96;, &#96;vendor/&#96;, &#96;*.out&#96;\n   - **Ruby**: &#96;.bundle/&#96;, &#96;log/&#96;, &#96;tmp/&#96;, &#96;*.gem&#96;, &#96;vendor/bundle/&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "     - Automatically proceed to step 3",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "3. Load and analyze the implementation context:",
+            "lineNumber": 48
+          },
+          {
+            "text": "   - **REQUIRED**: Read tasks.md for the complete task list and execution plan",
+            "lineNumber": 49
+          },
+          {
+            "text": "   - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure",
+            "lineNumber": 50
+          },
+          {
+            "text": "   - **IF EXISTS**: Read data-model.md for entities and relationships",
+            "lineNumber": 51
+          },
+          {
+            "text": "   - **IF EXISTS**: Read contracts/ for API specifications and test requirements",
+            "lineNumber": 52
+          },
+          {
+            "text": "   - **IF EXISTS**: Read research.md for technical decisions and constraints",
+            "lineNumber": 53
+          },
+          {
+            "text": "   - **IF EXISTS**: Read quickstart.md for integration scenarios",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "4. **Project Setup Verification**:",
+            "lineNumber": 56
+          },
+          {
+            "text": "   - **REQUIRED**: Create/verify ignore files based on actual project setup:",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "   **Detection &amp; Creation Logic**:",
+            "lineNumber": 59
+          },
+          {
+            "text": "   - Check if the following command succeeds to determine if the repository is a git repo (create/verify .gitignore if so):",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "     &#96;&#96;&#96;sh",
+            "lineNumber": 62
+          },
+          {
+            "text": "     git rev-parse --git-dir 2&gt;/dev/null",
+            "lineNumber": 63
+          },
+          {
+            "text": "     &#96;&#96;&#96;",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "   - Check if Dockerfile* exists or Docker in plan.md → create/verify .dockerignore",
+            "lineNumber": 66
+          },
+          {
+            "text": "   - Check if .eslintrc* exists → create/verify .eslintignore",
+            "lineNumber": 67
+          },
+          {
+            "text": "   - Check if eslint.config.* exists → ensure the config's &#96;ignores&#96; entries cover required patterns",
+            "lineNumber": 68
+          },
+          {
+            "text": "   - Check if .prettierrc* exists → create/verify .prettierignore",
+            "lineNumber": 69
+          },
+          {
+            "text": "   - Check if .npmrc or package.json exists → create/verify .npmignore (if publishing)",
+            "lineNumber": 70
+          },
+          {
+            "text": "   - Check if terraform files (*.tf) exist → create/verify .terraformignore",
+            "lineNumber": 71
+          },
+          {
+            "text": "   - Check if .helmignore needed (helm charts present) → create/verify .helmignore",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "   **If ignore file already exists**: Verify it contains essential patterns, append missing critical patterns only",
+            "lineNumber": 74
+          },
+          {
+            "text": "   **If ignore file missing**: Create with full pattern set for detected technology",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "   **Common Patterns by Technology** (from plan.md tech stack):",
+            "lineNumber": 77
+          },
+          {
+            "text": "   - **Node.js/JavaScript/TypeScript**: &#96;node_modules/&#96;, &#96;dist/&#96;, &#96;build/&#96;, &#96;*.log&#96;, &#96;.env*&#96;",
+            "lineNumber": 78
+          },
+          {
+            "text": "   - **Python**: &#96;__pycache__/&#96;, &#96;*.pyc&#96;, &#96;.venv/&#96;, &#96;venv/&#96;, &#96;dist/&#96;, &#96;*.egg-info/&#96;",
+            "lineNumber": 79
+          },
+          {
+            "text": "   - **Java**: &#96;target/&#96;, &#96;*.class&#96;, &#96;*.jar&#96;, &#96;.gradle/&#96;, &#96;build/&#96;",
+            "lineNumber": 80
+          },
+          {
+            "text": "   - **C#/.NET**: &#96;bin/&#96;, &#96;obj/&#96;, &#96;*.user&#96;, &#96;*.suo&#96;, &#96;packages/&#96;",
+            "lineNumber": 81
+          },
+          {
+            "text": "   - **Go**: &#96;*.exe&#96;, &#96;*.test&#96;, &#96;vendor/&#96;, &#96;*.out&#96;",
+            "lineNumber": 82
+          },
+          {
+            "text": "   - **Ruby**: &#96;.bundle/&#96;, &#96;log/&#96;, &#96;tmp/&#96;, &#96;*.gem&#96;, &#96;vendor/bundle/&#96;",
+            "lineNumber": 83
+          }
+        ]
+      },
+      "score": 0.22219540178775787
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./README.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 50
+          }
+        },
+        "contents": "# Project Chat\n\nA local-first, privacy-focused command-line chat interface for managing and searching project conversations—complete with project tagging, color-coded UI, and local database storage.\nDesigned for home-lab and productivity workflows (e.g. THN, DAAS, FF, 700B, etc.).\n\n---\n\n## Features\n\n- **CLI chat interface** with project tagging and color-coded context\n- **Local conversation storage** (PostgreSQL) for privacy and fast search\n- **Context-aware AI assistant** (OpenAI API or local LLM via Ollama)\n- **Customizable labeling, emoji, and color schemes**\n- **/history and project switching** on-the-fly\n- **Streaming responses** - ChatGPT-like progressive text display\n- **Automatic conversation saving** - Conversations are automatically saved:\n  - When switching between projects (saves current conversation before switch)\n  - When exiting the program (saves before exit)\n- **Mandatory conversation titles** - All conversations require a title for better organization\n- **Project-aware conversation separation** - Switching projects creates a new conversation to keep topics separate\n- **DAAS Semantic Dream Retrieval** - Advanced dream analysis with:\n  - Single-dream queries by quoted title (e.g., &#96;\"My Flying Dream\"&#96;)\n  - Pattern-based semantic search across dreams using vector embeddings\n  - Automatic embedding generation for dream entries\n- **Conversation indexing** - Automatic organization and summarization of conversations\n- **Conversation audit tool** - CLI tool for managing and cleaning up conversation history (edit titles/projects, delete conversations)\n- **Shell alias support** for quick startup\n\n---\n\n## Quick Start\n\n1. **Clone the repo**\n\n   &#96;&#96;&#96;bash\n   git clone https://github.com/yourname/project_chat.git\n   cd project_chat\n   &#96;&#96;&#96;\n\n2. **Install dependencies**\n\n   Assuming Python 3.10+ is used:\n\n   &#96;&#96;&#96;bash\n   pip install -r requirements.txt\n   &#96;&#96;&#96;\n\n3. **Install PostgreSQL pgvector extension** (required for DAAS semantic search)\n\n   The DAAS project uses vector embeddings for semantic dream retrieval. You need to install the pgvector extension:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Project Chat",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "A local-first, privacy-focused command-line chat interface for managing and searching project conversations—complete with project tagging, color-coded UI, and local database storage.",
+            "lineNumber": 3
+          },
+          {
+            "text": "Designed for home-lab and productivity workflows (e.g. THN, DAAS, FF, 700B, etc.).",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "---",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "## Features",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "- **CLI chat interface** with project tagging and color-coded context",
+            "lineNumber": 10
+          },
+          {
+            "text": "- **Local conversation storage** (PostgreSQL) for privacy and fast search",
+            "lineNumber": 11
+          },
+          {
+            "text": "- **Context-aware AI assistant** (OpenAI API or local LLM via Ollama)",
+            "lineNumber": 12
+          },
+          {
+            "text": "- **Customizable labeling, emoji, and color schemes**",
+            "lineNumber": 13
+          },
+          {
+            "text": "- **/history and project switching** on-the-fly",
+            "lineNumber": 14
+          },
+          {
+            "text": "- **Streaming responses** - ChatGPT-like progressive text display",
+            "lineNumber": 15
+          },
+          {
+            "text": "- **Automatic conversation saving** - Conversations are automatically saved:",
+            "lineNumber": 16
+          },
+          {
+            "text": "  - When switching between projects (saves current conversation before switch)",
+            "lineNumber": 17
+          },
+          {
+            "text": "  - When exiting the program (saves before exit)",
+            "lineNumber": 18
+          },
+          {
+            "text": "- **Mandatory conversation titles** - All conversations require a title for better organization",
+            "lineNumber": 19
+          },
+          {
+            "text": "- **Project-aware conversation separation** - Switching projects creates a new conversation to keep topics separate",
+            "lineNumber": 20
+          },
+          {
+            "text": "- **DAAS Semantic Dream Retrieval** - Advanced dream analysis with:",
+            "lineNumber": 21
+          },
+          {
+            "text": "  - Single-dream queries by quoted title (e.g., &#96;\"My Flying Dream\"&#96;)",
+            "lineNumber": 22
+          },
+          {
+            "text": "  - Pattern-based semantic search across dreams using vector embeddings",
+            "lineNumber": 23
+          },
+          {
+            "text": "  - Automatic embedding generation for dream entries",
+            "lineNumber": 24
+          },
+          {
+            "text": "- **Conversation indexing** - Automatic organization and summarization of conversations",
+            "lineNumber": 25
+          },
+          {
+            "text": "- **Conversation audit tool** - CLI tool for managing and cleaning up conversation history (edit titles/projects, delete conversations)",
+            "lineNumber": 26
+          },
+          {
+            "text": "- **Shell alias support** for quick startup",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "---",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "## Quick Start",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "1. **Clone the repo**",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 35
+          },
+          {
+            "text": "   git clone https://github.com/yourname/project_chat.git",
+            "lineNumber": 36
+          },
+          {
+            "text": "   cd project_chat",
+            "lineNumber": 37
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "2. **Install dependencies**",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "   Assuming Python 3.10+ is used:",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 44
+          },
+          {
+            "text": "   pip install -r requirements.txt",
+            "lineNumber": 45
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "3. **Install PostgreSQL pgvector extension** (required for DAAS semantic search)",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "   The DAAS project uses vector embeddings for semantic dream retrieval. You need to install the pgvector extension:",
+            "lineNumber": 50
+          }
+        ]
+      },
+      "score": 0.21903455257415771
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {
+            "line": 187
+          },
+          "endPosition": {
+            "line": 243
+          }
+        },
+        "contents": "2. Verify MCP server is running (not restarting each time)\n3. Check repository size (should handle 1000+ notes)\n4. Check network latency to GitLab\n\n## Advanced Configuration\n\n### Multiple MCP Servers\n\nYou can configure multiple MCP servers:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]\n    },\n    \"code-index\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.code_server\"],\n      \"env\": {\n        \"REPO_PATH\": \"../repos\"\n      },\n      \"projects\": [\"THN\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### Project-Specific Servers\n\nAssociate MCP servers with specific projects:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"projects\": [\"DAAS\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\nWhen in DAAS project, meditation notes are automatically included in context.\n\n## Next Steps\n\n1. Test MCP integration with meditation server\n2. Configure additional MCP servers as needed\n3. Use &#96;/mcp&#96; commands to explore available resources\n4. Let automatic context integration enhance conversations",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "2. Verify MCP server is running (not restarting each time)",
+            "lineNumber": 188
+          },
+          {
+            "text": "3. Check repository size (should handle 1000+ notes)",
+            "lineNumber": 189
+          },
+          {
+            "text": "4. Check network latency to GitLab",
+            "lineNumber": 190
+          },
+          {
+            "lineNumber": 191
+          },
+          {
+            "text": "## Advanced Configuration",
+            "lineNumber": 192
+          },
+          {
+            "lineNumber": 193
+          },
+          {
+            "text": "### Multiple MCP Servers",
+            "lineNumber": 194
+          },
+          {
+            "lineNumber": 195
+          },
+          {
+            "text": "You can configure multiple MCP servers:",
+            "lineNumber": 196
+          },
+          {
+            "lineNumber": 197
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 198
+          },
+          {
+            "text": "{",
+            "lineNumber": 199
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 200
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 201
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 202
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 203
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 204
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 205
+          },
+          {
+            "text": "      },",
+            "lineNumber": 206
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 207
+          },
+          {
+            "text": "    },",
+            "lineNumber": 208
+          },
+          {
+            "text": "    \"code-index\": {",
+            "lineNumber": 209
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 210
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.code_server\"],",
+            "lineNumber": 211
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 212
+          },
+          {
+            "text": "        \"REPO_PATH\": \"../repos\"",
+            "lineNumber": 213
+          },
+          {
+            "text": "      },",
+            "lineNumber": 214
+          },
+          {
+            "text": "      \"projects\": [\"THN\"]",
+            "lineNumber": 215
+          },
+          {
+            "text": "    }",
+            "lineNumber": 216
+          },
+          {
+            "text": "  }",
+            "lineNumber": 217
+          },
+          {
+            "text": "}",
+            "lineNumber": 218
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 219
+          },
+          {
+            "lineNumber": 220
+          },
+          {
+            "text": "### Project-Specific Servers",
+            "lineNumber": 221
+          },
+          {
+            "lineNumber": 222
+          },
+          {
+            "text": "Associate MCP servers with specific projects:",
+            "lineNumber": 223
+          },
+          {
+            "lineNumber": 224
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 225
+          },
+          {
+            "text": "{",
+            "lineNumber": 226
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 227
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 228
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 229
+          },
+          {
+            "text": "    }",
+            "lineNumber": 230
+          },
+          {
+            "text": "  }",
+            "lineNumber": 231
+          },
+          {
+            "text": "}",
+            "lineNumber": 232
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 233
+          },
+          {
+            "lineNumber": 234
+          },
+          {
+            "text": "When in DAAS project, meditation notes are automatically included in context.",
+            "lineNumber": 235
+          },
+          {
+            "lineNumber": 236
+          },
+          {
+            "text": "## Next Steps",
+            "lineNumber": 237
+          },
+          {
+            "lineNumber": 238
+          },
+          {
+            "text": "1. Test MCP integration with meditation server",
+            "lineNumber": 239
+          },
+          {
+            "text": "2. Configure additional MCP servers as needed",
+            "lineNumber": 240
+          },
+          {
+            "text": "3. Use &#96;/mcp&#96; commands to explore available resources",
+            "lineNumber": 241
+          },
+          {
+            "text": "4. Let automatic context integration enhance conversations",
+            "lineNumber": 242
+          }
+        ]
+      },
+      "score": 0.217576801776886
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 55,
+            "column": 6
+          }
+        },
+        "contents": "# MCP Server Integration\n\n## Overview\n\nIntegrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.\n\n## Requirements\n\n### 1. MCP Client Infrastructure\n\n- Implement MCP client that communicates via JSON-RPC over stdio\n- Support stdio transport for MCP server communication\n- Handle MCP protocol initialization and capabilities negotiation\n- Support resource discovery and retrieval\n- Support tool invocation\n\n### 2. Configuration Management\n\n- Add MCP server configuration to project_chat config system\n- Support multiple MCP servers (extensible for future servers)\n- Configuration via environment variables or config file\n- Support for server-specific environment variables\n\n### 3. Meditation MCP Server Integration\n\n- Configure meditation MCP server connection\n- Access meditation notes as resources during conversations\n- Support search_notes tool for finding relevant meditation content\n- Support sync_repository tool for updating note index\n- Integrate meditation notes into conversation context when relevant\n\n### 4. Context Integration\n\n- Automatically include relevant MCP resources in conversation context\n- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)\n- Graceful degradation if MCP server unavailable\n- Cache MCP resources to reduce latency\n\n### 5. CLI Integration\n\n- Add &#96;/mcp&#96; command for manual MCP operations\n- Support listing available MCP resources\n- Support searching MCP resources\n- Support manual sync operations\n\n## Technical Details\n\n### MCP Server Configuration\n\nThe meditation MCP server should be configured as:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Integrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. MCP Client Infrastructure",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Implement MCP client that communicates via JSON-RPC over stdio",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Support stdio transport for MCP server communication",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Handle MCP protocol initialization and capabilities negotiation",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Support resource discovery and retrieval",
+            "lineNumber": 14
+          },
+          {
+            "text": "- Support tool invocation",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "### 2. Configuration Management",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "- Add MCP server configuration to project_chat config system",
+            "lineNumber": 19
+          },
+          {
+            "text": "- Support multiple MCP servers (extensible for future servers)",
+            "lineNumber": 20
+          },
+          {
+            "text": "- Configuration via environment variables or config file",
+            "lineNumber": 21
+          },
+          {
+            "text": "- Support for server-specific environment variables",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "### 3. Meditation MCP Server Integration",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "- Configure meditation MCP server connection",
+            "lineNumber": 26
+          },
+          {
+            "text": "- Access meditation notes as resources during conversations",
+            "lineNumber": 27
+          },
+          {
+            "text": "- Support search_notes tool for finding relevant meditation content",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Support sync_repository tool for updating note index",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Integrate meditation notes into conversation context when relevant",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "### 4. Context Integration",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "- Automatically include relevant MCP resources in conversation context",
+            "lineNumber": 34
+          },
+          {
+            "text": "- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)",
+            "lineNumber": 35
+          },
+          {
+            "text": "- Graceful degradation if MCP server unavailable",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Cache MCP resources to reduce latency",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "### 5. CLI Integration",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- Add &#96;/mcp&#96; command for manual MCP operations",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Support listing available MCP resources",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Support searching MCP resources",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Support manual sync operations",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "## Technical Details",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "The meditation MCP server should be configured as:",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      ",
+            "lineNumber": 56
+          }
+        ]
+      },
+      "score": 0.2123710960149765
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./.gitignore",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 24,
+            "column": 7
+          }
+        },
+        "contents": "imports/*\n.venv\n.env\n.env.local\n\n# Python cache\n__pycache__/\n*.pyc\n\n# Local DB backups or exports\n*.dump\n*.bak\n*.zip\n\n# Database backup files (keep directory, ignore backup files)\ndb/backups/*.dump\ndb/backups/*.metadata.json\n\n# Temporary files\n.DS_Store\n\n# Snyk Security Extension - AI Rules (auto-generated)\n.cursor/rules/snyk_rules.mdc\n\nrepos/*",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "imports/*",
+            "lineNumber": 1
+          },
+          {
+            "text": ".venv",
+            "lineNumber": 2
+          },
+          {
+            "text": ".env",
+            "lineNumber": 3
+          },
+          {
+            "text": ".env.local",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "# Python cache",
+            "lineNumber": 6
+          },
+          {
+            "text": "__pycache__/",
+            "lineNumber": 7
+          },
+          {
+            "text": "*.pyc",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "# Local DB backups or exports",
+            "lineNumber": 10
+          },
+          {
+            "text": "*.dump",
+            "lineNumber": 11
+          },
+          {
+            "text": "*.bak",
+            "lineNumber": 12
+          },
+          {
+            "text": "*.zip",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "# Database backup files (keep directory, ignore backup files)",
+            "lineNumber": 15
+          },
+          {
+            "text": "db/backups/*.dump",
+            "lineNumber": 16
+          },
+          {
+            "text": "db/backups/*.metadata.json",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "# Temporary files",
+            "lineNumber": 19
+          },
+          {
+            "text": ".DS_Store",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "# Snyk Security Extension - AI Rules (auto-generated)",
+            "lineNumber": 22
+          },
+          {
+            "text": ".cursor/rules/snyk_rules.mdc",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "repos/*",
+            "lineNumber": 25
+          }
+        ]
+      },
+      "score": 0.20982010662555695
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 50
+          },
+          "endPosition": {
+            "line": 95
+          }
+        },
+        "contents": "&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      }\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### MCP Protocol Support\n\n- JSON-RPC 2.0 over stdio\n- Protocol version: 2024-11-05\n- Resources: list and read operations\n- Tools: call operations\n- Error handling with appropriate JSON-RPC error codes\n\n### Integration Points\n\n1. **Context Building**: MCP resources can be included in conversation context\n2. **Tool Invocation**: MCP tools can be called during conversations\n3. **Resource Access**: MCP resources can be read and included in responses\n4. **Project Association**: MCP servers can be associated with specific projects\n\n## Use Cases\n\n1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes\n2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;\n3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;\n4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;\n\n## Constraints\n\n- Must not break existing functionality\n- Must handle MCP server failures gracefully\n- Must support async/background operations for MCP calls\n- Must cache MCP resources to avoid excessive calls\n- Must respect rate limits if MCP server has them",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 56
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 57
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 58
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 59
+          },
+          {
+            "text": "      }",
+            "lineNumber": 60
+          },
+          {
+            "text": "    }",
+            "lineNumber": 61
+          },
+          {
+            "text": "  }",
+            "lineNumber": 62
+          },
+          {
+            "text": "}",
+            "lineNumber": 63
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### MCP Protocol Support",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "- JSON-RPC 2.0 over stdio",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Protocol version: 2024-11-05",
+            "lineNumber": 69
+          },
+          {
+            "text": "- Resources: list and read operations",
+            "lineNumber": 70
+          },
+          {
+            "text": "- Tools: call operations",
+            "lineNumber": 71
+          },
+          {
+            "text": "- Error handling with appropriate JSON-RPC error codes",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "### Integration Points",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "1. **Context Building**: MCP resources can be included in conversation context",
+            "lineNumber": 76
+          },
+          {
+            "text": "2. **Tool Invocation**: MCP tools can be called during conversations",
+            "lineNumber": 77
+          },
+          {
+            "text": "3. **Resource Access**: MCP resources can be read and included in responses",
+            "lineNumber": 78
+          },
+          {
+            "text": "4. **Project Association**: MCP servers can be associated with specific projects",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "## Use Cases",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes",
+            "lineNumber": 83
+          },
+          {
+            "text": "2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;",
+            "lineNumber": 84
+          },
+          {
+            "text": "3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;",
+            "lineNumber": 85
+          },
+          {
+            "text": "4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "## Constraints",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "- Must not break existing functionality",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Must handle MCP server failures gracefully",
+            "lineNumber": 91
+          },
+          {
+            "text": "- Must support async/background operations for MCP calls",
+            "lineNumber": 92
+          },
+          {
+            "text": "- Must cache MCP resources to avoid excessive calls",
+            "lineNumber": 93
+          },
+          {
+            "text": "- Must respect rate limits if MCP server has them",
+            "lineNumber": 94
+          }
+        ]
+      },
+      "score": 0.20899750292301178
+    }
+  ]
+}
+```
+Status: **completed**
 
 
 </details>
