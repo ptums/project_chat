@@ -481,7 +481,8 @@ def index_session(
             rows = cur.fetchall()
     
     if not rows:
-        raise ValueError(f"No messages found for conversation {session_id}")
+        logger.info(f"No messages found for conversation {session_id} - skipping indexing")
+        return None
     
     # Build transcript
     messages = [{"role": role, "content": content} for role, content in rows]

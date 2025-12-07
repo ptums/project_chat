@@ -10010,32 +10010,149 @@ Lines added: 1, lines removed: 1
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="search_replace">
-<details>
-<summary>Tool use: **search_replace**</summary>
+<tool-use data-tool-type="write" data-tool-name="search_replace">
 
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
 
-Parameters:
+**Chunk 1**
+Lines added: 22, lines removed: undefined
 
-```json
-{
-  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py"
-}
+```diff
+@@ -127,4 +127,26 @@
+              
+              logger.info(f"MCP server '{self.server_name}' process started (PID: {self.process.pid})")
++             
++             # Give the server a moment to initialize (it may need to sync repository, build index, etc.)
++             # Wait a bit and check if process is still alive
++             time.sleep(0.5)
++             if self.process.poll() is not None:
++                 # Process exited during startup
++                 stderr_output = ""
++                 try:
++                     if self.process.stderr:
++                         stderr_output = self.process.stderr.read(4096)
++                 except Exception:
++                     pass
++                 
++                 error_msg = f"MCP server '{self.server_name}' exited during startup (exit code: {self.process.returncode})"
++                 if stderr_output:
++                     error_msg += f"\nStderr: {stderr_output.strip()}"
++                 logger.error(error_msg)
++                 self.last_error = (time.time(), error_msg)
++                 self.process = None
++                 self.retry_count += 1
++                 return False
++             
+              return True
+              
 ```
-Additional data:
-
-```json
-{
-  "codeblockId": "fe9ff07b-2143-49da-b5b0-c85ef8485416"
-}
-```
-User decision: **accepted**
-
-Status: **loading**
-
 
 </details>
+
 </tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 5, lines removed: undefined
+
+```diff
+@@ -367,4 +367,9 @@
+                  return False
+          
++         # Give the server additional time to complete any startup operations
++         # (e.g., repository sync, index building) before sending initialize
++         logger.debug(f"Waiting for MCP server '{self.server_name}' to be ready...")
++         time.sleep(1.0)  # Additional wait for server initialization
++         
+          params = {
+              "protocolVersion": MCP_PROTOCOL_VERSION,
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **search_replace** • Edit file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/mcp_client.py</summary>
+
+**Chunk 1**
+Lines added: 12, lines removed: 1
+
+```diff
+@@ -293,8 +293,19 @@
+              
+              if reader_thread.is_alive():
+-                 logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}'")
++                 logger.warning(f"Timeout waiting for response from MCP server '{self.server_name}' (timeout: {timeout}s)")
+                  # Check if process is still alive
+                  if not self._is_process_alive():
+                      logger.error(f"MCP server '{self.server_name}' process died during request")
++                     # Try to read stderr for diagnostics
++                     if self.process and self.process.stderr:
++                         try:
++                             stderr_content = self.process.stderr.read(4096)
++                             if stderr_content:
++                                 logger.error(f"Stderr output: {stderr_content}")
++                         except Exception:
++                             pass
++                 else:
++                     # Process is alive but not responding - might be stuck
++                     logger.warning(f"MCP server '{self.server_name}' process is alive but not responding")
+                  return None
+              
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `brain_core/mcp_client.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Made these changes to handle the server's startup sync:
+
+1. **Increased INITIALIZE_TIMEOUT** from 2s to 10s to allow for repository sync and index building
+2. **Added startup delay** — wait 0.5s after starting the process, then 1.0s before sending the initialize request
+3. **Improved error diagnostics** — better stderr capture and logging when timeouts occur
+
+The server performs an initial sync on startup (parsing 62 notes, building index), which can take a few seconds. The previous 2s timeout was too short.
+
+Try running `/mcp status` again. The server should have enough time to:
+1. Start the process
+2. Complete the repository sync
+3. Build the index
+4. Be ready to accept the initialize request
+
+If it still times out, the improved error messages will show stderr output to help diagnose the issue. The server should respond within the 10-second window.
 
 ---
 
