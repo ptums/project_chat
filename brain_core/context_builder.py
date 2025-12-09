@@ -8,6 +8,7 @@ For DAAS project, uses custom retrieval rules:
 """
 import logging
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 from .db import get_conn
@@ -15,6 +16,137 @@ from .memory import fetch_project_knowledge
 
 logger = logging.getLogger(__name__)
 
+# Module-level cache for base system prompt
+_base_system_prompt_cache: Optional[str] = None
+
+
+def load_base_system_prompt() -> str:
+    """
+    Load the base system prompt from brain_core/base_system_prompt.txt.
+    
+    Uses module-level caching to avoid repeated file I/O. If the file is missing
+    or unreadable, falls back to a minimal default prompt and logs a warning.
+    
+    Returns:
+        Base system prompt as string
+        
+    Raises:
+        None - always returns a valid string (either from file or fallback)
+    """
+    global _base_system_prompt_cache
+    
+    # Return cached value if available
+    if _base_system_prompt_cache is not None:
+        return _base_system_prompt_cache
+    
+    # Determine file path relative to this module
+    module_dir = Path(__file__).parent
+    prompt_file = module_dir / "base_system_prompt.txt"
+    
+    try:
+        # Load prompt from file
+        prompt_content = prompt_file.read_text(encoding='utf-8').strip()
+        
+        if prompt_content:
+            # Cache and return
+            _base_system_prompt_cache = prompt_content
+            logger.info(f"Loaded base system prompt from {prompt_file}")
+            return _base_system_prompt_cache
+        else:
+            # File exists but is empty
+            logger.warning(f"Base system prompt file {prompt_file} is empty, using fallback")
+            return _get_fallback_prompt()
+            
+    except FileNotFoundError:
+        logger.warning(f"Base system prompt file {prompt_file} not found, using fallback")
+        return _get_fallback_prompt()
+    except IOError as e:
+        logger.warning(f"Could not read base system prompt file {prompt_file}: {e}, using fallback")
+        return _get_fallback_prompt()
+    except Exception as e:
+        logger.error(f"Unexpected error loading base system prompt: {e}, using fallback")
+        return _get_fallback_prompt()
+
+
+def _get_fallback_prompt() -> str:
+    """
+    Get a minimal fallback system prompt when the file cannot be loaded.
+    
+    Returns:
+        Minimal fallback prompt string
+    """
+    return (
+        "You are a helpful, accurate, and context-aware AI assistant. "
+        "Your goal is to support the user by providing clear, concise, and reliable responses. "
+        "You should always be conversational, honest, direct, and thoughtful."
+    )
+
+
+def build_project_system_prompt(project: str) -> str:
+    """
+    Build the complete system prompt for a given project.
+    
+    Loads the base system prompt and appends project-specific extension if
+    the project is not "general". The extension uses the overview from
+    project_knowledge table.
+    
+    Args:
+        project: Project tag (THN, DAAS, FF, 700B, or "general")
+        
+    Returns:
+        Composed system prompt string (base + project extension if applicable)
+    """
+    base_prompt = load_base_system_prompt()
+    
+    # Only add project extension if project is not "general"
+    if project and project.lower() != "general":
+        # Get project overview from project_knowledge table
+        project_overview = _get_project_overview(project)
+        
+        if project_overview:
+            # Append project-specific extension
+            project_extension = (
+                f"\n\nIn this current conversation is tagged as project {project.upper()}. "
+                f"Here's a general overview of the project {project.upper()}: {project_overview}"
+            )
+            logger.debug(f"Added project extension for {project.upper()}")
+            return base_prompt + project_extension
+        else:
+            logger.debug(f"No project overview found for {project.upper()}, using base prompt only")
+    
+    # Return base prompt only for general or if overview not found
+    return base_prompt
+
+
+def _get_project_overview(project: str) -> Optional[str]:
+    """
+    Get the overview summary for a project from project_knowledge table.
+    
+    Args:
+        project: Project tag (THN, DAAS, FF, 700B)
+        
+    Returns:
+        Overview summary string, or None if not found
+    """
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT summary
+                    FROM project_knowledge
+                    WHERE project = %s AND key = 'overview'
+                    LIMIT 1
+                    """,
+                    (project.upper(),),
+                )
+                row = cur.fetchone()
+                if row:
+                    return row[0]
+    except Exception as e:
+        logger.debug(f"Could not fetch project overview for {project}: {e}")
+    
+    return None
 
 
 def extract_json_from_text(text: str) -> str:
@@ -222,10 +354,7 @@ def build_project_context(
                 if context_parts:
                     context = "\n\n".join(context_parts)
                     context += "\n\nUse this information naturally in our conversation. Recall and reference "
-                    context += "relevant details from these notes and dreams as we discuss topics. "
-                    context += "Be conversational, honest, direct, and thoughtful. Think deeply, "
-                    context += "inspire new ideas, reason logically, and show empathy. "
-                    context += "If something is unclear, say so. Keep responses natural and engaging."
+                    context += "relevant details from these notes and dreams as we discuss topics."
                     
                     logger.debug(f"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams")
                     return {
@@ -302,11 +431,8 @@ def build_project_context(
                 context = "\n\n".join(context_parts)
                 context += "\n\nUse this information naturally in our conversation. Recall and reference "
                 context += "relevant code and notes as we discuss topics. Focus on actual code when "
-                context += "providing technical guidance. Be conversational, honest, direct, and thoughtful. "
-                context += "Think deeply about technical concepts, inspire new ideas, reason logically, "
-                context += "and show empathy for the learning process. Use actual code examples, explain "
-                context += "how code works, identify patterns, and suggest practical exercises. "
-                context += "Keep responses natural, educational, and engaging - not robotic or overly formal."
+                context += "providing technical guidance. Use actual code examples, explain "
+                context += "how code works, identify patterns, and suggest practical exercises."
                 
                 logger.debug(f"Built THN context with code retrieval")
                 return {
@@ -465,10 +591,7 @@ def build_project_context(
     # Add instruction text about how to use this information
     context += "\n\nUse this information in our conversation. This is a natural dialogue - "
     context += "recall and reference relevant information from these notes and prior conversations "
-    context += "as topics come up. Be conversational, honest, direct, and thoughtful. "
-    context += "Think deeply, inspire new ideas, reason logically, and show empathy. "
-    context += "If something is unclear, say so. If you think I made a mistake, share your perspective. "
-    context += "Keep responses natural and engaging, not robotic or overly formal."
+    context += "as topics come up."
     
     logger.debug(f"Built project context for {project} with {len(top_memories)} memories and {len(knowledge_summaries)} knowledge entries")
     

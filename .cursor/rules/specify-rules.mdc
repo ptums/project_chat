@@ -24,6 +24,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-24
 - N/A (MCP resources cached in memory, no persistent storage required) (010-mcp-server-integration)
 - Python 3.11+ + GitPython (for committing/pushing notes), python-frontmatter (for markdown frontmatter), existing MCP server infrastructure (001-project-organized-notes)
 - Local filesystem (GitLab repository clone), in-memory index (NoteIndex) (001-project-organized-notes)
+- Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv, openai, requests) (011-improve-context-building)
+- File system (for base system prompt file), PostgreSQL (for project_knowledge table) (011-improve-context-building)
 
 - Python 3.10+ + Flask, psycopg2, python-dotenv, openai (Python SDK) (001-dev-environment)
 
@@ -43,9 +45,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.10+: Follow standard conventions
 
 ## Recent Changes
+- 011-improve-context-building: Added Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv, openai, requests)
 - 001-project-organized-notes: Added Python 3.11+ + GitPython (for committing/pushing notes), python-frontmatter (for markdown frontmatter), existing MCP server infrastructure
 - 010-mcp-server-integration: Added Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv, openai, requests, gitpython), subprocess (stdlib), json (stdlib), asyncio (stdlib) or threading for async operations
-- 009-refactor-script-organization: Added Python 3.10+ (existing project standard) + Existing project dependencies (no new dependencies required)
 
 
 <!-- MANUAL ADDITIONS START -->

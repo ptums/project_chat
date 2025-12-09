@@ -5,7 +5,7 @@ import logging
 from .config import client, OPENAI_MODEL, MOCK_MODE
 from .db import save_message, load_conversation_messages
 from .memory import get_project_context
-from .context_builder import build_project_context
+from .context_builder import build_project_context, build_project_system_prompt
 from .usage_tracker import (
     get_session_tracker,
     calculate_cost,
@@ -53,7 +53,16 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
     # Build messages for OpenAI
     messages = []
 
-    # Add indexed context if available (from conversation_index)
+    # Message order: system prompt → RAG context → note reads → history
+    
+    # 1. System prompt (base + project extension) - FIRST
+    system_prompt = build_project_system_prompt(project)
+    logger.debug(f"System prompt for project {project} (length: {len(system_prompt)} chars)")
+    # Uncomment the line below to see the full system prompt in logs:
+    # logger.info(f"System prompt content:\n{system_prompt}")
+    messages.append({"role": "system", "content": system_prompt})
+
+    # 2. Project context from RAG (if available) - SECOND
     if indexed_context and indexed_context.get("context"):
         context_msg = (
             f"We're working on project {project} together. "
@@ -68,25 +77,9 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
             )
         messages.append({"role": "system", "content": context_msg})
 
-    # Add existing project context (from memory.py)
+    # Add existing project context (from memory.py) - also RAG context
     if project_context:
         messages.append({"role": "system", "content": project_context})
-
-    base_system = (
-        "You are a conversational assistant helping the user with their personal projects "
-        "(THN, DAAS, FF, 700B, or general). This is a conversation between two people - "
-        "be natural, engaging, and thoughtful.\n\n"
-        "Important conversational qualities:\n"
-        "- Be honest and direct - say what you think, don't hedge unnecessarily\n"
-        "- Think deeply about questions before responding - consider multiple angles and implications\n"
-        "- Inspire new ideas - help the user see connections and possibilities they might not have considered\n"
-        "- Think logically - use clear reasoning and explain your thought process when helpful\n"
-        "- Show empathy - understand the user's perspective and respond with care and understanding\n\n"
-        "When referencing information from meditation notes or prior conversations, do so naturally "
-        "as part of the conversation flow. Recall and reference relevant information when it's "
-        "helpful, and maintain awareness of context throughout the conversation."
-    )
-    messages.append({"role": "system", "content": base_system})
     
     # Add note reads first (most recent first) so they're fresh in context
     if note_reads:
