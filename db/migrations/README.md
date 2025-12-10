@@ -9,6 +9,7 @@ Run migrations in numerical order:
 1. **000_initial_schema.sql** - Creates base tables: `conversations`, `messages`, `project_knowledge` (001-dev-environment)
 2. **001_create_conversation_index.sql** - Creates the `conversation_index` table (001-ollama-organizer feature)
 3. **002_daas_embeddings.sql** - Adds `embedding` column and vector index for DAAS semantic retrieval (002-daas-semantic-retrieval)
+4. **004_project_knowledge_simplify.sql** - Simplifies `project_knowledge` table to `overview` and `rules` columns (012-expand-project-extension)
 
 ## Quick Start
 
@@ -42,6 +43,9 @@ psql -d your_production_database -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
 # 4. Add embedding column and vector index
 psql -d your_production_database -f db/migrations/002_daas_embeddings.sql
+
+# 5. Simplify project_knowledge table structure (overview + rules)
+psql -d your_production_database -f db/migrations/004_project_knowledge_simplify.sql
 ```
 
 ### Production Setup (Existing Database)
@@ -57,6 +61,9 @@ psql -d your_production_database -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
 # 3. Add embedding column and vector index
 psql -d your_production_database -f db/migrations/002_daas_embeddings.sql
+
+# 4. Simplify project_knowledge table structure (overview + rules)
+psql -d your_production_database -f db/migrations/004_project_knowledge_simplify.sql
 ```
 
 ### Adding Embeddings to Existing conversation_index
@@ -84,6 +91,9 @@ psql -d your_production_database -f db/migrations/002_daas_embeddings_rollback.s
 
 # Rollback conversation_index (WARNING: deletes all index data!)
 psql -d your_production_database -f db/migrations/001_create_conversation_index_rollback.sql
+
+# Rollback project_knowledge simplification (restores old structure)
+psql -d your_production_database -f db/migrations/004_project_knowledge_simplify_rollback.sql
 ```
 
 ## Verification
@@ -95,17 +105,16 @@ After running migrations, verify the setup:
 SELECT table_name FROM information_schema.tables WHERE table_name = 'conversation_index';
 
 -- Check embedding column exists
-SELECT column_name, data_type 
-FROM information_schema.columns 
+SELECT column_name, data_type
+FROM information_schema.columns
 WHERE table_name = 'conversation_index' AND column_name = 'embedding';
 
 -- Check vector extension is installed
 SELECT * FROM pg_extension WHERE extname = 'vector';
 
 -- Check vector index exists
-SELECT indexname, indexdef 
-FROM pg_indexes 
-WHERE tablename = 'conversation_index' 
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'conversation_index'
   AND indexname = 'idx_conversation_index_embedding';
 ```
-
