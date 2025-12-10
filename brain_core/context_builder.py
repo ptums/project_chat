@@ -89,22 +89,15 @@ def build_project_system_prompt(project: str, user_message: str = "") -> str:
     
     Loads the base system prompt and appends project-specific extension if
     the project is not "general". The extension includes overview and rules
-    from project_knowledge table. For THN and DAAS projects, also includes RAG context
-    when conditions are met:
-    - THN: RAG included when user_message is provided (typically on first message only)
-    - DAAS: RAG included when user_message indicates analysis/interpretation intent
-    THN RAG includes History & Context and Relevant Code Snippets.
-    DAAS RAG includes Related Dreams for Analysis.
+    from project_knowledge table. Does NOT include RAG context automatically.
+    Use /rag command to manually include RAG context when needed.
     
     Args:
         project: Project tag (THN, DAAS, FF, 700B, or "general")
-        user_message: Optional user message for THN/DAAS RAG context generation.
-                     For THN: RAG included if message provided (typically first message).
-                     For DAAS: RAG included if message indicates analysis intent.
-                     If empty or no intent detected, RAG context is not included (saves tokens).
+        user_message: Ignored (kept for backward compatibility)
         
     Returns:
-        Composed system prompt string (base + project extension + RAG if applicable)
+        Composed system prompt string (base + project extension, NO RAG)
     """
     base_prompt = load_base_system_prompt()
     
@@ -133,43 +126,6 @@ def build_project_system_prompt(project: str, user_message: str = "") -> str:
                     logger.debug(f"Added {len(parsed_rules)} rules for {project.upper()}")
             
             project_extension = "".join(project_extension_parts)
-            
-            # For THN project, append RAG context to system prompt
-            if project.upper() == "THN" and user_message:
-                try:
-                    rag_result = build_thn_rag_context(user_message)
-                    if rag_result.get("context"):
-                        project_extension += "\n\n---\n\n"
-                        project_extension += rag_result["context"]
-                        if rag_result.get("notes"):
-                            project_extension += "\n\nKey sources:\n" + "\n".join(
-                                f"- {note}" for note in rag_result["notes"]
-                            )
-                        logger.info(f"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)")
-                    else:
-                        logger.warning("THN RAG context generation returned empty context")
-                except Exception as e:
-                    logger.warning(f"Failed to add THN RAG context to system prompt: {e}", exc_info=True)
-            
-            # For DAAS project, append RAG context to system prompt only when analysis is requested
-            if project.upper() == "DAAS" and user_message:
-                if should_include_daas_rag(user_message):
-                    try:
-                        rag_result = build_daas_rag_context(user_message, top_k=3)
-                        if rag_result.get("context"):
-                            project_extension += "\n\n---\n\n"
-                            project_extension += rag_result["context"]
-                            if rag_result.get("notes"):
-                                project_extension += "\n\nKey sources:\n" + "\n".join(
-                                    f"- {note}" for note in rag_result["notes"]
-                                )
-                            logger.info(f"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)")
-                        else:
-                            logger.warning("DAAS RAG context generation returned empty context")
-                    except Exception as e:
-                        logger.warning(f"Failed to add DAAS RAG context to system prompt: {e}", exc_info=True)
-                else:
-                    logger.debug(f"DAAS RAG skipped - message does not indicate analysis request: {user_message[:100]}")
             
             logger.debug(f"Added project extension for {project.upper()}")
             return base_prompt + project_extension
@@ -694,62 +650,6 @@ def build_thn_rag_context(user_message: str) -> Dict[str, Any]:
         "context": context,
         "notes": notes
     }
-
-
-def should_include_daas_rag(user_message: str) -> bool:
-    """
-    Determine if DAAS RAG should be included based on user message intent.
-    
-    Returns True if the message indicates the user wants dream analysis,
-    interpretation, or deep conversation about a dream. Returns False for
-    casual questions or non-analysis requests.
-    
-    Args:
-        user_message: User's message text
-        
-    Returns:
-        True if RAG should be included, False otherwise
-    """
-    if not user_message or not user_message.strip():
-        return False
-    
-    message_lower = user_message.lower()
-    
-    # Keywords that indicate analysis/interpretation intent
-    analysis_keywords = [
-        'analyze', 'analysis', 'interpret', 'interpretation', 'meaning',
-        'symbol', 'symbolism', 'symbolic', 'what does this mean',
-        'what does it mean', 'what does that mean', 'help me understand',
-        'explain this dream', 'explain the dream', 'tell me about this dream',
-        'tell me about the dream', 'discuss this dream', 'discuss the dream',
-        'deep conversation', 'deep dive', 'explore this dream', 'explore the dream',
-        'unpack', 'break down', 'what is the significance', 'what significance',
-        'what themes', 'what patterns', 'parallel', 'connection', 'relate',
-        'compare', 'similar', 'recurring', 'recurrence'
-    ]
-    
-    # Check for analysis keywords
-    for keyword in analysis_keywords:
-        if keyword in message_lower:
-            return True
-    
-    # Check for question patterns that suggest analysis
-    analysis_patterns = [
-        'what does', 'what is', 'what are', 'what were', 'what do',
-        'how does', 'how is', 'how are', 'why does', 'why is',
-        'can you analyze', 'can you interpret', 'can you explain',
-        'could you analyze', 'could you interpret', 'could you explain',
-        'would you analyze', 'would you interpret', 'would you explain'
-    ]
-    
-    for pattern in analysis_patterns:
-        if pattern in message_lower:
-            # Additional check: ensure it's about a dream or dream-related
-            if 'dream' in message_lower or len(message_lower) > 50:
-                # Longer messages are more likely to be analysis requests
-                return True
-    
-    return False
 
 
 def build_daas_rag_context(user_message: str, top_k: int = 3) -> Dict[str, Any]:

@@ -566,9 +566,9 @@ def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):
         subarg = " ".join(arg.split()[1:]) if len(arg.split()) > 1 else ""
         return current_project, True, f"{subcmd}|{subarg}", "memory"
 
-    # MCP commands
-    if cmd == "mcp":
-        return current_project, True, arg, "mcp"
+    # Notes commands (renamed from /mcp)
+    if cmd == "notes":
+        return current_project, True, arg, "notes"
 
     # unknown command
     return current_project, True, f"Unknown command: {cmd}", None
@@ -666,7 +666,7 @@ def print_help_line():
         "/readfile <file>",
         "/save",
         "/memory [list|view <id>|refresh <id>|delete <id>]",
-        "/mcp [status|list [server]|read <uri>|search <server> <query>|sync [server]]",
+        "/notes [status|list [project]|read <uri|title|slug> [project]|search <query> [limit]|sync|save [title]]",
         "/exit",
     ]
     print(color_text("Commands:", "grey"))
@@ -675,20 +675,20 @@ def print_help_line():
     print()
 
 
-def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):
+def _handle_notes_command(args: str, current_project: str, conversation_id: uuid.UUID = None):
     """
-    Handle /mcp command with subcommands.
+    Handle /notes command with subcommands.
     
     Commands:
-    - /mcp status - Show status of MCP server
-    - /mcp list [project] - List all meditation note resources (optionally filtered by project)
-    - /mcp read <uri|title|slug> [project] - Read a specific note by URI, title, or slug
-    - /mcp search <query> [limit] - Search notes
-    - /mcp sync - Sync repository from GitLab
-    - /mcp save [title] - Save current conversation as a note
+    - /notes status - Show status of notes server
+    - /notes list [project] - List all notes (optionally filtered by project)
+    - /notes read <uri|title|slug> [project] - Read a specific note by URI, title, or slug
+    - /notes search <query> [limit] - Search notes
+    - /notes sync - Sync repository from GitLab
+    - /notes save [title] - Save current conversation as a note
     """
     if not args:
-        print(color_text("Usage: /mcp [status|list [project]|read <uri|title|slug> [project]|search <query> [limit]|sync|save [title]]", "orange"))
+        print(color_text("Usage: /notes [status|list [project]|read <uri|title|slug> [project]|search <query> [limit]|sync|save [title]]", "orange"))
         return
     
     parts = args.split()
@@ -703,7 +703,7 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
             # Show server status
             status = api.get_status()
             
-            print(color_text("MCP Server Status:", "cyan", bold=True))
+            print(color_text("Notes Server Status:", "cyan", bold=True))
             print(color_text("=" * 60, "grey"))
             print(f"Repository URL: {status['repository_url']}")
             print(f"Repository Path: {status['repository_path']}")
@@ -723,16 +723,16 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
                 # List resources for specific project
                 resources = api.list_resources_by_project(project_filter)
                 if not resources:
-                    print(color_text(f"No resources found for project '{project_filter}'. Try running /mcp sync first.", "grey"))
+                    print(color_text(f"No resources found for project '{project_filter}'. Try running /notes sync first.", "grey"))
                     return
-                print(color_text(f"MCP Resources for {project_filter} ({len(resources)} total):", "cyan", bold=True))
+                print(color_text(f"Notes for {project_filter} ({len(resources)} total):", "cyan", bold=True))
             else:
                 # List all resources
                 resources = api.list_resources()
                 if not resources:
-                    print(color_text("No resources found. Try running /mcp sync first.", "grey"))
+                    print(color_text("No resources found. Try running /notes sync first.", "grey"))
                     return
-                print(color_text(f"MCP Resources ({len(resources)} total):", "cyan", bold=True))
+                print(color_text(f"Notes ({len(resources)} total):", "cyan", bold=True))
             
             for resource in resources:
                 uri = resource.get("uri", "")
@@ -741,7 +741,7 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
         
         elif subcmd == "read":
             if len(parts) < 2:
-                print(color_text("Usage: /mcp read <uri|title|slug> [project]", "orange"))
+                print(color_text("Usage: /notes read <uri|title|slug> [project]", "orange"))
                 return
             
             if not conversation_id:
@@ -795,7 +795,7 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
         
         elif subcmd == "search":
             if len(parts) < 2:
-                print(color_text("Usage: /mcp search <query> [limit]", "orange"))
+                print(color_text("Usage: /notes search <query> [limit]", "orange"))
                 return
             
             query = parts[1]
@@ -897,17 +897,17 @@ def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.U
                     
             except Exception as e:
                 print(color_text(f"Error saving conversation: {e}", "orange"))
-                logger.exception("Error in /mcp save command")
+                logger.exception("Error in /notes save command")
         
         else:
-            print(color_text(f"Unknown MCP command: {subcmd}", "orange"))
-            print(color_text("Usage: /mcp [status|list|read <uri>|search <query> [limit]|sync|save [title]]", "grey"))
+            print(color_text(f"Unknown notes command: {subcmd}", "orange"))
+            print(color_text("Usage: /notes [status|list|read <uri>|search <query> [limit]|sync|save [title]]", "grey"))
     
     except ImportError as e:
-        print(color_text(f"MCP integration not available: {e}", "orange"))
+        print(color_text(f"Notes integration not available: {e}", "orange"))
     except Exception as e:
-        print(color_text(f"Error executing MCP command: {e}", "orange"))
-        logger.exception("MCP command error")
+        print(color_text(f"Error executing notes command: {e}", "orange"))
+        logger.exception("Notes command error")
 
 
 def show_project_memory_blurb(project: str, limit: int = 3):
@@ -1445,8 +1445,8 @@ def main():
                 finally:
                     if reply:
                         print()  # Ensure newline after response
-            elif special == "mcp":
-                _handle_mcp_command(msg, current_project, conv_id)
+            elif special == "notes":
+                _handle_notes_command(msg, current_project, conv_id)
             elif special == "readfile":
                 # Read file and process content
                 filepath = msg.strip()

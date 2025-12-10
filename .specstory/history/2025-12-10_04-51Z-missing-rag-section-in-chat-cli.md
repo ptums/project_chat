@@ -54431,7 +54431,18882 @@ Additional data:
   "codeblockId": "41779a3e-57a2-49b4-9857-de35bf13fa5b"
 }
 ```
-Status: **loading**
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -c \"from brain_core.context_builder import should_include_daas_rag; test_cases = ['analyze this dream', 'what does this mean', 'help me understand the symbolism', 'hi', 'what time is it', 'can you interpret this dream', 'tell me about this dream', 'what is the meaning']; print('Testing should_include_daas_rag:'); [print(f'{tc}: {should_include_daas_rag(tc)}') for tc in test_cases]\"",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-c"
+          },
+          {
+            "type": "string",
+            "value": "\"from brain_core.context_builder import should_include_daas_rag; test_cases = ['analyze this dream', 'what does this mean', 'help me understand the symbolism', 'hi', 'what time is it', 'can you interpret this dream', 'tell me about this dream', 'what is the meaning']; print('Testing should_include_daas_rag:'); [print(f'{tc}: {should_include_daas_rag(tc)}') for tc in test_cases]\""
+          }
+        ],
+        "fullText": "python3.10 -c \"from brain_core.context_builder import should_include_daas_rag; test_cases = ['analyze this dream', 'what does this mean', 'help me understand the symbolism', 'hi', 'what time is it', 'can you interpret this dream', 'tell me about this dream', 'what is the meaning']; print('Testing should_include_daas_rag:'); [print(f'{tc}: {should_include_daas_rag(tc)}') for tc in test_cases]\""
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "Testing should_include_daas_rag:\nanalyze this dream: True\nwhat does this mean: True\nhelp me understand the symbolism: True\nhi: False\nwhat time is it: False\ncan you interpret this dream: True\ntell me about this dream: True\nwhat is the meaning: True\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+The detection function works. Verifying imports and creating a summary:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "^from|^import",
+  "path": "brain_core/chat.py",
+  "contextAfter": 0,
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "^from|^import",
+    "path": "brain_core/chat.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "brain_core/chat.py",
+              "matches": [
+                {
+                  "lineNumber": 2,
+                  "content": "import datetime"
+                },
+                {
+                  "lineNumber": 3,
+                  "content": "import logging"
+                },
+                {
+                  "lineNumber": 5,
+                  "content": "from .config import client, OPENAI_MODEL, MOCK_MODE"
+                },
+                {
+                  "lineNumber": 6,
+                  "content": "from .db import save_message, load_conversation_messages"
+                },
+                {
+                  "lineNumber": 7,
+                  "content": "from .memory import get_project_context"
+                },
+                {
+                  "lineNumber": 8,
+                  "content": "from .context_builder import build_project_context, build_project_system_prompt"
+                },
+                {
+                  "lineNumber": 9,
+                  "content": "from .usage_tracker import ("
+                }
+              ]
+            }
+          ],
+          "totalLines": 7,
+          "totalMatchedLines": 7
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py",
+  "offset": 1,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# brain_core/chat.py\nimport datetime\nimport logging\n\nfrom .config import client, OPENAI_MODEL, MOCK_MODE\nfrom .db import save_message, load_conversation_messages\nfrom .memory import get_project_context\nfrom .context_builder import build_project_context, build_project_system_prompt\nfrom .usage_tracker import (\n    get_session_tracker,\n    calculate_cost,\n    get_model_pricing,\n)\n\nlogger = logging.getLogger(__name__)\n\n\ndef normalize_project_tag(tag: str) -&gt; str:\n    tag = (tag or \"\").strip().upper()\n    if tag in (\"THN\", \"DAAS\", \"FF\", \"700B\"):\n        return tag\n    return \"general\"\n\n\ndef chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+  "totalLinesInFile": 306
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Moving the import to the top level for consistency:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "1e3c9abd-727d-479c-9af6-696e980da817"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "24ee5298-3db7-430a-abb9-86484b7777d3"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "fbca255c-1316-4ca2-ba41-6eaf5b93915f"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -m py_compile brain_core/chat.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/chat.py"
+          }
+        ],
+        "fullText": "python3.10 -m py_compile brain_core/chat.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+DAAS RAG is now conditional. Summary:
+
+## Changes Made
+
+### 1. **New Detection Function** (`should_include_daas_rag`)
+- Added in `context_builder.py`
+- Detects analysis/interpretation intent from keywords and patterns
+- Triggers on: "analyze", "interpret", "meaning", "symbol", "what does this mean", "help me understand", etc.
+- Skips casual messages like "hi" or "what time is it"
+
+### 2. **Updated System Prompt Logic**
+- DAAS RAG is included only when analysis is requested (any message, not just first)
+- THN RAG remains first-message only
+- Logs indicate when DAAS RAG is included or skipped
+
+### 3. **Optimized RAG Generation**
+- Skips DAAS RAG generation in `build_project_context()` when analysis intent isn't detected
+- Saves tokens by avoiding unnecessary retrieval
+
+## How It Works
+
+**DAAS RAG is included when:**
+- User asks to "analyze this dream"
+- User asks "what does this mean"
+- User requests "interpretation" or "symbolism"
+- User asks "help me understand" or "explain this dream"
+- User wants to "discuss" or "explore" a dream
+
+**DAAS RAG is skipped when:**
+- Casual greetings ("hi", "hello")
+- Simple questions ("what time is it")
+- Non-analysis requests
+
+## Verification
+
+1. **Test with analysis request:**
+   ```
+   "Can you analyze this dream I had about water?"
+   ```
+   - Should see: `INFO: DAAS RAG included in system prompt (analysis requested...)`
+
+2. **Test with casual message:**
+   ```
+   "Hi, how are you?"
+   ```
+   - Should see: `DEBUG: DAAS RAG skipped (no analysis intent detected)`
+
+3. **Check logs:**
+   - Analysis requests trigger RAG generation
+   - Casual messages skip RAG generation
+
+4. **Use `/rag` command:**
+   - Always shows what RAG would contain (bypasses intent detection)
+
+The system now includes DAAS RAG only when you request dream analysis or deep conversation, reducing token usage for casual interactions.
+
+---
+
+_**User (2025-12-10 07:19Z)**_
+
+/speckit.plan There are two updates. I'd like to make
+
+
+
+1 - i like using rag only in specific cases. So you can remove the code that calls rag on the first system prompt within a new convseation. I just want to manually call /rag with in THN and DAAS as needed. 
+
+
+
+2 - Currently /mcp does not sync notes in all directories of the obsidian notebook. I'll be using this command with in every project so I should be able to call /mcp list FF and it'll get notes from the FF directory and /mcp list 700b should get notes from the 700b directory
+
+
+
+3 - I want to rename the command /mcp to /notes in the future i'll have other mcps and this /mcp is going to be confusing. So simply rename the command to /notes and ensure all other functionality is intact.
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Reviewing the current implementation to understand the structure:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/setup-plan.sh --json",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/setup-plan.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/setup-plan.sh --json"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "Copied plan template to /Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md\n{\"FEATURE_SPEC\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/spec.md\",\"IMPL_PLAN\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md\",\"SPECS_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"BRANCH\":\"013-enhance-thn-rag\",\"HAS_GIT\":\"true\"}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How is RAG automatically included in the first system prompt for THN and DAAS projects?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 24
+          },
+          "endPosition": {
+            "line": 300
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n\n    include_daas_rag = project.upper() == \"DAAS\" and should_include_daas_rag(user_text)\n    \n    # Pass user_message to system prompt builder if RAG should be included\n    user_message_for_rag = \"\"\n    if include_thn_rag or include_daas_rag:\n        user_message_for_rag = user_text\n    \n    system_prompt = build_project_system_prompt(project, user_message_for_rag)\n    \n    # Log RAG inclusion status for verification\n    if project.upper() == \"THN\":\n        if include_thn_rag:\n            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")\n    elif project.upper() == \"DAAS\":\n        if include_daas_rag:\n            logger.info(f\"DAAS RAG included in system prompt (analysis requested, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"DAAS RAG skipped (no analysis intent detected)\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})\n\n    # 2. Project context from RAG (if available and not THN/DAAS) - SECOND\n    # THN/DAAS RAG is now included in system prompt above, so skip here\n    if project.upper() not in (\"THN\", \"DAAS\") and indexed_context and indexed_context.get(\"context\"):\n        # RAG content is self-explanatory, no verbose wrapper needed\n        context_msg = indexed_context['context']\n        if indexed_context.get(\"notes\"):\n            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                f\"- {note}\" for note in indexed_context[\"notes\"]\n            )\n        messages.append({\"role\": \"system\", \"content\": context_msg})\n\n    # Add existing project context (from memory.py) - also RAG context\n    if",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 25,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 27,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "    include_daas_rag = project.upper() == \"DAAS\" and should_include_daas_rag(user_text)",
+            "lineNumber": 74
+          },
+          {
+            "text": "    ",
+            "lineNumber": 75
+          },
+          {
+            "text": "    # Pass user_message to system prompt builder if RAG should be included",
+            "lineNumber": 76
+          },
+          {
+            "text": "    user_message_for_rag = \"\"",
+            "lineNumber": 77
+          },
+          {
+            "text": "    if include_thn_rag or include_daas_rag:",
+            "lineNumber": 78
+          },
+          {
+            "text": "        user_message_for_rag = user_text",
+            "lineNumber": 79
+          },
+          {
+            "text": "    ",
+            "lineNumber": 80
+          },
+          {
+            "text": "    system_prompt = build_project_system_prompt(project, user_message_for_rag)",
+            "lineNumber": 81
+          },
+          {
+            "text": "    ",
+            "lineNumber": 82
+          },
+          {
+            "text": "    # Log RAG inclusion status for verification",
+            "lineNumber": 83
+          },
+          {
+            "text": "    if project.upper() == \"THN\":",
+            "lineNumber": 84
+          },
+          {
+            "text": "        if include_thn_rag:",
+            "lineNumber": 85
+          },
+          {
+            "text": "            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")",
+            "lineNumber": 86
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 87
+          },
+          {
+            "text": "            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")",
+            "lineNumber": 88
+          },
+          {
+            "text": "    elif project.upper() == \"DAAS\":",
+            "lineNumber": 89
+          },
+          {
+            "text": "        if include_daas_rag:",
+            "lineNumber": 90
+          },
+          {
+            "text": "            logger.info(f\"DAAS RAG included in system prompt (analysis requested, length: {len(system_prompt)} chars)\")",
+            "lineNumber": 91
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 92
+          },
+          {
+            "text": "            logger.debug(f\"DAAS RAG skipped (no analysis intent detected)\")",
+            "lineNumber": 93
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 94
+          },
+          {
+            "text": "        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")",
+            "lineNumber": 95
+          },
+          {
+            "text": "    ",
+            "lineNumber": 96
+          },
+          {
+            "text": "    # Uncomment the line below to see the full system prompt in logs:",
+            "lineNumber": 97
+          },
+          {
+            "text": "    # logger.info(f\"System prompt content:\\n{system_prompt}\")",
+            "lineNumber": 98
+          },
+          {
+            "text": "    messages.append({\"role\": \"system\", \"content\": system_prompt})",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "    # 2. Project context from RAG (if available and not THN/DAAS) - SECOND",
+            "lineNumber": 101
+          },
+          {
+            "text": "    # THN/DAAS RAG is now included in system prompt above, so skip here",
+            "lineNumber": 102
+          },
+          {
+            "text": "    if project.upper() not in (\"THN\", \"DAAS\") and indexed_context and indexed_context.get(\"context\"):",
+            "lineNumber": 103
+          },
+          {
+            "text": "        # RAG content is self-explanatory, no verbose wrapper needed",
+            "lineNumber": 104
+          },
+          {
+            "text": "        context_msg = indexed_context['context']",
+            "lineNumber": 105
+          },
+          {
+            "text": "        if indexed_context.get(\"notes\"):",
+            "lineNumber": 106
+          },
+          {
+            "text": "            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 107
+          },
+          {
+            "text": "                f\"- {note}\" for note in indexed_context[\"notes\"]",
+            "lineNumber": 108
+          },
+          {
+            "text": "            )",
+            "lineNumber": 109
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": context_msg})",
+            "lineNumber": 110
+          },
+          {
+            "lineNumber": 111
+          },
+          {
+            "text": "    # Add existing project context (from memory.py) - also RAG context",
+            "lineNumber": 112
+          },
+          {
+            "text": "    if",
+            "lineNumber": 113
+          }
+        ]
+      },
+      "score": 0.6092572808265686
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 82,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 179
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n    \"\"\"\n    Build the complete system prompt for a given project.\n    \n    Loads the base system prompt and appends project-specific extension if\n    the project is not \"general\". The extension includes overview and rules\n    from project_knowledge table. For THN and DAAS projects, also includes RAG context\n    when conditions are met:\n    - THN: RAG included when user_message is provided (typically on first message only)\n    - DAAS: RAG included when user_message indicates analysis/interpretation intent\n    THN RAG includes History &amp; Context and Relevant Code Snippets.\n    DAAS RAG includes Related Dreams for Analysis.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, or \"general\")\n        user_message: Optional user message for THN/DAAS RAG context generation.\n                     For THN: RAG included if message provided (typically first message).\n                     For DAAS: RAG included if message indicates analysis intent.\n                     If empty or no intent detected, RAG context is not included (saves tokens).\n        \n    Returns:\n        Composed system prompt string (base + project extension + RAG if applicable)\n    \"\"\"\n    base_prompt = load_base_system_prompt()\n    \n    # Only add project extension if project is not \"general\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 87
+          },
+          {
+            "text": "    Build the complete system prompt for a given project.",
+            "lineNumber": 88
+          },
+          {
+            "text": "    ",
+            "lineNumber": 89
+          },
+          {
+            "text": "    Loads the base system prompt and appends project-specific extension if",
+            "lineNumber": 90
+          },
+          {
+            "text": "    the project is not \"general\". The extension includes overview and rules",
+            "lineNumber": 91
+          },
+          {
+            "text": "    from project_knowledge table. For THN and DAAS projects, also includes RAG context",
+            "lineNumber": 92
+          },
+          {
+            "text": "    when conditions are met:",
+            "lineNumber": 93
+          },
+          {
+            "text": "    - THN: RAG included when user_message is provided (typically on first message only)",
+            "lineNumber": 94
+          },
+          {
+            "text": "    - DAAS: RAG included when user_message indicates analysis/interpretation intent",
+            "lineNumber": 95
+          },
+          {
+            "text": "    THN RAG includes History &amp; Context and Relevant Code Snippets.",
+            "lineNumber": 96
+          },
+          {
+            "text": "    DAAS RAG includes Related Dreams for Analysis.",
+            "lineNumber": 97
+          },
+          {
+            "text": "    ",
+            "lineNumber": 98
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 99
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, or \"general\")",
+            "lineNumber": 100
+          },
+          {
+            "text": "        user_message: Optional user message for THN/DAAS RAG context generation.",
+            "lineNumber": 101
+          },
+          {
+            "text": "                     For THN: RAG included if message provided (typically first message).",
+            "lineNumber": 102
+          },
+          {
+            "text": "                     For DAAS: RAG included if message indicates analysis intent.",
+            "lineNumber": 103
+          },
+          {
+            "text": "                     If empty or no intent detected, RAG context is not included (saves tokens).",
+            "lineNumber": 104
+          },
+          {
+            "text": "        ",
+            "lineNumber": 105
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 106
+          },
+          {
+            "text": "        Composed system prompt string (base + project extension + RAG if applicable)",
+            "lineNumber": 107
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 108
+          },
+          {
+            "text": "    base_prompt = load_base_system_prompt()",
+            "lineNumber": 109
+          },
+          {
+            "text": "    ",
+            "lineNumber": 110
+          },
+          {
+            "text": "    # Only add project extension if project is not \"general\"",
+            "lineNumber": 111
+          }
+        ]
+      },
+      "score": 0.5860929489135742
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 21,
+            "column": 20
+          },
+          "endPosition": {
+            "line": 300
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n    save_message(conversation_id, \"user\", user_text)\n\n    # Load conversation history first to check if this is the first message\n    history = load_conversation_messages(conversation_id, limit=50)\n    \n    # Extract note reads from history (system messages with note_read meta)\n    note_reads = []\n    other_messages = []\n    for msg in history:\n        meta = msg.get(\"meta\", {})\n        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":\n            note_reads.append(msg)\n        else:\n            other_messages.append(msg)\n    \n    # Check if this is the first user message (no user/assistant messages in history)\n    is_first_message = len(other_messages) == 0\n\n    # Build project-aware context from conversation_index (if available)\n    # Skip RAG generation for THN if not first message (THN RAG included in system prompt on first message only)\n    # Skip RAG generation for DAAS if analysis not requested (DAAS RAG included in system prompt when analysis requested)\n    indexed_context = {}\n    skip_rag = False\n    if project.upper() == \"THN\" and not is_first_message:\n        skip_rag = True\n    elif project.upper() == \"DAAS\" and not should_include_daas_rag(user_text):\n        skip_rag = True\n    \n    if not skip_rag:\n        try:\n            indexed_context = build_project_context(project, user_text)\n        except Exception as e:\n            # Log but don't fail - fallback to existing behavior\n            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")\n\n    # Only static + snippet context included now\n    project_context = get_project_context(project, conversation_id, limit_messages=80)\n    \n    # Build messages for OpenAI\n    messages = []\n\n    # Message order: system prompt → RAG context → note reads → history\n    \n    # 1. System prompt (base + project extension + RAG for THN/DAAS) - FIRST\n    # For THN: RAG included on first message only\n    # For DAAS: RAG included when analysis is requested (any message)\n    include_thn_rag = project.upper() == \"THN\" and is_first_message\n    include_daas_rag = project.upper() == \"DAAS\" and should_include_daas_rag(user_text)\n    \n    # Pass user_message to system prompt builder if RAG should be included",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "text": "    save_message(conversation_id, \"user\", user_text)",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "    # Load conversation history first to check if this is the first message",
+            "lineNumber": 29
+          },
+          {
+            "text": "    history = load_conversation_messages(conversation_id, limit=50)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    # Extract note reads from history (system messages with note_read meta)",
+            "lineNumber": 32
+          },
+          {
+            "text": "    note_reads = []",
+            "lineNumber": 33
+          },
+          {
+            "text": "    other_messages = []",
+            "lineNumber": 34
+          },
+          {
+            "text": "    for msg in history:",
+            "lineNumber": 35
+          },
+          {
+            "text": "        meta = msg.get(\"meta\", {})",
+            "lineNumber": 36
+          },
+          {
+            "text": "        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":",
+            "lineNumber": 37
+          },
+          {
+            "text": "            note_reads.append(msg)",
+            "lineNumber": 38
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            other_messages.append(msg)",
+            "lineNumber": 40
+          },
+          {
+            "text": "    ",
+            "lineNumber": 41
+          },
+          {
+            "text": "    # Check if this is the first user message (no user/assistant messages in history)",
+            "lineNumber": 42
+          },
+          {
+            "text": "    is_first_message = len(other_messages) == 0",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "    # Build project-aware context from conversation_index (if available)",
+            "lineNumber": 45
+          },
+          {
+            "text": "    # Skip RAG generation for THN if not first message (THN RAG included in system prompt on first message only)",
+            "lineNumber": 46
+          },
+          {
+            "text": "    # Skip RAG generation for DAAS if analysis not requested (DAAS RAG included in system prompt when analysis requested)",
+            "lineNumber": 47
+          },
+          {
+            "text": "    indexed_context = {}",
+            "lineNumber": 48
+          },
+          {
+            "text": "    skip_rag = False",
+            "lineNumber": 49
+          },
+          {
+            "text": "    if project.upper() == \"THN\" and not is_first_message:",
+            "lineNumber": 50
+          },
+          {
+            "text": "        skip_rag = True",
+            "lineNumber": 51
+          },
+          {
+            "text": "    elif project.upper() == \"DAAS\" and not should_include_daas_rag(user_text):",
+            "lineNumber": 52
+          },
+          {
+            "text": "        skip_rag = True",
+            "lineNumber": 53
+          },
+          {
+            "text": "    ",
+            "lineNumber": 54
+          },
+          {
+            "text": "    if not skip_rag:",
+            "lineNumber": 55
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 56
+          },
+          {
+            "text": "            indexed_context = build_project_context(project, user_text)",
+            "lineNumber": 57
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 58
+          },
+          {
+            "text": "            # Log but don't fail - fallback to existing behavior",
+            "lineNumber": 59
+          },
+          {
+            "text": "            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "    # Only static + snippet context included now",
+            "lineNumber": 62
+          },
+          {
+            "text": "    project_context = get_project_context(project, conversation_id, limit_messages=80)",
+            "lineNumber": 63
+          },
+          {
+            "text": "    ",
+            "lineNumber": 64
+          },
+          {
+            "text": "    # Build messages for OpenAI",
+            "lineNumber": 65
+          },
+          {
+            "text": "    messages = []",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "    # Message order: system prompt → RAG context → note reads → history",
+            "lineNumber": 68
+          },
+          {
+            "text": "    ",
+            "lineNumber": 69
+          },
+          {
+            "text": "    # 1. System prompt (base + project extension + RAG for THN/DAAS) - FIRST",
+            "lineNumber": 70
+          },
+          {
+            "text": "    # For THN: RAG included on first message only",
+            "lineNumber": 71
+          },
+          {
+            "text": "    # For DAAS: RAG included when analysis is requested (any message)",
+            "lineNumber": 72
+          },
+          {
+            "text": "    include_thn_rag = project.upper() == \"THN\" and is_first_message",
+            "lineNumber": 73
+          },
+          {
+            "text": "    include_daas_rag = project.upper() == \"DAAS\" and should_include_daas_rag(user_text)",
+            "lineNumber": 74
+          },
+          {
+            "text": "    ",
+            "lineNumber": 75
+          },
+          {
+            "text": "    # Pass user_message to system prompt builder if RAG should be included",
+            "lineNumber": 76
+          }
+        ]
+      },
+      "score": 0.5751764178276062
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 85
+          },
+          "endPosition": {
+            "line": 213
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n\n            \n            # For DAAS project, append RAG context to system prompt only when analysis is requested\n            if project.upper() == \"DAAS\" and user_message:\n                if should_include_daas_rag(user_message):\n                    try:\n                        rag_result = build_daas_rag_context(user_message, top_k=3)\n                        if rag_result.get(\"context\"):\n                            project_extension += \"\\n\\n---\\n\\n\"\n                            project_extension += rag_result[\"context\"]\n                            if rag_result.get(\"notes\"):\n                                project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                    f\"- {note}\" for note in rag_result[\"notes\"]\n                                )\n                            logger.info(f\"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                        else:\n                            logger.warning(\"DAAS RAG context generation returned empty context\")\n                    except Exception as e:\n                        logger.warning(f\"Failed to add DAAS RAG context to system prompt: {e}\", exc_info=True)\n                else:\n                    logger.debug(f\"DAAS RAG skipped - message does not indicate analysis request: {user_message[:100]}\")\n            \n            logger.debug(f\"Added project extension for {project.upper()}\")\n            return base_prompt + project_extension\n        else:\n            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")\n    \n    # Return base prompt only for general or if overview not found\n    return base_prompt\n\n\ndef _get_project_overview(project: str) -&gt; Optional[str]:\n    \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 86,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 87,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 152
+          },
+          {
+            "text": "            ",
+            "lineNumber": 153
+          },
+          {
+            "text": "            # For DAAS project, append RAG context to system prompt only when analysis is requested",
+            "lineNumber": 154
+          },
+          {
+            "text": "            if project.upper() == \"DAAS\" and user_message:",
+            "lineNumber": 155
+          },
+          {
+            "text": "                if should_include_daas_rag(user_message):",
+            "lineNumber": 156
+          },
+          {
+            "text": "                    try:",
+            "lineNumber": 157
+          },
+          {
+            "text": "                        rag_result = build_daas_rag_context(user_message, top_k=3)",
+            "lineNumber": 158
+          },
+          {
+            "text": "                        if rag_result.get(\"context\"):",
+            "lineNumber": 159
+          },
+          {
+            "text": "                            project_extension += \"\\n\\n---\\n\\n\"",
+            "lineNumber": 160
+          },
+          {
+            "text": "                            project_extension += rag_result[\"context\"]",
+            "lineNumber": 161
+          },
+          {
+            "text": "                            if rag_result.get(\"notes\"):",
+            "lineNumber": 162
+          },
+          {
+            "text": "                                project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 163
+          },
+          {
+            "text": "                                    f\"- {note}\" for note in rag_result[\"notes\"]",
+            "lineNumber": 164
+          },
+          {
+            "text": "                                )",
+            "lineNumber": 165
+          },
+          {
+            "text": "                            logger.info(f\"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")",
+            "lineNumber": 166
+          },
+          {
+            "text": "                        else:",
+            "lineNumber": 167
+          },
+          {
+            "text": "                            logger.warning(\"DAAS RAG context generation returned empty context\")",
+            "lineNumber": 168
+          },
+          {
+            "text": "                    except Exception as e:",
+            "lineNumber": 169
+          },
+          {
+            "text": "                        logger.warning(f\"Failed to add DAAS RAG context to system prompt: {e}\", exc_info=True)",
+            "lineNumber": 170
+          },
+          {
+            "text": "                else:",
+            "lineNumber": 171
+          },
+          {
+            "text": "                    logger.debug(f\"DAAS RAG skipped - message does not indicate analysis request: {user_message[:100]}\")",
+            "lineNumber": 172
+          },
+          {
+            "text": "            ",
+            "lineNumber": 173
+          },
+          {
+            "text": "            logger.debug(f\"Added project extension for {project.upper()}\")",
+            "lineNumber": 174
+          },
+          {
+            "text": "            return base_prompt + project_extension",
+            "lineNumber": 175
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 176
+          },
+          {
+            "text": "            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")",
+            "lineNumber": 177
+          },
+          {
+            "text": "    ",
+            "lineNumber": 178
+          },
+          {
+            "text": "    # Return base prompt only for general or if overview not found",
+            "lineNumber": 179
+          },
+          {
+            "text": "    return base_prompt",
+            "lineNumber": 180,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 181
+          },
+          {
+            "lineNumber": 182
+          },
+          {
+            "text": "def _get_project_overview(project: str) -&gt; Optional[str]:",
+            "lineNumber": 183,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 184
+          }
+        ]
+      },
+      "score": 0.4986456632614136
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 85
+          },
+          "endPosition": {
+            "line": 179
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n\n            \n            # For THN project, append RAG context to system prompt\n            if project.upper() == \"THN\" and user_message:\n                try:\n                    rag_result = build_thn_rag_context(user_message)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"THN RAG context generation returned empty context\")\n                except Exception as e:\n                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)\n            \n            # For DAAS project, append RAG context to system prompt only when analysis is requested",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 86,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 87,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 135
+          },
+          {
+            "text": "            ",
+            "lineNumber": 136
+          },
+          {
+            "text": "            # For THN project, append RAG context to system prompt",
+            "lineNumber": 137
+          },
+          {
+            "text": "            if project.upper() == \"THN\" and user_message:",
+            "lineNumber": 138
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 139
+          },
+          {
+            "text": "                    rag_result = build_thn_rag_context(user_message)",
+            "lineNumber": 140
+          },
+          {
+            "text": "                    if rag_result.get(\"context\"):",
+            "lineNumber": 141
+          },
+          {
+            "text": "                        project_extension += \"\\n\\n---\\n\\n\"",
+            "lineNumber": 142
+          },
+          {
+            "text": "                        project_extension += rag_result[\"context\"]",
+            "lineNumber": 143
+          },
+          {
+            "text": "                        if rag_result.get(\"notes\"):",
+            "lineNumber": 144
+          },
+          {
+            "text": "                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 145
+          },
+          {
+            "text": "                                f\"- {note}\" for note in rag_result[\"notes\"]",
+            "lineNumber": 146
+          },
+          {
+            "text": "                            )",
+            "lineNumber": 147
+          },
+          {
+            "text": "                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")",
+            "lineNumber": 148
+          },
+          {
+            "text": "                    else:",
+            "lineNumber": 149
+          },
+          {
+            "text": "                        logger.warning(\"THN RAG context generation returned empty context\")",
+            "lineNumber": 150
+          },
+          {
+            "text": "                except Exception as e:",
+            "lineNumber": 151
+          },
+          {
+            "text": "                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)",
+            "lineNumber": 152
+          },
+          {
+            "text": "            ",
+            "lineNumber": 153
+          },
+          {
+            "text": "            # For DAAS project, append RAG context to system prompt only when analysis is requested",
+            "lineNumber": 154
+          }
+        ]
+      },
+      "score": 0.4666593074798584
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 858,
+            "column": 43
+          },
+          "endPosition": {
+            "line": 1048
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses vector similarity search to retrieve related dreams.\n    For THN project: Uses RAG with conversation history and code snippets.\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: new RAG format\n    if project == 'DAAS':\n        try:\n            return build_daas_rag_context(user_message, top_k=3)\n        except Exception as e:\n            logger.error(f\"DAAS RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)\n        except Exception as e:\n            logger.error(f\"THN RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 862,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 863,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 864,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 865,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 866,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 867,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 868
+          },
+          {
+            "text": "    Build project-aware context from project_knowledge and conversation_index entries.",
+            "lineNumber": 869
+          },
+          {
+            "text": "    ",
+            "lineNumber": 870
+          },
+          {
+            "text": "    For DAAS project: Uses vector similarity search to retrieve related dreams.",
+            "lineNumber": 871
+          },
+          {
+            "text": "    For THN project: Uses RAG with conversation history and code snippets.",
+            "lineNumber": 872
+          },
+          {
+            "text": "    For other projects: Uses keyword-based relevance scoring.",
+            "lineNumber": 873
+          },
+          {
+            "text": "    ",
+            "lineNumber": 874
+          },
+          {
+            "text": "    Fetches stable project overview from project_knowledge table, queries indexed",
+            "lineNumber": 875
+          },
+          {
+            "text": "    memories from conversation_index for the project, applies simple relevance scoring,",
+            "lineNumber": 876
+          },
+          {
+            "text": "    selects top N relevant entries, and formats them directly into context.",
+            "lineNumber": 877
+          },
+          {
+            "text": "    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,",
+            "lineNumber": 878
+          },
+          {
+            "text": "    then conversation_index memories (specific conversation details) SECOND.",
+            "lineNumber": 879
+          },
+          {
+            "text": "    ",
+            "lineNumber": 880
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 881
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 882
+          },
+          {
+            "text": "        user_message: Current user message to match against (used for relevance scoring)",
+            "lineNumber": 883
+          },
+          {
+            "text": "        limit_memories: Max number of indexed entries to consider (default: 200)",
+            "lineNumber": 884
+          },
+          {
+            "text": "        top_n: Number of top relevant entries to use (default: 5)",
+            "lineNumber": 885
+          },
+          {
+            "text": "    ",
+            "lineNumber": 886
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 887
+          },
+          {
+            "text": "        Dict with 'context' (string) and 'notes' (list of strings)",
+            "lineNumber": 888
+          },
+          {
+            "text": "        Returns empty dict if no relevant data found",
+            "lineNumber": 889
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 890
+          },
+          {
+            "text": "    ",
+            "lineNumber": 891
+          },
+          {
+            "text": "    # DAAS-specific retrieval: new RAG format",
+            "lineNumber": 892
+          },
+          {
+            "text": "    if project == 'DAAS':",
+            "lineNumber": 893
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 894
+          },
+          {
+            "text": "            return build_daas_rag_context(user_message, top_k=3)",
+            "lineNumber": 895
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 896
+          },
+          {
+            "text": "            logger.error(f\"DAAS RAG generation failed: {e}\")",
+            "lineNumber": 897
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 898
+          },
+          {
+            "text": "    ",
+            "lineNumber": 899
+          },
+          {
+            "text": "    # THN-specific retrieval: new RAG format",
+            "lineNumber": 900
+          },
+          {
+            "text": "    if project == 'THN':",
+            "lineNumber": 901
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 902
+          },
+          {
+            "text": "            return build_thn_rag_context(user_message)",
+            "lineNumber": 903
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 904
+          },
+          {
+            "text": "            logger.error(f\"THN RAG generation failed: {e}\")",
+            "lineNumber": 905
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 906
+          },
+          {
+            "text": "    ",
+            "lineNumber": 907
+          },
+          {
+            "text": "    # Get project-scoped meditation notes (if MCP available)",
+            "lineNumber": 908
+          },
+          {
+            "text": "    mcp_notes_context = None",
+            "lineNumber": 909
+          }
+        ]
+      },
+      "score": 0.4053950905799866
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 68
+          }
+        },
+        "contents": "\"\"\"\nProject context builder for injecting conversation memory into chat prompts.\nBuilds context directly from project_knowledge and conversation_index entries.\n\nFor DAAS project, uses vector similarity search to retrieve related dreams by themes, symbols, or events.\nFor THN project, uses RAG with conversation history and code snippets.\n\"\"\"\nimport logging\nimport os\nimport re\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nfrom .db import get_conn\nfrom .memory import fetch_project_knowledge\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n# Module-level cache for base system prompt\n_base_system_prompt_cache: Optional[str] = None\n\n\ndef load_base_system_prompt() -&gt; str:\n    \"\"\"\n    Load the base system prompt from brain_core/base_system_prompt.txt.\n    \n    Uses module-level caching to avoid repeated file I/O. If the file is missing\n    or unreadable, falls back to a minimal default prompt and logs a warning.\n    \n    Returns:\n        Base system prompt as string\n        \n    Raises:\n        None - always returns a valid string (either from file or fallback)\n    \"\"\"\n    global _base_system_prompt_cache\n    \n    # Return cached value if available\n    if _base_system_prompt_cache is not None:\n        return _base_system_prompt_cache\n    \n    # Determine file path relative to this module\n    module_dir = Path(__file__).parent\n    prompt_file = module_dir / \"base_system_prompt.txt\"\n    \n    try:\n        # Load prompt from file\n        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Project context builder for injecting conversation memory into chat prompts.",
+            "lineNumber": 2
+          },
+          {
+            "text": "Builds context directly from project_knowledge and conversation_index entries.",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "For DAAS project, uses vector similarity search to retrieve related dreams by themes, symbols, or events.",
+            "lineNumber": 5
+          },
+          {
+            "text": "For THN project, uses RAG with conversation history and code snippets.",
+            "lineNumber": 6
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "import os",
+            "lineNumber": 9
+          },
+          {
+            "text": "import re",
+            "lineNumber": 10
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 11
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 14
+          },
+          {
+            "text": "from .memory import fetch_project_knowledge",
+            "lineNumber": 15
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "# Module-level cache for base system prompt",
+            "lineNumber": 20
+          },
+          {
+            "text": "_base_system_prompt_cache: Optional[str] = None",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "def load_base_system_prompt() -&gt; str:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    Load the base system prompt from brain_core/base_system_prompt.txt.",
+            "lineNumber": 26
+          },
+          {
+            "text": "    ",
+            "lineNumber": 27
+          },
+          {
+            "text": "    Uses module-level caching to avoid repeated file I/O. If the file is missing",
+            "lineNumber": 28
+          },
+          {
+            "text": "    or unreadable, falls back to a minimal default prompt and logs a warning.",
+            "lineNumber": 29
+          },
+          {
+            "text": "    ",
+            "lineNumber": 30
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 31
+          },
+          {
+            "text": "        Base system prompt as string",
+            "lineNumber": 32
+          },
+          {
+            "text": "        ",
+            "lineNumber": 33
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 34
+          },
+          {
+            "text": "        None - always returns a valid string (either from file or fallback)",
+            "lineNumber": 35
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 36
+          },
+          {
+            "text": "    global _base_system_prompt_cache",
+            "lineNumber": 37
+          },
+          {
+            "text": "    ",
+            "lineNumber": 38
+          },
+          {
+            "text": "    # Return cached value if available",
+            "lineNumber": 39
+          },
+          {
+            "text": "    if _base_system_prompt_cache is not None:",
+            "lineNumber": 40
+          },
+          {
+            "text": "        return _base_system_prompt_cache",
+            "lineNumber": 41
+          },
+          {
+            "text": "    ",
+            "lineNumber": 42
+          },
+          {
+            "text": "    # Determine file path relative to this module",
+            "lineNumber": 43
+          },
+          {
+            "text": "    module_dir = Path(__file__).parent",
+            "lineNumber": 44
+          },
+          {
+            "text": "    prompt_file = module_dir / \"base_system_prompt.txt\"",
+            "lineNumber": 45
+          },
+          {
+            "text": "    ",
+            "lineNumber": 46
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 47
+          },
+          {
+            "text": "        # Load prompt from file",
+            "lineNumber": 48
+          },
+          {
+            "text": "        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+            "lineNumber": 49
+          }
+        ]
+      },
+      "score": 0.4025571942329407
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 34
+          }
+        },
+        "contents": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG\n\n## Overview\n\nImprove the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.\n\n## Requirements\n\n### 1. Base System Prompt\n\n- Create a new base system prompt that applies to ALL conversations regardless of project\n- Store the base system prompt in a separate file for easy editing\n- Base system prompt should be the starting point for all project conversations\n- Design should be extensible to support project-specific system prompts in the future\n\n**Base System Prompt Content:**\n\n&#96;&#96;&#96;\nYou are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.\n\nHere are a few rules that will apply to all chats\n\n1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.\n\n2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.\n\n3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.\n\n4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"\n\n5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.\n&#96;&#96;&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Improve the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. Base System Prompt",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Create a new base system prompt that applies to ALL conversations regardless of project",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Store the base system prompt in a separate file for easy editing",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Base system prompt should be the starting point for all project conversations",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Design should be extensible to support project-specific system prompts in the future",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Base System Prompt Content:**",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "Here are a few rules that will apply to all chats",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          }
+        ]
+      },
+      "score": 0.37367063760757446
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/contracts/api.md",
+        "range": {
+          "startPosition": {
+            "line": 203
+          },
+          "endPosition": {
+            "line": 261
+          }
+        },
+        "contents": "if project == 'THN':\n    try:\n        return build_thn_rag_context(user_message)\n    except Exception as e:\n        logger.error(f\"THN RAG generation failed: {e}\")\n        # Fall through to default behavior\n&#96;&#96;&#96;\n\n### Message Ordering in &#96;chat.py&#96;\n\n**Location**: &#96;brain_core/chat.py&#96;\n\n**Current Message Order** (lines 54-100):\n1. System prompt (base + project extension with overview/rules) - &#96;build_project_system_prompt()&#96;\n2. Project context from RAG - &#96;build_project_context()&#96; output (this is where THN RAG appears)\n3. Existing project context (from memory.py)\n4. Note reads\n5. Conversation messages\n\n**Requirement**: THN RAG must appear **after** the project_knowledge section (overview and rules) which is in the first system message. The RAG is included in the second system message, maintaining this order.\n\n**Wrapper Text Update**: The wrapper text in &#96;chat.py&#96; (lines 67-72) should be updated to be more concise. Current text:\n&#96;&#96;&#96;python\nf\"We're working on project {project} together. \"\nf\"Here's relevant context from prior conversations and notes:\\n\\n\"\n&#96;&#96;&#96;\n\n**Recommended replacement**: Remove wrapper text entirely and let RAG sections speak for themselves, or use a concise one-liner like:\n&#96;&#96;&#96;python\nf\"Context from THN project history and codebase:\\n\\n\"\n&#96;&#96;&#96;\n\nThe RAG content itself (History &amp; Context + Relevant Code Snippets sections) is self-explanatory and doesn't need verbose introduction.&#96;\n\n---\n\n## Testing Contracts\n\n### Unit Tests\n\n1. **&#96;test_build_thn_rag_context()&#96;**:\n\n   - Test with 5 conversations and 5 code chunks\n   - Test with empty results (no conversations, no code)\n   - Test with partial results (some conversations, no code)\n   - Test truncation of long fields\n   - Test NULL field handling\n\n2. **&#96;test_format_conversation_entry()&#96;**:\n\n   - Test with all fields present\n   - Test with NULL fields\n   - Test JSONB array formatting\n   - Test truncation\n\n3. **&#96;test_format_code_snippet()&#96;**:\n\n   - Test with metadata (function_name)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "if project == 'THN':",
+            "lineNumber": 204
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 205
+          },
+          {
+            "text": "        return build_thn_rag_context(user_message)",
+            "lineNumber": 206
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 207
+          },
+          {
+            "text": "        logger.error(f\"THN RAG generation failed: {e}\")",
+            "lineNumber": 208
+          },
+          {
+            "text": "        # Fall through to default behavior",
+            "lineNumber": 209
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 210
+          },
+          {
+            "lineNumber": 211
+          },
+          {
+            "text": "### Message Ordering in &#96;chat.py&#96;",
+            "lineNumber": 212
+          },
+          {
+            "lineNumber": 213
+          },
+          {
+            "text": "**Location**: &#96;brain_core/chat.py&#96;",
+            "lineNumber": 214
+          },
+          {
+            "lineNumber": 215
+          },
+          {
+            "text": "**Current Message Order** (lines 54-100):",
+            "lineNumber": 216
+          },
+          {
+            "text": "1. System prompt (base + project extension with overview/rules) - &#96;build_project_system_prompt()&#96;",
+            "lineNumber": 217
+          },
+          {
+            "text": "2. Project context from RAG - &#96;build_project_context()&#96; output (this is where THN RAG appears)",
+            "lineNumber": 218
+          },
+          {
+            "text": "3. Existing project context (from memory.py)",
+            "lineNumber": 219
+          },
+          {
+            "text": "4. Note reads",
+            "lineNumber": 220
+          },
+          {
+            "text": "5. Conversation messages",
+            "lineNumber": 221
+          },
+          {
+            "lineNumber": 222
+          },
+          {
+            "text": "**Requirement**: THN RAG must appear **after** the project_knowledge section (overview and rules) which is in the first system message. The RAG is included in the second system message, maintaining this order.",
+            "lineNumber": 223
+          },
+          {
+            "lineNumber": 224
+          },
+          {
+            "text": "**Wrapper Text Update**: The wrapper text in &#96;chat.py&#96; (lines 67-72) should be updated to be more concise. Current text:",
+            "lineNumber": 225
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 226
+          },
+          {
+            "text": "f\"We're working on project {project} together. \"",
+            "lineNumber": 227
+          },
+          {
+            "text": "f\"Here's relevant context from prior conversations and notes:\\n\\n\"",
+            "lineNumber": 228
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 229
+          },
+          {
+            "lineNumber": 230
+          },
+          {
+            "text": "**Recommended replacement**: Remove wrapper text entirely and let RAG sections speak for themselves, or use a concise one-liner like:",
+            "lineNumber": 231
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 232
+          },
+          {
+            "text": "f\"Context from THN project history and codebase:\\n\\n\"",
+            "lineNumber": 233
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 234
+          },
+          {
+            "lineNumber": 235
+          },
+          {
+            "text": "The RAG content itself (History &amp; Context + Relevant Code Snippets sections) is self-explanatory and doesn't need verbose introduction.&#96;",
+            "lineNumber": 236
+          },
+          {
+            "lineNumber": 237
+          },
+          {
+            "text": "---",
+            "lineNumber": 238
+          },
+          {
+            "lineNumber": 239
+          },
+          {
+            "text": "## Testing Contracts",
+            "lineNumber": 240
+          },
+          {
+            "lineNumber": 241
+          },
+          {
+            "text": "### Unit Tests",
+            "lineNumber": 242
+          },
+          {
+            "lineNumber": 243
+          },
+          {
+            "text": "1. **&#96;test_build_thn_rag_context()&#96;**:",
+            "lineNumber": 244
+          },
+          {
+            "lineNumber": 245
+          },
+          {
+            "text": "   - Test with 5 conversations and 5 code chunks",
+            "lineNumber": 246
+          },
+          {
+            "text": "   - Test with empty results (no conversations, no code)",
+            "lineNumber": 247
+          },
+          {
+            "text": "   - Test with partial results (some conversations, no code)",
+            "lineNumber": 248
+          },
+          {
+            "text": "   - Test truncation of long fields",
+            "lineNumber": 249
+          },
+          {
+            "text": "   - Test NULL field handling",
+            "lineNumber": 250
+          },
+          {
+            "lineNumber": 251
+          },
+          {
+            "text": "2. **&#96;test_format_conversation_entry()&#96;**:",
+            "lineNumber": 252
+          },
+          {
+            "lineNumber": 253
+          },
+          {
+            "text": "   - Test with all fields present",
+            "lineNumber": 254
+          },
+          {
+            "text": "   - Test with NULL fields",
+            "lineNumber": 255
+          },
+          {
+            "text": "   - Test JSONB array formatting",
+            "lineNumber": 256
+          },
+          {
+            "text": "   - Test truncation",
+            "lineNumber": 257
+          },
+          {
+            "lineNumber": 258
+          },
+          {
+            "text": "3. **&#96;test_format_code_snippet()&#96;**:",
+            "lineNumber": 259
+          },
+          {
+            "lineNumber": 260
+          },
+          {
+            "text": "   - Test with metadata (function_name)",
+            "lineNumber": 261
+          }
+        ]
+      },
+      "score": 0.3724696636199951
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/data-model.md",
+        "range": {
+          "startPosition": {
+            "line": 55
+          },
+          "endPosition": {
+            "line": 110
+          }
+        },
+        "contents": "LIMIT 5\n&#96;&#96;&#96;\n\n## Data Flow\n\n1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;\n2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules\n3. **Build context** → &#96;build_project_context(project='THN', user_message)&#96; in &#96;context_builder.py&#96;\n4. **Query conversations** → SELECT from &#96;conversation_index&#96; WHERE project='THN' ORDER BY indexed_at DESC LIMIT 5\n5. **Query code** → Vector similarity search on &#96;code_index&#96; using user_message embedding\n6. **Format RAG** → Combine into formatted string with History &amp; Context and Relevant Code Snippets sections\n7. **Return context** → &#96;{\"context\": str, \"notes\": List[str]}&#96;\n8. **Inject into messages** → Added as system message in &#96;chat.py&#96; **after** the system prompt (which contains overview/rules)\n\n**Message Order**:\n\n- System message 1: Base prompt + project overview + project rules (from &#96;build_project_system_prompt()&#96;)\n- System message 2: THN RAG (History &amp; Context + Relevant Code Snippets) (from &#96;build_project_context()&#96;)\n- System message 3: Note reads (if any)\n- User/Assistant messages: Conversation history\n\n## Data Transformations\n\n### Conversation Entry Formatting\n\n**Input**: Row from &#96;conversation_index&#96;\n\n&#96;&#96;&#96;python\n{\n    'title': 'THN Network Setup',\n    'tags': ['networking', 'vlan', 'firewall'],\n    'key_entities': ['Firewalla', 'Mac Mini'],\n    'summary_detailed': 'Long summary text...',\n    'memory_snippet': 'Memory text...'\n}\n&#96;&#96;&#96;\n\n**Output**: Formatted string\n\n&#96;&#96;&#96;\n- **Title:** THN Network Setup\n- **Tags:** networking, vlan, firewall\n- **Key Entities:** Firewalla, Mac Mini\n- **Summary:** Long summary text... (truncated if &gt;500 chars)\n- **Memory Snippet:** Memory text... (truncated if &gt;300 chars)\n&#96;&#96;&#96;\n\n### Code Snippet Formatting\n\n**Input**: Row from &#96;code_index&#96;\n\n&#96;&#96;&#96;python\n{\n    'file_path': 'brain_core/context_builder.py',\n    'language': 'python',",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;",
+            "lineNumber": 61
+          },
+          {
+            "text": "2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+            "lineNumber": 62
+          },
+          {
+            "text": "3. **Build context** → &#96;build_project_context(project='THN', user_message)&#96; in &#96;context_builder.py&#96;",
+            "lineNumber": 63
+          },
+          {
+            "text": "4. **Query conversations** → SELECT from &#96;conversation_index&#96; WHERE project='THN' ORDER BY indexed_at DESC LIMIT 5",
+            "lineNumber": 64
+          },
+          {
+            "text": "5. **Query code** → Vector similarity search on &#96;code_index&#96; using user_message embedding",
+            "lineNumber": 65
+          },
+          {
+            "text": "6. **Format RAG** → Combine into formatted string with History &amp; Context and Relevant Code Snippets sections",
+            "lineNumber": 66
+          },
+          {
+            "text": "7. **Return context** → &#96;{\"context\": str, \"notes\": List[str]}&#96;",
+            "lineNumber": 67
+          },
+          {
+            "text": "8. **Inject into messages** → Added as system message in &#96;chat.py&#96; **after** the system prompt (which contains overview/rules)",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "**Message Order**:",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "- System message 1: Base prompt + project overview + project rules (from &#96;build_project_system_prompt()&#96;)",
+            "lineNumber": 72
+          },
+          {
+            "text": "- System message 2: THN RAG (History &amp; Context + Relevant Code Snippets) (from &#96;build_project_context()&#96;)",
+            "lineNumber": 73
+          },
+          {
+            "text": "- System message 3: Note reads (if any)",
+            "lineNumber": 74
+          },
+          {
+            "text": "- User/Assistant messages: Conversation history",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "## Data Transformations",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "### Conversation Entry Formatting",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "**Input**: Row from &#96;conversation_index&#96;",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 83
+          },
+          {
+            "text": "{",
+            "lineNumber": 84
+          },
+          {
+            "text": "    'title': 'THN Network Setup',",
+            "lineNumber": 85
+          },
+          {
+            "text": "    'tags': ['networking', 'vlan', 'firewall'],",
+            "lineNumber": 86
+          },
+          {
+            "text": "    'key_entities': ['Firewalla', 'Mac Mini'],",
+            "lineNumber": 87
+          },
+          {
+            "text": "    'summary_detailed': 'Long summary text...',",
+            "lineNumber": 88
+          },
+          {
+            "text": "    'memory_snippet': 'Memory text...'",
+            "lineNumber": 89
+          },
+          {
+            "text": "}",
+            "lineNumber": 90
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "**Output**: Formatted string",
+            "lineNumber": 93
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 95
+          },
+          {
+            "text": "- **Title:** THN Network Setup",
+            "lineNumber": 96
+          },
+          {
+            "text": "- **Tags:** networking, vlan, firewall",
+            "lineNumber": 97
+          },
+          {
+            "text": "- **Key Entities:** Firewalla, Mac Mini",
+            "lineNumber": 98
+          },
+          {
+            "text": "- **Summary:** Long summary text... (truncated if &gt;500 chars)",
+            "lineNumber": 99
+          },
+          {
+            "text": "- **Memory Snippet:** Memory text... (truncated if &gt;300 chars)",
+            "lineNumber": 100
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "### Code Snippet Formatting",
+            "lineNumber": 103
+          },
+          {
+            "lineNumber": 104
+          },
+          {
+            "text": "**Input**: Row from &#96;code_index&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 107
+          },
+          {
+            "text": "{",
+            "lineNumber": 108
+          },
+          {
+            "text": "    'file_path': 'brain_core/context_builder.py',",
+            "lineNumber": 109
+          },
+          {
+            "text": "    'language': 'python',",
+            "lineNumber": 110
+          }
+        ]
+      },
+      "score": 0.37083789706230164
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 29
+          },
+          "endPosition": {
+            "line": 69
+          }
+        },
+        "contents": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.\n&#96;&#96;&#96;\n\n### 2. Project-Specific Context Extension\n\n- When a user is in a specific project (e.g., &#96;/ff&#96;, &#96;/thn&#96;, &#96;/daas&#96;, &#96;/700b&#96;), append project-specific context to the base system prompt\n- Format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"\n- Project-specific RAG should only be used when having a conversation under that specific project\n\n### 3. Code Cleanup\n\n- Remove any hardcoded system prompt text under THN and DAAS\n- Update logic in &#96;context_builder.py&#96; to use the new base system prompt as the foundation\n- Ensure project_knowledge retrieval is under specific logic for project-specific conversations\n- Make the system extensible for future project-specific system prompts and custom RAG\n\n### 4. Architecture Requirements\n\n- Base system prompt must be loaded from a file\n- System prompt should be composable: base + project-specific extensions\n- Context building should clearly separate base prompt from project-specific RAG\n- Design should support future additions of project-specific system prompts\n\n## Technical Constraints\n\n- Must work with existing project structure (Python 3.10+)\n- Must integrate with existing &#96;context_builder.py&#96; and &#96;chat.py&#96;\n- Must maintain backward compatibility with existing project tags (THN, DAAS, FF, 700B, general)\n- Must preserve existing RAG functionality (DAAS dream retrieval, THN code retrieval, etc.)\n\n## Success Criteria\n\n1. Base system prompt is loaded from a file and applied to all conversations\n2. Project-specific context is appended only when in that project\n3. No hardcoded system prompts remain in THN/DAAS code\n4. System is extensible for future project-specific prompts\n5. All existing functionality continues to work",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "### 2. Project-Specific Context Extension",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "- When a user is in a specific project (e.g., &#96;/ff&#96;, &#96;/thn&#96;, &#96;/daas&#96;, &#96;/700b&#96;), append project-specific context to the base system prompt",
+            "lineNumber": 38
+          },
+          {
+            "text": "- Format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"",
+            "lineNumber": 39
+          },
+          {
+            "text": "- Project-specific RAG should only be used when having a conversation under that specific project",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "### 3. Code Cleanup",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "- Remove any hardcoded system prompt text under THN and DAAS",
+            "lineNumber": 44
+          },
+          {
+            "text": "- Update logic in &#96;context_builder.py&#96; to use the new base system prompt as the foundation",
+            "lineNumber": 45
+          },
+          {
+            "text": "- Ensure project_knowledge retrieval is under specific logic for project-specific conversations",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Make the system extensible for future project-specific system prompts and custom RAG",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### 4. Architecture Requirements",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "- Base system prompt must be loaded from a file",
+            "lineNumber": 51
+          },
+          {
+            "text": "- System prompt should be composable: base + project-specific extensions",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Context building should clearly separate base prompt from project-specific RAG",
+            "lineNumber": 53
+          },
+          {
+            "text": "- Design should support future additions of project-specific system prompts",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "## Technical Constraints",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- Must work with existing project structure (Python 3.10+)",
+            "lineNumber": 58
+          },
+          {
+            "text": "- Must integrate with existing &#96;context_builder.py&#96; and &#96;chat.py&#96;",
+            "lineNumber": 59
+          },
+          {
+            "text": "- Must maintain backward compatibility with existing project tags (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 60
+          },
+          {
+            "text": "- Must preserve existing RAG functionality (DAAS dream retrieval, THN code retrieval, etc.)",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "## Success Criteria",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "1. Base system prompt is loaded from a file and applied to all conversations",
+            "lineNumber": 65
+          },
+          {
+            "text": "2. Project-specific context is appended only when in that project",
+            "lineNumber": 66
+          },
+          {
+            "text": "3. No hardcoded system prompts remain in THN/DAAS code",
+            "lineNumber": 67
+          },
+          {
+            "text": "4. System is extensible for future project-specific prompts",
+            "lineNumber": 68
+          },
+          {
+            "text": "5. All existing functionality continues to work",
+            "lineNumber": 69
+          }
+        ]
+      },
+      "score": 0.3563739061355591
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 695,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 751
+          }
+        },
+        "contents": "def should_include_daas_rag(user_message: str) -&gt; bool:\n    \"\"\"\n    Determine if DAAS RAG should be included based on user message intent.\n    \n    Returns True if the message indicates the user wants dream analysis,\n    interpretation, or deep conversation about a dream. Returns False for\n    casual questions or non-analysis requests.\n    \n    Args:\n        user_message: User's message text\n        \n    Returns:\n        True if RAG should be included, False otherwise\n    \"\"\"\n    if not user_message or not user_message.strip():\n        return False\n    \n    message_lower = user_message.lower()\n    \n    # Keywords that indicate analysis/interpretation intent\n    analysis_keywords = [\n        'analyze', 'analysis', 'interpret', 'interpretation', 'meaning',\n        'symbol', 'symbolism', 'symbolic', 'what does this mean',\n        'what does it mean', 'what does that mean', 'help me understand',\n        'explain this dream', 'explain the dream', 'tell me about this dream',\n        'tell me about the dream', 'discuss this dream', 'discuss the dream',\n        'deep conversation', 'deep dive', 'explore this dream', 'explore the dream',\n        'unpack', 'break down', 'what is the significance', 'what significance',\n        'what themes', 'what patterns', 'parallel', 'connection', 'relate',\n        'compare', 'similar', 'recurring', 'recurrence'\n    ]\n    \n    # Check for analysis keywords\n    for keyword in analysis_keywords:\n        if keyword in message_lower:\n            return True\n    \n    # Check for question patterns that suggest analysis\n    analysis_patterns = [\n        'what does', 'what is', 'what are', 'what were', 'what do',\n        'how does', 'how is', 'how are', 'why does', 'why is',\n        'can you analyze', 'can you interpret', 'can you explain',\n        'could you analyze', 'could you interpret', 'could you explain',\n        'would you analyze', 'would you interpret', 'would you explain'\n    ]\n    \n    for pattern in analysis_patterns:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def should_include_daas_rag(user_message: str) -&gt; bool:",
+            "lineNumber": 699,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 700
+          },
+          {
+            "text": "    Determine if DAAS RAG should be included based on user message intent.",
+            "lineNumber": 701
+          },
+          {
+            "text": "    ",
+            "lineNumber": 702
+          },
+          {
+            "text": "    Returns True if the message indicates the user wants dream analysis,",
+            "lineNumber": 703
+          },
+          {
+            "text": "    interpretation, or deep conversation about a dream. Returns False for",
+            "lineNumber": 704
+          },
+          {
+            "text": "    casual questions or non-analysis requests.",
+            "lineNumber": 705
+          },
+          {
+            "text": "    ",
+            "lineNumber": 706
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 707
+          },
+          {
+            "text": "        user_message: User's message text",
+            "lineNumber": 708
+          },
+          {
+            "text": "        ",
+            "lineNumber": 709
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 710
+          },
+          {
+            "text": "        True if RAG should be included, False otherwise",
+            "lineNumber": 711
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 712
+          },
+          {
+            "text": "    if not user_message or not user_message.strip():",
+            "lineNumber": 713
+          },
+          {
+            "text": "        return False",
+            "lineNumber": 714
+          },
+          {
+            "text": "    ",
+            "lineNumber": 715
+          },
+          {
+            "text": "    message_lower = user_message.lower()",
+            "lineNumber": 716
+          },
+          {
+            "text": "    ",
+            "lineNumber": 717
+          },
+          {
+            "text": "    # Keywords that indicate analysis/interpretation intent",
+            "lineNumber": 718
+          },
+          {
+            "text": "    analysis_keywords = [",
+            "lineNumber": 719
+          },
+          {
+            "text": "        'analyze', 'analysis', 'interpret', 'interpretation', 'meaning',",
+            "lineNumber": 720
+          },
+          {
+            "text": "        'symbol', 'symbolism', 'symbolic', 'what does this mean',",
+            "lineNumber": 721
+          },
+          {
+            "text": "        'what does it mean', 'what does that mean', 'help me understand',",
+            "lineNumber": 722
+          },
+          {
+            "text": "        'explain this dream', 'explain the dream', 'tell me about this dream',",
+            "lineNumber": 723
+          },
+          {
+            "text": "        'tell me about the dream', 'discuss this dream', 'discuss the dream',",
+            "lineNumber": 724
+          },
+          {
+            "text": "        'deep conversation', 'deep dive', 'explore this dream', 'explore the dream',",
+            "lineNumber": 725
+          },
+          {
+            "text": "        'unpack', 'break down', 'what is the significance', 'what significance',",
+            "lineNumber": 726
+          },
+          {
+            "text": "        'what themes', 'what patterns', 'parallel', 'connection', 'relate',",
+            "lineNumber": 727
+          },
+          {
+            "text": "        'compare', 'similar', 'recurring', 'recurrence'",
+            "lineNumber": 728
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 729
+          },
+          {
+            "text": "    ",
+            "lineNumber": 730
+          },
+          {
+            "text": "    # Check for analysis keywords",
+            "lineNumber": 731
+          },
+          {
+            "text": "    for keyword in analysis_keywords:",
+            "lineNumber": 732
+          },
+          {
+            "text": "        if keyword in message_lower:",
+            "lineNumber": 733
+          },
+          {
+            "text": "            return True",
+            "lineNumber": 734
+          },
+          {
+            "text": "    ",
+            "lineNumber": 735
+          },
+          {
+            "text": "    # Check for question patterns that suggest analysis",
+            "lineNumber": 736
+          },
+          {
+            "text": "    analysis_patterns = [",
+            "lineNumber": 737
+          },
+          {
+            "text": "        'what does', 'what is', 'what are', 'what were', 'what do',",
+            "lineNumber": 738
+          },
+          {
+            "text": "        'how does', 'how is', 'how are', 'why does', 'why is',",
+            "lineNumber": 739
+          },
+          {
+            "text": "        'can you analyze', 'can you interpret', 'can you explain',",
+            "lineNumber": 740
+          },
+          {
+            "text": "        'could you analyze', 'could you interpret', 'could you explain',",
+            "lineNumber": 741
+          },
+          {
+            "text": "        'would you analyze', 'would you interpret', 'would you explain'",
+            "lineNumber": 742
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 743
+          },
+          {
+            "text": "    ",
+            "lineNumber": 744
+          },
+          {
+            "text": "    for pattern in analysis_patterns:",
+            "lineNumber": 745
+          }
+        ]
+      },
+      "score": 0.35464853048324585
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/base_system_prompt.txt",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 15
+          }
+        },
+        "contents": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.\n\nHere are a few rules that will apply to all chats\n\n1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.\n\n2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.\n\n3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.\n\n4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"\n\n5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "Here are a few rules that will apply to all chats",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 15
+          }
+        ]
+      },
+      "score": 0.35206279158592224
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 300
+          }
+        },
+        "contents": "# brain_core/chat.py\nimport datetime\nimport logging\n\nfrom .config import client, OPENAI_MODEL, MOCK_MODE\nfrom .db import save_message, load_conversation_messages\nfrom .memory import get_project_context\nfrom .context_builder import build_project_context, build_project_system_prompt, should_include_daas_rag\nfrom .usage_tracker import (\n    get_session_tracker,\n    calculate_cost,\n    get_model_pricing,\n)\n\nlogger = logging.getLogger(__name__)\n\n\ndef normalize_project_tag(tag: str) -&gt; str:\n    tag = (tag or \"\").strip().upper()\n    if tag in (\"THN\", \"DAAS\", \"FF\", \"700B\"):\n        return tag\n    return \"general\"\n\n\ndef chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n    ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# brain_core/chat.py",
+            "lineNumber": 1
+          },
+          {
+            "text": "import datetime",
+            "lineNumber": 2
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "from .config import client, OPENAI_MODEL, MOCK_MODE",
+            "lineNumber": 5
+          },
+          {
+            "text": "from .db import save_message, load_conversation_messages",
+            "lineNumber": 6
+          },
+          {
+            "text": "from .memory import get_project_context",
+            "lineNumber": 7
+          },
+          {
+            "text": "from .context_builder import build_project_context, build_project_system_prompt, should_include_daas_rag",
+            "lineNumber": 8
+          },
+          {
+            "text": "from .usage_tracker import (",
+            "lineNumber": 9
+          },
+          {
+            "text": "    get_session_tracker,",
+            "lineNumber": 10
+          },
+          {
+            "text": "    calculate_cost,",
+            "lineNumber": 11
+          },
+          {
+            "text": "    get_model_pricing,",
+            "lineNumber": 12
+          },
+          {
+            "text": ")",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "def normalize_project_tag(tag: str) -&gt; str:",
+            "lineNumber": 18,
+            "isSignature": true
+          },
+          {
+            "text": "    tag = (tag or \"\").strip().upper()",
+            "lineNumber": 19
+          },
+          {
+            "text": "    if tag in (\"THN\", \"DAAS\", \"FF\", \"700B\"):",
+            "lineNumber": 20
+          },
+          {
+            "text": "        return tag",
+            "lineNumber": 21
+          },
+          {
+            "text": "    return \"general\"",
+            "lineNumber": 22,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 27
+          }
+        ]
+      },
+      "score": 0.349931001663208
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 24
+          },
+          "endPosition": {
+            "line": 300
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n\n\n    # Add existing project context (from memory.py) - also RAG context\n    if project_context:\n        messages.append({\"role\": \"system\", \"content\": project_context})\n    \n    # Add note reads first (most recent first) so they're fresh in context\n    if note_reads:\n        # Get the most recent note read (last in list since history is chronological)\n        most_recent_note = note_reads[-1]\n        note_content = most_recent_note.get(\"content\", \"\")\n        # Extract just the note content (skip the header)\n        if \"[Note loaded:\" in note_content:\n            note_parts = note_content.split(\"\\n\\n\", 1)\n            if len(note_parts) &gt; 1:\n                note_content = note_parts[1]  # Get content after header\n        messages.append({\n            \"role\": \"system\",\n            \"content\": f\"The user has loaded a note for discussion. Here is the note content:\\n\\n{note_content}\\n\\nYou can now reference and discuss this note naturally in the conversation.\"\n        })\n    \n    # Add other conversation messages\n    messages.extend(other_messages)\n\n    # Query OpenAI\n    if stream:\n        # Streaming mode: yield chunks as they arrive",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 25,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 27,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 110
+          },
+          {
+            "lineNumber": 111
+          },
+          {
+            "text": "    # Add existing project context (from memory.py) - also RAG context",
+            "lineNumber": 112
+          },
+          {
+            "text": "    if project_context:",
+            "lineNumber": 113
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": project_context})",
+            "lineNumber": 114
+          },
+          {
+            "text": "    ",
+            "lineNumber": 115
+          },
+          {
+            "text": "    # Add note reads first (most recent first) so they're fresh in context",
+            "lineNumber": 116
+          },
+          {
+            "text": "    if note_reads:",
+            "lineNumber": 117
+          },
+          {
+            "text": "        # Get the most recent note read (last in list since history is chronological)",
+            "lineNumber": 118
+          },
+          {
+            "text": "        most_recent_note = note_reads[-1]",
+            "lineNumber": 119
+          },
+          {
+            "text": "        note_content = most_recent_note.get(\"content\", \"\")",
+            "lineNumber": 120
+          },
+          {
+            "text": "        # Extract just the note content (skip the header)",
+            "lineNumber": 121
+          },
+          {
+            "text": "        if \"[Note loaded:\" in note_content:",
+            "lineNumber": 122
+          },
+          {
+            "text": "            note_parts = note_content.split(\"\\n\\n\", 1)",
+            "lineNumber": 123
+          },
+          {
+            "text": "            if len(note_parts) &gt; 1:",
+            "lineNumber": 124
+          },
+          {
+            "text": "                note_content = note_parts[1]  # Get content after header",
+            "lineNumber": 125
+          },
+          {
+            "text": "        messages.append({",
+            "lineNumber": 126
+          },
+          {
+            "text": "            \"role\": \"system\",",
+            "lineNumber": 127
+          },
+          {
+            "text": "            \"content\": f\"The user has loaded a note for discussion. Here is the note content:\\n\\n{note_content}\\n\\nYou can now reference and discuss this note naturally in the conversation.\"",
+            "lineNumber": 128
+          },
+          {
+            "text": "        })",
+            "lineNumber": 129
+          },
+          {
+            "text": "    ",
+            "lineNumber": 130
+          },
+          {
+            "text": "    # Add other conversation messages",
+            "lineNumber": 131
+          },
+          {
+            "text": "    messages.extend(other_messages)",
+            "lineNumber": 132
+          },
+          {
+            "lineNumber": 133
+          },
+          {
+            "text": "    # Query OpenAI",
+            "lineNumber": 134
+          },
+          {
+            "text": "    if stream:",
+            "lineNumber": 135
+          },
+          {
+            "text": "        # Streaming mode: yield chunks as they arrive",
+            "lineNumber": 136
+          }
+        ]
+      },
+      "score": 0.34436240792274475
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 75
+          },
+          "endPosition": {
+            "line": 99
+          }
+        },
+        "contents": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py\n- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py\n- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py\n\n**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional\n\n---\n\n## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)\n\n**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations\n\n**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.\n\n### Implementation for User Story 3\n\n- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths\n- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py\n- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py\n- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py",
+            "lineNumber": 76
+          },
+          {
+            "text": "- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py",
+            "lineNumber": 77
+          },
+          {
+            "text": "- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional",
+            "lineNumber": 80
+          },
+          {
+            "lineNumber": 81
+          },
+          {
+            "text": "---",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)",
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85
+          },
+          {
+            "text": "**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "### Implementation for User Story 3",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths",
+            "lineNumber": 92
+          },
+          {
+            "text": "- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 93
+          },
+          {
+            "text": "- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 94
+          },
+          {
+            "text": "- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py",
+            "lineNumber": 95
+          },
+          {
+            "text": "- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 96
+          },
+          {
+            "text": "- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 97
+          },
+          {
+            "text": "- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 98
+          },
+          {
+            "text": "- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+            "lineNumber": 99
+          }
+        ]
+      },
+      "score": 0.3442791700363159
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 53
+          }
+        },
+        "contents": "# Feature Specification: Enhance THN RAG System\n\n**Feature ID**: &#96;013-enhance-thn-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nReplace the current RAG implementation for THN project with a new, improved RAG system that provides:\n\n1. **History &amp; Context**: Last 5 conversations from &#96;conversation_index&#96; table\n2. **Relevant Code Snippets**: Code chunks from &#96;thn_code_index&#96; table (via &#96;code_index&#96; table)\n\nThe goal is to give project THN a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate where conversations should be going. Code snippets aid in code review and analysis tasks.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current THN RAG Implementation**\n\n   - Remove existing THN-specific RAG code in &#96;build_project_context()&#96; function\n   - Remove or deprecate &#96;get_thn_code_context()&#96; usage in context builder\n   - Clean up any THN-specific retrieval logic that doesn't match new format\n\n2. **Implement New RAG Format**\n\n   **History &amp; Context Section:**\n\n   - Query &#96;conversation_index&#96; table for THN project\n   - Retrieve last 5 conversations (ordered by &#96;indexed_at DESC&#96;)\n   - Format each entry with:\n     - Title (&#96;title&#96;)\n     - Tags (&#96;tags&#96; - JSONB array)\n     - Key Entities (&#96;key_entities&#96; - JSONB array)\n     - Summary (&#96;summary_detailed&#96;)\n     - Memory Snippet (&#96;memory_snippet&#96;)\n\n   **Relevant Code Snippets Section:**\n\n   - Query &#96;code_index&#96; table (THN code)\n   - Retrieve top 5 relevant code chunks using vector similarity search\n   - Format each entry with:\n     - File path (&#96;file_path&#96;)\n     - Language (&#96;language&#96;)\n     - Brief description (extracted from metadata or file path)\n     - Code chunk text (&#96;chunk_text&#96;)\n\n3. **RAG Format Template**\n\n   &#96;&#96;&#96;&#96;\n   ### History &amp; Context: Last 5 Conversations",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature ID**: &#96;013-enhance-thn-rag&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Planning",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "Replace the current RAG implementation for THN project with a new, improved RAG system that provides:",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "1. **History &amp; Context**: Last 5 conversations from &#96;conversation_index&#96; table",
+            "lineNumber": 11
+          },
+          {
+            "text": "2. **Relevant Code Snippets**: Code chunks from &#96;thn_code_index&#96; table (via &#96;code_index&#96; table)",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "The goal is to give project THN a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate where conversations should be going. Code snippets aid in code review and analysis tasks.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "1. **Remove Current THN RAG Implementation**",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "   - Remove existing THN-specific RAG code in &#96;build_project_context()&#96; function",
+            "lineNumber": 22
+          },
+          {
+            "text": "   - Remove or deprecate &#96;get_thn_code_context()&#96; usage in context builder",
+            "lineNumber": 23
+          },
+          {
+            "text": "   - Clean up any THN-specific retrieval logic that doesn't match new format",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "2. **Implement New RAG Format**",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "   **History &amp; Context Section:**",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "   - Query &#96;conversation_index&#96; table for THN project",
+            "lineNumber": 30
+          },
+          {
+            "text": "   - Retrieve last 5 conversations (ordered by &#96;indexed_at DESC&#96;)",
+            "lineNumber": 31
+          },
+          {
+            "text": "   - Format each entry with:",
+            "lineNumber": 32
+          },
+          {
+            "text": "     - Title (&#96;title&#96;)",
+            "lineNumber": 33
+          },
+          {
+            "text": "     - Tags (&#96;tags&#96; - JSONB array)",
+            "lineNumber": 34
+          },
+          {
+            "text": "     - Key Entities (&#96;key_entities&#96; - JSONB array)",
+            "lineNumber": 35
+          },
+          {
+            "text": "     - Summary (&#96;summary_detailed&#96;)",
+            "lineNumber": 36
+          },
+          {
+            "text": "     - Memory Snippet (&#96;memory_snippet&#96;)",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "   **Relevant Code Snippets Section:**",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "   - Query &#96;code_index&#96; table (THN code)",
+            "lineNumber": 41
+          },
+          {
+            "text": "   - Retrieve top 5 relevant code chunks using vector similarity search",
+            "lineNumber": 42
+          },
+          {
+            "text": "   - Format each entry with:",
+            "lineNumber": 43
+          },
+          {
+            "text": "     - File path (&#96;file_path&#96;)",
+            "lineNumber": 44
+          },
+          {
+            "text": "     - Language (&#96;language&#96;)",
+            "lineNumber": 45
+          },
+          {
+            "text": "     - Brief description (extracted from metadata or file path)",
+            "lineNumber": 46
+          },
+          {
+            "text": "     - Code chunk text (&#96;chunk_text&#96;)",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "3. **RAG Format Template**",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "   &#96;&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "text": "   ### History &amp; Context: Last 5 Conversations",
+            "lineNumber": 52
+          }
+        ]
+      },
+      "score": 0.3441368341445923
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 492,
+            "column": 47
+          },
+          "endPosition": {
+            "line": 573
+          }
+        },
+        "contents": "def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):\n    \"\"\"\n    Handle slash commands. Returns:\n      (new_project, handled, message_to_show, special)\n\n    special:\n      - None        → just print message_to_show (if any)\n      - \"context\"   → run /context\n      - \"search\"    → run /search\n      - \"multiline\" → enter paste mode (/paste)\n      - \"readfile\"  → read file and process content\n    \"\"\"\n    raw = text.strip()\n    if not raw.startswith(\"/\"):\n        return current_project, False, \"\", None\n\n    parts = raw[1:].split()\n    cmd = parts[0].lower() if parts else \"\"\n    arg = \" \".join(parts[1:]) if len(parts) &gt; 1 else \"\"\n\n    # project change\n    if cmd in (\"project\", \"tag\"):\n        if not arg:\n            return current_project, True, \"Usage: /project THN|DAAS|FF|700B|general\", None\n        new_project = normalize_project_tag(arg)\n        # Return special flag \"project_switch\" to trigger save and title prompt flow\n        return new_project, True, \"\", \"project_switch\"\n\n    if cmd in (\"thn\", \"daas\", \"ff\", \"700b\", \"general\"):\n        new_project = normalize_project_tag(cmd)\n        # Return special flag \"project_switch\" to trigger save and title prompt flow\n        return new_project, True, \"\", \"project_switch\"\n\n    # context\n    if cmd in (\"context\", \"ctx\"):\n        return current_project, True, \"\", \"context\"\n\n    # rag - show RAG content for THN\n    if cmd == \"rag\":\n        return current_project, True, arg if arg else \"\", \"rag\"\n\n    # search\n    if cmd in (\"search\", \"s\"):\n        if not arg:\n            return current_project, True, \"Usage: /search your query\", None\n        return current_project, True, arg, \"search\"\n\n    # multiline paste mode\n    if cmd in (\"paste\", \"block\", \"ml\"):\n        # Check if user wants vim mode (e.g., /paste vim or /paste --vim)\n        use_vim = len(parts) &gt; 1 and parts[1].lower() in (\"vim\", \"vi\", \"--vim\", \"--vi\", \"-v\")\n        return current_project, True, \"vim\" if use_vim else \"\", \"multiline\"\n\n    # read file\n    if cmd in (\"readfile\", \"read\", \"file\"):",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):",
+            "lineNumber": 496,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 497
+          },
+          {
+            "text": "    Handle slash commands. Returns:",
+            "lineNumber": 498
+          },
+          {
+            "text": "      (new_project, handled, message_to_show, special)",
+            "lineNumber": 499
+          },
+          {
+            "lineNumber": 500
+          },
+          {
+            "text": "    special:",
+            "lineNumber": 501
+          },
+          {
+            "text": "      - None        → just print message_to_show (if any)",
+            "lineNumber": 502
+          },
+          {
+            "text": "      - \"context\"   → run /context",
+            "lineNumber": 503
+          },
+          {
+            "text": "      - \"search\"    → run /search",
+            "lineNumber": 504
+          },
+          {
+            "text": "      - \"multiline\" → enter paste mode (/paste)",
+            "lineNumber": 505
+          },
+          {
+            "text": "      - \"readfile\"  → read file and process content",
+            "lineNumber": 506
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 507
+          },
+          {
+            "text": "    raw = text.strip()",
+            "lineNumber": 508
+          },
+          {
+            "text": "    if not raw.startswith(\"/\"):",
+            "lineNumber": 509
+          },
+          {
+            "text": "        return current_project, False, \"\", None",
+            "lineNumber": 510
+          },
+          {
+            "lineNumber": 511
+          },
+          {
+            "text": "    parts = raw[1:].split()",
+            "lineNumber": 512
+          },
+          {
+            "text": "    cmd = parts[0].lower() if parts else \"\"",
+            "lineNumber": 513
+          },
+          {
+            "text": "    arg = \" \".join(parts[1:]) if len(parts) &gt; 1 else \"\"",
+            "lineNumber": 514
+          },
+          {
+            "lineNumber": 515
+          },
+          {
+            "text": "    # project change",
+            "lineNumber": 516
+          },
+          {
+            "text": "    if cmd in (\"project\", \"tag\"):",
+            "lineNumber": 517
+          },
+          {
+            "text": "        if not arg:",
+            "lineNumber": 518
+          },
+          {
+            "text": "            return current_project, True, \"Usage: /project THN|DAAS|FF|700B|general\", None",
+            "lineNumber": 519
+          },
+          {
+            "text": "        new_project = normalize_project_tag(arg)",
+            "lineNumber": 520
+          },
+          {
+            "text": "        # Return special flag \"project_switch\" to trigger save and title prompt flow",
+            "lineNumber": 521
+          },
+          {
+            "text": "        return new_project, True, \"\", \"project_switch\"",
+            "lineNumber": 522
+          },
+          {
+            "lineNumber": 523
+          },
+          {
+            "text": "    if cmd in (\"thn\", \"daas\", \"ff\", \"700b\", \"general\"):",
+            "lineNumber": 524
+          },
+          {
+            "text": "        new_project = normalize_project_tag(cmd)",
+            "lineNumber": 525
+          },
+          {
+            "text": "        # Return special flag \"project_switch\" to trigger save and title prompt flow",
+            "lineNumber": 526
+          },
+          {
+            "text": "        return new_project, True, \"\", \"project_switch\"",
+            "lineNumber": 527
+          },
+          {
+            "lineNumber": 528
+          },
+          {
+            "text": "    # context",
+            "lineNumber": 529
+          },
+          {
+            "text": "    if cmd in (\"context\", \"ctx\"):",
+            "lineNumber": 530
+          },
+          {
+            "text": "        return current_project, True, \"\", \"context\"",
+            "lineNumber": 531
+          },
+          {
+            "lineNumber": 532
+          },
+          {
+            "text": "    # rag - show RAG content for THN",
+            "lineNumber": 533
+          },
+          {
+            "text": "    if cmd == \"rag\":",
+            "lineNumber": 534
+          },
+          {
+            "text": "        return current_project, True, arg if arg else \"\", \"rag\"",
+            "lineNumber": 535
+          },
+          {
+            "lineNumber": 536
+          },
+          {
+            "text": "    # search",
+            "lineNumber": 537
+          },
+          {
+            "text": "    if cmd in (\"search\", \"s\"):",
+            "lineNumber": 538
+          },
+          {
+            "text": "        if not arg:",
+            "lineNumber": 539
+          },
+          {
+            "text": "            return current_project, True, \"Usage: /search your query\", None",
+            "lineNumber": 540
+          },
+          {
+            "text": "        return current_project, True, arg, \"search\"",
+            "lineNumber": 541
+          },
+          {
+            "lineNumber": 542
+          },
+          {
+            "text": "    # multiline paste mode",
+            "lineNumber": 543
+          },
+          {
+            "text": "    if cmd in (\"paste\", \"block\", \"ml\"):",
+            "lineNumber": 544
+          },
+          {
+            "text": "        # Check if user wants vim mode (e.g., /paste vim or /paste --vim)",
+            "lineNumber": 545
+          },
+          {
+            "text": "        use_vim = len(parts) &gt; 1 and parts[1].lower() in (\"vim\", \"vi\", \"--vim\", \"--vi\", \"-v\")",
+            "lineNumber": 546
+          },
+          {
+            "text": "        return current_project, True, \"vim\" if use_vim else \"\", \"multiline\"",
+            "lineNumber": 547
+          },
+          {
+            "lineNumber": 548
+          },
+          {
+            "text": "    # read file",
+            "lineNumber": 549
+          },
+          {
+            "text": "    if cmd in (\"readfile\", \"read\", \"file\"):",
+            "lineNumber": 550
+          }
+        ]
+      },
+      "score": 0.3429048955440521
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/conversation_indexer.py",
+        "range": {
+          "startPosition": {
+            "line": 340,
+            "column": 17
+          },
+          "endPosition": {
+            "line": 755
+          }
+        },
+        "contents": "def build_index_prompt(transcript: str) -&gt; str:\n    \"\"\"\n    Build the prompt for Ollama to organize a conversation.\n    \n    Enhanced with explicit JSON format requirements and multiple emphasis points\n    to improve compliance with JSON-only output.\n    \n    Args:\n        transcript: Full conversation transcript from build_transcript()\n    \n    Returns:\n        Prompt string instructing Ollama to return structured JSON\n    \"\"\"\n    prompt = f\"\"\"You MUST return ONLY valid JSON. No markdown, no explanatory text, no additional formatting.\n\nCRITICAL: Your response must start with '{{' and end with '}}'. Do not include any text before or after the JSON object.\n\nYou are a conversation organizer. Analyze the following conversation and extract structured information.\n\nNote: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.\n\nConversation transcript:\n{transcript}\n\nPlease return a JSON object with the following structure:\n{{\n  \"title\": \"A short, descriptive title for this conversation (max 100 characters)\",\n  \"project\": \"One of: THN, DAAS, FF, 700B, or general\",\n  \"tags\": [\"tag1\", \"tag2\", \"tag3\"],\n  \"summary_short\": \"A 1-2 sentence summary of the conversation\",\n  \"summary_detailed\": \"A multi-paragraph detailed summary covering key points, decisions, and context\",\n  \"key_entities\": {{\n    \"people\": [\"person1\", \"person2\"],\n    \"domains\": [\"domain1\", \"domain2\"],\n    \"assets\": [\"asset1\", \"asset2\"]\n  }},\n  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\"],\n  \"memory_snippet\": \"A concise memory blurb (2-3 sentences) that would help future conversations understand the context and decisions made here\"\n}}\n\nIMPORTANT: Return ONLY valid JSON. No markdown formatting, no explanatory text, no code blocks. Just the JSON object starting with '{{' and ending with '}}'.\n\"\"\"\n    return prompt\n\n\ndef index_session(\n    session_id: uuid.UUID | str,\n    model: str = None,\n    version: int = None,\n    override_project: str = None,\n    preserve_project: bool = False,\n) -&gt; Optional[Dict[str, Any]]:\n    ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_index_prompt(transcript: str) -&gt; str:",
+            "lineNumber": 344,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 345
+          },
+          {
+            "text": "    Build the prompt for Ollama to organize a conversation.",
+            "lineNumber": 346
+          },
+          {
+            "text": "    ",
+            "lineNumber": 347
+          },
+          {
+            "text": "    Enhanced with explicit JSON format requirements and multiple emphasis points",
+            "lineNumber": 348
+          },
+          {
+            "text": "    to improve compliance with JSON-only output.",
+            "lineNumber": 349
+          },
+          {
+            "text": "    ",
+            "lineNumber": 350
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 351
+          },
+          {
+            "text": "        transcript: Full conversation transcript from build_transcript()",
+            "lineNumber": 352
+          },
+          {
+            "text": "    ",
+            "lineNumber": 353
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 354
+          },
+          {
+            "text": "        Prompt string instructing Ollama to return structured JSON",
+            "lineNumber": 355
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 356
+          },
+          {
+            "text": "    prompt = f\"\"\"You MUST return ONLY valid JSON. No markdown, no explanatory text, no additional formatting.",
+            "lineNumber": 357
+          },
+          {
+            "lineNumber": 358
+          },
+          {
+            "text": "CRITICAL: Your response must start with '{{' and end with '}}'. Do not include any text before or after the JSON object.",
+            "lineNumber": 359
+          },
+          {
+            "lineNumber": 360
+          },
+          {
+            "text": "You are a conversation organizer. Analyze the following conversation and extract structured information.",
+            "lineNumber": 361
+          },
+          {
+            "lineNumber": 362
+          },
+          {
+            "text": "Note: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.",
+            "lineNumber": 363
+          },
+          {
+            "lineNumber": 364
+          },
+          {
+            "text": "Conversation transcript:",
+            "lineNumber": 365
+          },
+          {
+            "text": "{transcript}",
+            "lineNumber": 366
+          },
+          {
+            "lineNumber": 367
+          },
+          {
+            "text": "Please return a JSON object with the following structure:",
+            "lineNumber": 368
+          },
+          {
+            "text": "{{",
+            "lineNumber": 369
+          },
+          {
+            "text": "  \"title\": \"A short, descriptive title for this conversation (max 100 characters)\",",
+            "lineNumber": 370
+          },
+          {
+            "text": "  \"project\": \"One of: THN, DAAS, FF, 700B, or general\",",
+            "lineNumber": 371
+          },
+          {
+            "text": "  \"tags\": [\"tag1\", \"tag2\", \"tag3\"],",
+            "lineNumber": 372
+          },
+          {
+            "text": "  \"summary_short\": \"A 1-2 sentence summary of the conversation\",",
+            "lineNumber": 373
+          },
+          {
+            "text": "  \"summary_detailed\": \"A multi-paragraph detailed summary covering key points, decisions, and context\",",
+            "lineNumber": 374
+          },
+          {
+            "text": "  \"key_entities\": {{",
+            "lineNumber": 375
+          },
+          {
+            "text": "    \"people\": [\"person1\", \"person2\"],",
+            "lineNumber": 376
+          },
+          {
+            "text": "    \"domains\": [\"domain1\", \"domain2\"],",
+            "lineNumber": 377
+          },
+          {
+            "text": "    \"assets\": [\"asset1\", \"asset2\"]",
+            "lineNumber": 378
+          },
+          {
+            "text": "  }},",
+            "lineNumber": 379
+          },
+          {
+            "text": "  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\"],",
+            "lineNumber": 380
+          },
+          {
+            "text": "  \"memory_snippet\": \"A concise memory blurb (2-3 sentences) that would help future conversations understand the context and decisions made here\"",
+            "lineNumber": 381
+          },
+          {
+            "text": "}}",
+            "lineNumber": 382
+          },
+          {
+            "lineNumber": 383
+          },
+          {
+            "text": "IMPORTANT: Return ONLY valid JSON. No markdown formatting, no explanatory text, no code blocks. Just the JSON object starting with '{{' and ending with '}}'.",
+            "lineNumber": 384
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 385
+          },
+          {
+            "text": "    return prompt",
+            "lineNumber": 386,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 387
+          },
+          {
+            "lineNumber": 388
+          },
+          {
+            "text": "def index_session(",
+            "lineNumber": 389,
+            "isSignature": true
+          },
+          {
+            "text": "    session_id: uuid.UUID | str,",
+            "lineNumber": 390,
+            "isSignature": true
+          },
+          {
+            "text": "    model: str = None,",
+            "lineNumber": 391,
+            "isSignature": true
+          },
+          {
+            "text": "    version: int = None,",
+            "lineNumber": 392,
+            "isSignature": true
+          },
+          {
+            "text": "    override_project: str = None,",
+            "lineNumber": 393,
+            "isSignature": true
+          },
+          {
+            "text": "    preserve_project: bool = False,",
+            "lineNumber": 394,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 395,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 396
+          }
+        ]
+      },
+      "score": 0.3410451412200928
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 62
+          }
+        },
+        "contents": "# Data Model: Enhance THN RAG System\n\n## Overview\n\nThis feature modifies the RAG (Retrieval Augmented Generation) system for THN project. No database schema changes are required - we use existing tables (&#96;conversation_index&#96; and &#96;code_index&#96;).\n\n## Existing Tables Used\n\n### 1. conversation_index\n\n**Purpose**: Stores conversation summaries and metadata for all projects.\n\n**Relevant Columns for THN RAG**:\n| Column | Type | Usage |\n|--------|------|-------|\n| &#96;session_id&#96; | UUID | Primary key (not used in RAG output) |\n| &#96;project&#96; | TEXT | Filter: &#96;WHERE project = 'THN'&#96; |\n| &#96;title&#96; | TEXT | Displayed in RAG as \"**Title:** {title}\" |\n| &#96;tags&#96; | JSONB | Displayed as comma-separated list |\n| &#96;key_entities&#96; | JSONB | Displayed as comma-separated list |\n| &#96;summary_detailed&#96; | TEXT | Displayed in RAG (truncated to 500 chars if needed) |\n| &#96;memory_snippet&#96; | TEXT | Displayed in RAG (truncated to 300 chars if needed) |\n| &#96;indexed_at&#96; | TIMESTAMPTZ | Used for ordering: &#96;ORDER BY indexed_at DESC&#96; |\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT title, tags, key_entities, summary_detailed, memory_snippet\nFROM conversation_index\nWHERE project = 'THN'\nORDER BY indexed_at DESC\nLIMIT 5\n&#96;&#96;&#96;\n\n### 2. code_index\n\n**Purpose**: Stores code chunks with embeddings for semantic search.\n\n**Relevant Columns for THN RAG**:\n| Column | Type | Usage |\n|--------|------|-------|\n| &#96;id&#96; | UUID | Primary key (not used in RAG output) |\n| &#96;file_path&#96; | TEXT | Displayed as \"**File:** {file_path}\" |\n| &#96;language&#96; | TEXT | Displayed as \"**Language:** {language}\" |\n| &#96;chunk_text&#96; | TEXT | Displayed in code block (truncated to 1000 chars if needed) |\n| &#96;chunk_metadata&#96; | JSONB | Used to extract function_name/class_name for description |\n| &#96;embedding&#96; | vector(1536) | Used for vector similarity search |\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT file_path, language, chunk_text, chunk_metadata\nFROM code_index\nWHERE embedding IS NOT NULL\nORDER BY embedding &lt;=&gt; %s::vector\nLIMIT 5\n&#96;&#96;&#96;\n\n## Data Flow\n\n1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;\n2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature modifies the RAG (Retrieval Augmented Generation) system for THN project. No database schema changes are required - we use existing tables (&#96;conversation_index&#96; and &#96;code_index&#96;).",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Existing Tables Used",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. conversation_index",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Purpose**: Stores conversation summaries and metadata for all projects.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Relevant Columns for THN RAG**:",
+            "lineNumber": 13
+          },
+          {
+            "text": "| Column | Type | Usage |",
+            "lineNumber": 14
+          },
+          {
+            "text": "|--------|------|-------|",
+            "lineNumber": 15
+          },
+          {
+            "text": "| &#96;session_id&#96; | UUID | Primary key (not used in RAG output) |",
+            "lineNumber": 16
+          },
+          {
+            "text": "| &#96;project&#96; | TEXT | Filter: &#96;WHERE project = 'THN'&#96; |",
+            "lineNumber": 17
+          },
+          {
+            "text": "| &#96;title&#96; | TEXT | Displayed in RAG as \"**Title:** {title}\" |",
+            "lineNumber": 18
+          },
+          {
+            "text": "| &#96;tags&#96; | JSONB | Displayed as comma-separated list |",
+            "lineNumber": 19
+          },
+          {
+            "text": "| &#96;key_entities&#96; | JSONB | Displayed as comma-separated list |",
+            "lineNumber": 20
+          },
+          {
+            "text": "| &#96;summary_detailed&#96; | TEXT | Displayed in RAG (truncated to 500 chars if needed) |",
+            "lineNumber": 21
+          },
+          {
+            "text": "| &#96;memory_snippet&#96; | TEXT | Displayed in RAG (truncated to 300 chars if needed) |",
+            "lineNumber": 22
+          },
+          {
+            "text": "| &#96;indexed_at&#96; | TIMESTAMPTZ | Used for ordering: &#96;ORDER BY indexed_at DESC&#96; |",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 27
+          },
+          {
+            "text": "SELECT title, tags, key_entities, summary_detailed, memory_snippet",
+            "lineNumber": 28
+          },
+          {
+            "text": "FROM conversation_index",
+            "lineNumber": 29
+          },
+          {
+            "text": "WHERE project = 'THN'",
+            "lineNumber": 30
+          },
+          {
+            "text": "ORDER BY indexed_at DESC",
+            "lineNumber": 31
+          },
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 32
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "### 2. code_index",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Purpose**: Stores code chunks with embeddings for semantic search.",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Relevant Columns for THN RAG**:",
+            "lineNumber": 39
+          },
+          {
+            "text": "| Column | Type | Usage |",
+            "lineNumber": 40
+          },
+          {
+            "text": "|--------|------|-------|",
+            "lineNumber": 41
+          },
+          {
+            "text": "| &#96;id&#96; | UUID | Primary key (not used in RAG output) |",
+            "lineNumber": 42
+          },
+          {
+            "text": "| &#96;file_path&#96; | TEXT | Displayed as \"**File:** {file_path}\" |",
+            "lineNumber": 43
+          },
+          {
+            "text": "| &#96;language&#96; | TEXT | Displayed as \"**Language:** {language}\" |",
+            "lineNumber": 44
+          },
+          {
+            "text": "| &#96;chunk_text&#96; | TEXT | Displayed in code block (truncated to 1000 chars if needed) |",
+            "lineNumber": 45
+          },
+          {
+            "text": "| &#96;chunk_metadata&#96; | JSONB | Used to extract function_name/class_name for description |",
+            "lineNumber": 46
+          },
+          {
+            "text": "| &#96;embedding&#96; | vector(1536) | Used for vector similarity search |",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 51
+          },
+          {
+            "text": "SELECT file_path, language, chunk_text, chunk_metadata",
+            "lineNumber": 52
+          },
+          {
+            "text": "FROM code_index",
+            "lineNumber": 53
+          },
+          {
+            "text": "WHERE embedding IS NOT NULL",
+            "lineNumber": 54
+          },
+          {
+            "text": "ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 55
+          },
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;",
+            "lineNumber": 61
+          },
+          {
+            "text": "2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+            "lineNumber": 62
+          }
+        ]
+      },
+      "score": 0.33974090218544006
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 81
+          }
+        },
+        "contents": "# Quickstart: Enhance THN RAG System\n\n## Overview\n\nThis guide explains how to use and validate the new THN RAG system that provides History &amp; Context and Relevant Code Snippets.\n\n## Prerequisites\n\n- PostgreSQL database with &#96;conversation_index&#96; and &#96;code_index&#96; tables\n- THN project conversations indexed in &#96;conversation_index&#96; table\n- THN code indexed in &#96;code_index&#96; table with embeddings\n- Python 3.10+ environment\n\n## Quick Validation\n\n### 1. Verify Database Tables Exist\n\n&#96;&#96;&#96;sql\n-- Check conversation_index table\nSELECT table_name FROM information_schema.tables\nWHERE table_name = 'conversation_index';\n\n-- Check code_index table\nSELECT table_name FROM information_schema.tables\nWHERE table_name = 'code_index';\n&#96;&#96;&#96;\n\n### 2. Verify THN Data Exists\n\n&#96;&#96;&#96;sql\n-- Check THN conversations\nSELECT COUNT(*) FROM conversation_index WHERE project = 'THN';\n\n-- Check code chunks with embeddings\nSELECT COUNT(*) FROM code_index WHERE embedding IS NOT NULL;\n&#96;&#96;&#96;\n\n### 3. Test RAG Generation\n\nRun a chat session with THN project:\n\n&#96;&#96;&#96;bash\npython3 chat_cli.py\n&#96;&#96;&#96;\n\nThen in the chat:\n\n&#96;&#96;&#96;\n/thn\nWhat is the current network setup?\n&#96;&#96;&#96;\n\nThe system should:\n\n1. Generate system prompt with project overview and rules (first system message)\n2. Generate RAG with History &amp; Context section (last 5 THN conversations)\n3. Generate RAG with Relevant Code Snippets section (top 5 code chunks)\n4. Include RAG in system messages **after** the project_knowledge section (second system message)\n\n### 4. Verify RAG Format\n\nCheck logs for RAG output format. The THN RAG appears as the **second system message**, after the project_knowledge section (overview + rules).\n\n**System Message 1** (Base prompt + project overview + rules):\n\n&#96;&#96;&#96;\nYou are a helpful, accurate, and context-aware AI assistant...\n\nIn this current conversation is tagged as project THN.\n\nHere's a general overview of the project THN: THN (Tumulty Home Network) is a privacy-first...\n\n---\n\n### Project THN rules:\n\n1. Always provide responses strictly related to THN...\n2. Maintain a privacy-first mindset...\n...\n&#96;&#96;&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This guide explains how to use and validate the new THN RAG system that provides History &amp; Context and Relevant Code Snippets.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "- PostgreSQL database with &#96;conversation_index&#96; and &#96;code_index&#96; tables",
+            "lineNumber": 9
+          },
+          {
+            "text": "- THN project conversations indexed in &#96;conversation_index&#96; table",
+            "lineNumber": 10
+          },
+          {
+            "text": "- THN code indexed in &#96;code_index&#96; table with embeddings",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Python 3.10+ environment",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "## Quick Validation",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "### 1. Verify Database Tables Exist",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 18
+          },
+          {
+            "text": "-- Check conversation_index table",
+            "lineNumber": 19
+          },
+          {
+            "text": "SELECT table_name FROM information_schema.tables",
+            "lineNumber": 20
+          },
+          {
+            "text": "WHERE table_name = 'conversation_index';",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "-- Check code_index table",
+            "lineNumber": 23
+          },
+          {
+            "text": "SELECT table_name FROM information_schema.tables",
+            "lineNumber": 24
+          },
+          {
+            "text": "WHERE table_name = 'code_index';",
+            "lineNumber": 25
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "### 2. Verify THN Data Exists",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 30
+          },
+          {
+            "text": "-- Check THN conversations",
+            "lineNumber": 31
+          },
+          {
+            "text": "SELECT COUNT(*) FROM conversation_index WHERE project = 'THN';",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "-- Check code chunks with embeddings",
+            "lineNumber": 34
+          },
+          {
+            "text": "SELECT COUNT(*) FROM code_index WHERE embedding IS NOT NULL;",
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "### 3. Test RAG Generation",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "Run a chat session with THN project:",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 42
+          },
+          {
+            "text": "python3 chat_cli.py",
+            "lineNumber": 43
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "Then in the chat:",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 48
+          },
+          {
+            "text": "/thn",
+            "lineNumber": 49
+          },
+          {
+            "text": "What is the current network setup?",
+            "lineNumber": 50
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "The system should:",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "1. Generate system prompt with project overview and rules (first system message)",
+            "lineNumber": 55
+          },
+          {
+            "text": "2. Generate RAG with History &amp; Context section (last 5 THN conversations)",
+            "lineNumber": 56
+          },
+          {
+            "text": "3. Generate RAG with Relevant Code Snippets section (top 5 code chunks)",
+            "lineNumber": 57
+          },
+          {
+            "text": "4. Include RAG in system messages **after** the project_knowledge section (second system message)",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "### 4. Verify RAG Format",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "Check logs for RAG output format. The THN RAG appears as the **second system message**, after the project_knowledge section (overview + rules).",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "**System Message 1** (Base prompt + project overview + rules):",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 66
+          },
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant...",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "In this current conversation is tagged as project THN.",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "Here's a general overview of the project THN: THN (Tumulty Home Network) is a privacy-first...",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "---",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "### Project THN rules:",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "1. Always provide responses strictly related to THN...",
+            "lineNumber": 77
+          },
+          {
+            "text": "2. Maintain a privacy-first mindset...",
+            "lineNumber": 78
+          },
+          {
+            "text": "...",
+            "lineNumber": 79
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 80
+          }
+        ]
+      },
+      "score": 0.3392316997051239
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 617,
+            "column": 27
+          },
+          "endPosition": {
+            "line": 695
+          }
+        },
+        "contents": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.\n    \n    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks\n    from code_index using vector similarity search. Formats them into a structured RAG context\n    that appears after the project_knowledge section (overview + rules) in system messages.\n    \n    Args:\n        user_message: Current user message for code similarity search\n    \n    Returns:\n        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)\n        \n    Performance:\n        Target: &lt;500ms total generation time\n        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)\n        - Code similarity search: &lt;200ms (uses vector index)\n        - Formatting: &lt;50ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    notes = []\n    context_parts = []\n    \n    # Retrieve and format conversations\n    conv_start = time.time()\n    conversations = _retrieve_thn_conversations(limit=5)\n    conv_time = (time.time() - conv_start) * 1000  # Convert to ms\n    \n    if conversations:\n        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]\n        for row in conversations:\n            formatted = _format_conversation_entry(row)\n            if formatted:\n                history_parts.append(formatted)\n                history_parts.append(\"\")  # Empty line between entries\n        \n        if len(history_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(history_parts))\n            notes.append(\"Retrieved 5 conversations from conversation_index\")\n    \n    # Retrieve and format code snippets\n    code_start = time.time()\n    code_chunks = _retrieve_thn_code(user_message, top_k=5)\n    code_time = (time.time() - code_start) * 1000  # Convert to ms\n    \n    if code_chunks:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:",
+            "lineNumber": 621,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 622
+          },
+          {
+            "text": "    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.",
+            "lineNumber": 623
+          },
+          {
+            "text": "    ",
+            "lineNumber": 624
+          },
+          {
+            "text": "    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks",
+            "lineNumber": 625
+          },
+          {
+            "text": "    from code_index using vector similarity search. Formats them into a structured RAG context",
+            "lineNumber": 626
+          },
+          {
+            "text": "    that appears after the project_knowledge section (overview + rules) in system messages.",
+            "lineNumber": 627
+          },
+          {
+            "text": "    ",
+            "lineNumber": 628
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 629
+          },
+          {
+            "text": "        user_message: Current user message for code similarity search",
+            "lineNumber": 630
+          },
+          {
+            "text": "    ",
+            "lineNumber": 631
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 632
+          },
+          {
+            "text": "        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)",
+            "lineNumber": 633
+          },
+          {
+            "text": "        ",
+            "lineNumber": 634
+          },
+          {
+            "text": "    Performance:",
+            "lineNumber": 635
+          },
+          {
+            "text": "        Target: &lt;500ms total generation time",
+            "lineNumber": 636
+          },
+          {
+            "text": "        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)",
+            "lineNumber": 637
+          },
+          {
+            "text": "        - Code similarity search: &lt;200ms (uses vector index)",
+            "lineNumber": 638
+          },
+          {
+            "text": "        - Formatting: &lt;50ms",
+            "lineNumber": 639
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 640
+          },
+          {
+            "text": "    import time",
+            "lineNumber": 641
+          },
+          {
+            "text": "    start_time = time.time()",
+            "lineNumber": 642
+          },
+          {
+            "text": "    ",
+            "lineNumber": 643
+          },
+          {
+            "text": "    notes = []",
+            "lineNumber": 644
+          },
+          {
+            "text": "    context_parts = []",
+            "lineNumber": 645
+          },
+          {
+            "text": "    ",
+            "lineNumber": 646
+          },
+          {
+            "text": "    # Retrieve and format conversations",
+            "lineNumber": 647
+          },
+          {
+            "text": "    conv_start = time.time()",
+            "lineNumber": 648
+          },
+          {
+            "text": "    conversations = _retrieve_thn_conversations(limit=5)",
+            "lineNumber": 649
+          },
+          {
+            "text": "    conv_time = (time.time() - conv_start) * 1000  # Convert to ms",
+            "lineNumber": 650
+          },
+          {
+            "text": "    ",
+            "lineNumber": 651
+          },
+          {
+            "text": "    if conversations:",
+            "lineNumber": 652
+          },
+          {
+            "text": "        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]",
+            "lineNumber": 653
+          },
+          {
+            "text": "        for row in conversations:",
+            "lineNumber": 654
+          },
+          {
+            "text": "            formatted = _format_conversation_entry(row)",
+            "lineNumber": 655
+          },
+          {
+            "text": "            if formatted:",
+            "lineNumber": 656
+          },
+          {
+            "text": "                history_parts.append(formatted)",
+            "lineNumber": 657
+          },
+          {
+            "text": "                history_parts.append(\"\")  # Empty line between entries",
+            "lineNumber": 658
+          },
+          {
+            "text": "        ",
+            "lineNumber": 659
+          },
+          {
+            "text": "        if len(history_parts) &gt; 1:  # More than just the header",
+            "lineNumber": 660
+          },
+          {
+            "text": "            context_parts.append(\"\\n\".join(history_parts))",
+            "lineNumber": 661
+          },
+          {
+            "text": "            notes.append(\"Retrieved 5 conversations from conversation_index\")",
+            "lineNumber": 662
+          },
+          {
+            "text": "    ",
+            "lineNumber": 663
+          },
+          {
+            "text": "    # Retrieve and format code snippets",
+            "lineNumber": 664
+          },
+          {
+            "text": "    code_start = time.time()",
+            "lineNumber": 665
+          },
+          {
+            "text": "    code_chunks = _retrieve_thn_code(user_message, top_k=5)",
+            "lineNumber": 666
+          },
+          {
+            "text": "    code_time = (time.time() - code_start) * 1000  # Convert to ms",
+            "lineNumber": 667
+          },
+          {
+            "text": "    ",
+            "lineNumber": 668
+          },
+          {
+            "text": "    if code_chunks:",
+            "lineNumber": 669
+          }
+        ]
+      },
+      "score": 0.333560585975647
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 67
+          }
+        },
+        "contents": "# API Contract: Context Building System\n\n## Overview\n\nThis contract defines the functions and interfaces for loading and composing system prompts in the context building system.\n\n## Functions\n\n### &#96;load_base_system_prompt() -&gt; str&#96;\n\nLoads the base system prompt from &#96;brain_core/base_system_prompt.txt&#96;.\n\n**Returns**: Base system prompt as string\n\n**Raises**:\n\n- &#96;FileNotFoundError&#96;: If file doesn't exist (handled with fallback)\n- &#96;IOError&#96;: If file cannot be read (handled with fallback)\n\n**Side Effects**: Caches prompt in module-level variable to avoid repeated file I/O\n\n**Example**:\n\n&#96;&#96;&#96;python\nfrom brain_core.context_builder import load_base_system_prompt\nbase_prompt = load_base_system_prompt()\n&#96;&#96;&#96;\n\n### &#96;build_project_system_prompt(project: str) -&gt; str&#96;\n\nBuilds the complete system prompt for a given project by composing base prompt with project-specific extension.\n\n**Parameters**:\n\n- &#96;project&#96;: Project tag (THN, DAAS, FF, 700B, or \"general\")\n\n**Returns**: Composed system prompt string\n\n**Behavior**:\n\n- Loads base system prompt\n- If project is not \"general\", appends project-specific extension using format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview from project_knowledge&gt;.\"\n- Returns composed prompt\n\n**Example**:\n\n&#96;&#96;&#96;python\nfrom brain_core.context_builder import build_project_system_prompt\nsystem_prompt = build_project_system_prompt(\"DAAS\")\n&#96;&#96;&#96;\n\n### &#96;build_project_context(project: str, user_message: str, ...) -&gt; Dict[str, Any]&#96;\n\n**Modified Function**: Existing function is refactored to use new system prompt composition.\n\n**Changes**:\n\n- No longer includes hardcoded system prompt text\n- System prompt is built separately using &#96;build_project_system_prompt()&#96;\n- RAG retrieval logic remains unchanged (only used for project-specific conversations)\n\n**Returns**: Dict with 'context' (RAG content) and 'notes' (metadata). System prompt is handled separately in &#96;chat.py&#96;.\n\n## Integration Points\n\n### &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contract: Context Building System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This contract defines the functions and interfaces for loading and composing system prompts in the context building system.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Functions",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### &#96;load_base_system_prompt() -&gt; str&#96;",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "Loads the base system prompt from &#96;brain_core/base_system_prompt.txt&#96;.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Returns**: Base system prompt as string",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Raises**:",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;FileNotFoundError&#96;: If file doesn't exist (handled with fallback)",
+            "lineNumber": 17
+          },
+          {
+            "text": "- &#96;IOError&#96;: If file cannot be read (handled with fallback)",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "**Side Effects**: Caches prompt in module-level variable to avoid repeated file I/O",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 24
+          },
+          {
+            "text": "from brain_core.context_builder import load_base_system_prompt",
+            "lineNumber": 25
+          },
+          {
+            "text": "base_prompt = load_base_system_prompt()",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "### &#96;build_project_system_prompt(project: str) -&gt; str&#96;",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "Builds the complete system prompt for a given project by composing base prompt with project-specific extension.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "- &#96;project&#96;: Project tag (THN, DAAS, FF, 700B, or \"general\")",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Returns**: Composed system prompt string",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- Loads base system prompt",
+            "lineNumber": 41
+          },
+          {
+            "text": "- If project is not \"general\", appends project-specific extension using format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview from project_knowledge&gt;.\"",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Returns composed prompt",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 47
+          },
+          {
+            "text": "from brain_core.context_builder import build_project_system_prompt",
+            "lineNumber": 48
+          },
+          {
+            "text": "system_prompt = build_project_system_prompt(\"DAAS\")",
+            "lineNumber": 49
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "### &#96;build_project_context(project: str, user_message: str, ...) -&gt; Dict[str, Any]&#96;",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "**Modified Function**: Existing function is refactored to use new system prompt composition.",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "**Changes**:",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- No longer includes hardcoded system prompt text",
+            "lineNumber": 58
+          },
+          {
+            "text": "- System prompt is built separately using &#96;build_project_system_prompt()&#96;",
+            "lineNumber": 59
+          },
+          {
+            "text": "- RAG retrieval logic remains unchanged (only used for project-specific conversations)",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "**Returns**: Dict with 'context' (RAG content) and 'notes' (metadata). System prompt is handled separately in &#96;chat.py&#96;.",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "## Integration Points",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96;",
+            "lineNumber": 66
+          }
+        ]
+      },
+      "score": 0.33142244815826416
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 49
+          },
+          "endPosition": {
+            "line": 111
+          }
+        },
+        "contents": "   &#96;&#96;&#96;&#96;\n   ### History &amp; Context: Last 5 Conversations\n\n   - **Title:** {title_1}\n   - **Tags:** {tags_1}\n   - **Key Entities:** {key_entities_1}\n   - **Summary:** {summary_detailed_1}\n   - **Memory Snippet:** {memory_snippet_1}\n\n   ... (4 more conversation entries)\n\n   ### Relevant Code Snippets\n\n   {# Example Code Snippet #}\n   **File:** {file_path_1}\n   **Language:** {language_1}\n   **Description:** {brief_description_1}\n   &#96;&#96;&#96;{language_1}\n   {chunk_text_1}\n   &#96;&#96;&#96;&#96;\n\n   ... (4 more code snippets)\n\n   &#96;&#96;&#96;\n\n   &#96;&#96;&#96;\n\n4. **Integration Points**\n   - New RAG should be generated in &#96;build_project_context()&#96; for THN project only\n   - Output format should match existing context dict structure: &#96;{\"context\": str, \"notes\": List[str]}&#96;\n   - RAG should be included in system messages in &#96;chat.py&#96; **after** the project_knowledge section (which contains overview and rules)\n   - Message order: System prompt (base + project extension with overview/rules) → THN RAG → Note reads → Conversation history\n\n### Non-Functional Requirements\n\n1. **Performance**\n\n   - RAG generation should complete in &lt;500ms\n   - Use efficient database queries with proper indexes\n   - Cache conversation queries when possible\n\n2. **Cost Optimization**\n\n   - Limit conversation history to 5 entries\n   - Limit code snippets to 5 entries\n   - Consider truncating long summaries/memory snippets if needed\n   - Use vector similarity search efficiently (top_k=5)\n\n3. **Maintainability**\n   - Code should be modular and testable\n   - Clear separation between conversation retrieval and code retrieval\n   - Proper error handling and fallback behavior\n\n## Technical Context\n\n### Current Implementation\n\n- **Location**: &#96;brain_core/context_builder.py&#96; - &#96;build_project_context()&#96; function (lines 489-562)\n- **Current THN RAG**: Uses &#96;get_thn_code_context()&#96; from &#96;thn_code_retrieval.py&#96;\n- **Database Tables**:\n  - &#96;conversation_index&#96;: Stores conversation summaries, tags, entities, memory snippets",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "   &#96;&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "text": "   ### History &amp; Context: Last 5 Conversations",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "   - **Title:** {title_1}",
+            "lineNumber": 54
+          },
+          {
+            "text": "   - **Tags:** {tags_1}",
+            "lineNumber": 55
+          },
+          {
+            "text": "   - **Key Entities:** {key_entities_1}",
+            "lineNumber": 56
+          },
+          {
+            "text": "   - **Summary:** {summary_detailed_1}",
+            "lineNumber": 57
+          },
+          {
+            "text": "   - **Memory Snippet:** {memory_snippet_1}",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "   ... (4 more conversation entries)",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "   ### Relevant Code Snippets",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "   {# Example Code Snippet #}",
+            "lineNumber": 64
+          },
+          {
+            "text": "   **File:** {file_path_1}",
+            "lineNumber": 65
+          },
+          {
+            "text": "   **Language:** {language_1}",
+            "lineNumber": 66
+          },
+          {
+            "text": "   **Description:** {brief_description_1}",
+            "lineNumber": 67
+          },
+          {
+            "text": "   &#96;&#96;&#96;{language_1}",
+            "lineNumber": 68
+          },
+          {
+            "text": "   {chunk_text_1}",
+            "lineNumber": 69
+          },
+          {
+            "text": "   &#96;&#96;&#96;&#96;",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "   ... (4 more code snippets)",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 76
+          },
+          {
+            "lineNumber": 77
+          },
+          {
+            "text": "4. **Integration Points**",
+            "lineNumber": 78
+          },
+          {
+            "text": "   - New RAG should be generated in &#96;build_project_context()&#96; for THN project only",
+            "lineNumber": 79
+          },
+          {
+            "text": "   - Output format should match existing context dict structure: &#96;{\"context\": str, \"notes\": List[str]}&#96;",
+            "lineNumber": 80
+          },
+          {
+            "text": "   - RAG should be included in system messages in &#96;chat.py&#96; **after** the project_knowledge section (which contains overview and rules)",
+            "lineNumber": 81
+          },
+          {
+            "text": "   - Message order: System prompt (base + project extension with overview/rules) → THN RAG → Note reads → Conversation history",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "### Non-Functional Requirements",
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85
+          },
+          {
+            "text": "1. **Performance**",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "   - RAG generation should complete in &lt;500ms",
+            "lineNumber": 88
+          },
+          {
+            "text": "   - Use efficient database queries with proper indexes",
+            "lineNumber": 89
+          },
+          {
+            "text": "   - Cache conversation queries when possible",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "2. **Cost Optimization**",
+            "lineNumber": 92
+          },
+          {
+            "lineNumber": 93
+          },
+          {
+            "text": "   - Limit conversation history to 5 entries",
+            "lineNumber": 94
+          },
+          {
+            "text": "   - Limit code snippets to 5 entries",
+            "lineNumber": 95
+          },
+          {
+            "text": "   - Consider truncating long summaries/memory snippets if needed",
+            "lineNumber": 96
+          },
+          {
+            "text": "   - Use vector similarity search efficiently (top_k=5)",
+            "lineNumber": 97
+          },
+          {
+            "lineNumber": 98
+          },
+          {
+            "text": "3. **Maintainability**",
+            "lineNumber": 99
+          },
+          {
+            "text": "   - Code should be modular and testable",
+            "lineNumber": 100
+          },
+          {
+            "text": "   - Clear separation between conversation retrieval and code retrieval",
+            "lineNumber": 101
+          },
+          {
+            "text": "   - Proper error handling and fallback behavior",
+            "lineNumber": 102
+          },
+          {
+            "lineNumber": 103
+          },
+          {
+            "text": "## Technical Context",
+            "lineNumber": 104
+          },
+          {
+            "lineNumber": 105
+          },
+          {
+            "text": "### Current Implementation",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "- **Location**: &#96;brain_core/context_builder.py&#96; - &#96;build_project_context()&#96; function (lines 489-562)",
+            "lineNumber": 108
+          },
+          {
+            "text": "- **Current THN RAG**: Uses &#96;get_thn_code_context()&#96; from &#96;thn_code_retrieval.py&#96;",
+            "lineNumber": 109
+          },
+          {
+            "text": "- **Database Tables**:",
+            "lineNumber": 110
+          },
+          {
+            "text": "  - &#96;conversation_index&#96;: Stores conversation summaries, tags, entities, memory snippets",
+            "lineNumber": 111
+          }
+        ]
+      },
+      "score": 0.3294456899166107
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 203,
+            "column": 39
+          },
+          "endPosition": {
+            "line": 259
+          }
+        },
+        "contents": "def debug_rag_context(project: str, user_message: str = \"\"):\n    \"\"\"Print out the RAG context for THN or DAAS project (/rag).\"\"\"\n    if project.upper() not in (\"THN\", \"DAAS\"):\n        print(color_text(f\"[rag] RAG context is only available for THN or DAAS project (current: {project})\", \"orange\"))\n        return\n    \n    from brain_core.context_builder import build_thn_rag_context, build_daas_rag_context\n    \n    project_label = project.upper()\n    print(color_text(f\"[rag] Generating RAG context for {project_label}\", \"green\"))\n    print(color_text(\"-\" * 60, \"grey\"))\n    \n    try:\n        if project.upper() == \"THN\":\n            rag_result = build_thn_rag_context(user_message or \"THN project\")\n        elif project.upper() == \"DAAS\":\n            rag_result = build_daas_rag_context(user_message or \"DAAS project\", top_k=3)\n        else:\n            print(color_text(f\"[rag] Unsupported project for RAG: {project}\", \"orange\"))\n            return\n        \n        if rag_result.get(\"context\"):\n            print(rag_result[\"context\"])\n            if rag_result.get(\"notes\"):\n                print(color_text(\"\\nKey sources:\", \"grey\"))\n                for note in rag_result[\"notes\"]:\n                    print(color_text(f\"  - {note}\", \"grey\"))\n        else:\n            print(color_text(\"No RAG context generated (empty result)\", \"orange\"))\n    except Exception as e:\n        print(color_text(f\"[rag] Error generating RAG context: {e}\", \"orange\"))\n    \n    print(color_text(\"-\" * 60, \"grey\"))\n\n\ndef run_search_command(project: str, query: str):\n    \"\"\"Run a text-only deep search over messages (/search).\"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def debug_rag_context(project: str, user_message: str = \"\"):",
+            "lineNumber": 207,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Print out the RAG context for THN or DAAS project (/rag).\"\"\"",
+            "lineNumber": 208
+          },
+          {
+            "text": "    if project.upper() not in (\"THN\", \"DAAS\"):",
+            "lineNumber": 209
+          },
+          {
+            "text": "        print(color_text(f\"[rag] RAG context is only available for THN or DAAS project (current: {project})\", \"orange\"))",
+            "lineNumber": 210
+          },
+          {
+            "text": "        return",
+            "lineNumber": 211
+          },
+          {
+            "text": "    ",
+            "lineNumber": 212
+          },
+          {
+            "text": "    from brain_core.context_builder import build_thn_rag_context, build_daas_rag_context",
+            "lineNumber": 213
+          },
+          {
+            "text": "    ",
+            "lineNumber": 214
+          },
+          {
+            "text": "    project_label = project.upper()",
+            "lineNumber": 215
+          },
+          {
+            "text": "    print(color_text(f\"[rag] Generating RAG context for {project_label}\", \"green\"))",
+            "lineNumber": 216
+          },
+          {
+            "text": "    print(color_text(\"-\" * 60, \"grey\"))",
+            "lineNumber": 217
+          },
+          {
+            "text": "    ",
+            "lineNumber": 218
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 219
+          },
+          {
+            "text": "        if project.upper() == \"THN\":",
+            "lineNumber": 220
+          },
+          {
+            "text": "            rag_result = build_thn_rag_context(user_message or \"THN project\")",
+            "lineNumber": 221
+          },
+          {
+            "text": "        elif project.upper() == \"DAAS\":",
+            "lineNumber": 222
+          },
+          {
+            "text": "            rag_result = build_daas_rag_context(user_message or \"DAAS project\", top_k=3)",
+            "lineNumber": 223
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 224
+          },
+          {
+            "text": "            print(color_text(f\"[rag] Unsupported project for RAG: {project}\", \"orange\"))",
+            "lineNumber": 225
+          },
+          {
+            "text": "            return",
+            "lineNumber": 226
+          },
+          {
+            "text": "        ",
+            "lineNumber": 227
+          },
+          {
+            "text": "        if rag_result.get(\"context\"):",
+            "lineNumber": 228
+          },
+          {
+            "text": "            print(rag_result[\"context\"])",
+            "lineNumber": 229
+          },
+          {
+            "text": "            if rag_result.get(\"notes\"):",
+            "lineNumber": 230
+          },
+          {
+            "text": "                print(color_text(\"\\nKey sources:\", \"grey\"))",
+            "lineNumber": 231
+          },
+          {
+            "text": "                for note in rag_result[\"notes\"]:",
+            "lineNumber": 232
+          },
+          {
+            "text": "                    print(color_text(f\"  - {note}\", \"grey\"))",
+            "lineNumber": 233
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 234
+          },
+          {
+            "text": "            print(color_text(\"No RAG context generated (empty result)\", \"orange\"))",
+            "lineNumber": 235
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 236
+          },
+          {
+            "text": "        print(color_text(f\"[rag] Error generating RAG context: {e}\", \"orange\"))",
+            "lineNumber": 237
+          },
+          {
+            "text": "    ",
+            "lineNumber": 238
+          },
+          {
+            "text": "    print(color_text(\"-\" * 60, \"grey\"))",
+            "lineNumber": 239,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 240
+          },
+          {
+            "lineNumber": 241
+          },
+          {
+            "text": "def run_search_command(project: str, query: str):",
+            "lineNumber": 242,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Run a text-only deep search over messages (/search).\"\"\"",
+            "lineNumber": 243
+          }
+        ]
+      },
+      "score": 0.3259066939353943
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How does the /mcp command work and where does it sync notes from?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 674,
+            "column": 11
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n    \"\"\"\n    Handle /mcp command with subcommands.\n    \n    Commands:\n    - /mcp status - Show status of MCP server\n    - /mcp list [project] - List all meditation note resources (optionally filtered by project)\n    - /mcp read &lt;uri|title|slug&gt; [project] - Read a specific note by URI, title, or slug\n    - /mcp search &lt;query&gt; [limit] - Search notes\n    - /mcp sync - Sync repository from GitLab\n    - /mcp save [title] - Save current conversation as a note\n    \"\"\"\n    if not args:\n        print(color_text(\"Usage: /mcp [status|list [project]|read &lt;uri|title|slug&gt; [project]|search &lt;query&gt; [limit]|sync|save [title]]\", \"orange\"))\n        return\n    \n    parts = args.split()\n    subcmd = parts[0].lower() if parts else \"\"\n    \n    try:\n        from src.mcp.api import get_mcp_api\n        \n        api = get_mcp_api()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 679
+          },
+          {
+            "text": "    Handle /mcp command with subcommands.",
+            "lineNumber": 680
+          },
+          {
+            "text": "    ",
+            "lineNumber": 681
+          },
+          {
+            "text": "    Commands:",
+            "lineNumber": 682
+          },
+          {
+            "text": "    - /mcp status - Show status of MCP server",
+            "lineNumber": 683
+          },
+          {
+            "text": "    - /mcp list [project] - List all meditation note resources (optionally filtered by project)",
+            "lineNumber": 684
+          },
+          {
+            "text": "    - /mcp read &lt;uri|title|slug&gt; [project] - Read a specific note by URI, title, or slug",
+            "lineNumber": 685
+          },
+          {
+            "text": "    - /mcp search &lt;query&gt; [limit] - Search notes",
+            "lineNumber": 686
+          },
+          {
+            "text": "    - /mcp sync - Sync repository from GitLab",
+            "lineNumber": 687
+          },
+          {
+            "text": "    - /mcp save [title] - Save current conversation as a note",
+            "lineNumber": 688
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 689
+          },
+          {
+            "text": "    if not args:",
+            "lineNumber": 690
+          },
+          {
+            "text": "        print(color_text(\"Usage: /mcp [status|list [project]|read &lt;uri|title|slug&gt; [project]|search &lt;query&gt; [limit]|sync|save [title]]\", \"orange\"))",
+            "lineNumber": 691
+          },
+          {
+            "text": "        return",
+            "lineNumber": 692
+          },
+          {
+            "text": "    ",
+            "lineNumber": 693
+          },
+          {
+            "text": "    parts = args.split()",
+            "lineNumber": 694
+          },
+          {
+            "text": "    subcmd = parts[0].lower() if parts else \"\"",
+            "lineNumber": 695
+          },
+          {
+            "text": "    ",
+            "lineNumber": 696
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 697
+          },
+          {
+            "text": "        from src.mcp.api import get_mcp_api",
+            "lineNumber": 698
+          },
+          {
+            "text": "        ",
+            "lineNumber": 699
+          },
+          {
+            "text": "        api = get_mcp_api()",
+            "lineNumber": 700
+          }
+        ]
+      },
+      "score": 0.5366607904434204
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/contracts/cli.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 98
+          }
+        },
+        "contents": "# CLI Contract: MCP Integration\n\n## New Commands\n\n### &#96;/mcp list [server]&#96;\n\nList available MCP resources from a server.\n\n**Usage**:\n&#96;&#96;&#96;\n/mcp list\n/mcp list meditation-notes\n&#96;&#96;&#96;\n\n**Behavior**:\n- If no server specified, list resources from all configured servers\n- If server specified, list resources from that server only\n- Display resource URIs, names, and descriptions\n- Use cached resource list if available\n\n**Output Format**:\n&#96;&#96;&#96;\nMCP Resources (meditation-notes):\n  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1\n  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1\n  ...\n&#96;&#96;&#96;\n\n### &#96;/mcp read &lt;uri&gt;&#96;\n\nRead a specific MCP resource.\n\n**Usage**:\n&#96;&#96;&#96;\n/mcp read meditation://note/morning-meditation-2024-12-01\n&#96;&#96;&#96;\n\n**Behavior**:\n- Read resource from MCP server\n- Display content (formatted if markdown)\n- Use cached resource if available and not expired\n- Show error if resource not found\n\n**Output Format**:\n&#96;&#96;&#96;\nResource: meditation://note/morning-meditation-2024-12-01\n==================================================\n\n# Morning Meditation\n\nContent here...\n&#96;&#96;&#96;\n\n### &#96;/mcp search &lt;server&gt; &lt;query&gt; [limit]&#96;\n\nSearch MCP resources using a tool.\n\n**Usage**:\n&#96;&#96;&#96;\n/mcp search meditation-notes \"morning routine\"\n/mcp search meditation-notes \"meditation\" 5\n&#96;&#96;&#96;\n\n**Behavior**:\n- Call search_notes tool (or equivalent) on specified server\n- Display search results\n- Limit results to specified number (default: 10)\n\n**Output Format**:\n&#96;&#96;&#96;\nSearch Results (meditation-notes): \"morning routine\"\n==================================================\n\nFound 3 notes:\n\n1. Morning Meditation - Dec 1\n   meditation://note/morning-meditation-2024-12-01\n   Brief description...\n\n2. Morning Routine\n   meditation://note/morning-routine\n   Brief description...\n&#96;&#96;&#96;\n\n### &#96;/mcp sync [server]&#96;\n\nSync MCP server repository and update index.\n\n**Usage**:\n&#96;&#96;&#96;\n/mcp sync\n/mcp sync meditation-notes\n&#96;&#96;&#96;\n\n**Behavior**:\n- If no server specified, sync all configured servers\n- If server specified, sync that server only\n- Call sync_repository tool (or equivalent)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# CLI Contract: MCP Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## New Commands",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### &#96;/mcp list [server]&#96;",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "List available MCP resources from a server.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**Usage**:",
+            "lineNumber": 9
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 10
+          },
+          {
+            "text": "/mcp list",
+            "lineNumber": 11
+          },
+          {
+            "text": "/mcp list meditation-notes",
+            "lineNumber": 12
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 15
+          },
+          {
+            "text": "- If no server specified, list resources from all configured servers",
+            "lineNumber": 16
+          },
+          {
+            "text": "- If server specified, list resources from that server only",
+            "lineNumber": 17
+          },
+          {
+            "text": "- Display resource URIs, names, and descriptions",
+            "lineNumber": 18
+          },
+          {
+            "text": "- Use cached resource list if available",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Output Format**:",
+            "lineNumber": 21
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 22
+          },
+          {
+            "text": "MCP Resources (meditation-notes):",
+            "lineNumber": 23
+          },
+          {
+            "text": "  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1",
+            "lineNumber": 24
+          },
+          {
+            "text": "  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1",
+            "lineNumber": 25
+          },
+          {
+            "text": "  ...",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "### &#96;/mcp read &lt;uri&gt;&#96;",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "Read a specific MCP resource.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Usage**:",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          },
+          {
+            "text": "/mcp read meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 38
+          },
+          {
+            "text": "- Read resource from MCP server",
+            "lineNumber": 39
+          },
+          {
+            "text": "- Display content (formatted if markdown)",
+            "lineNumber": 40
+          },
+          {
+            "text": "- Use cached resource if available and not expired",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Show error if resource not found",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "**Output Format**:",
+            "lineNumber": 44
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 45
+          },
+          {
+            "text": "Resource: meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 46
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "# Morning Meditation",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "Content here...",
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "### &#96;/mcp search &lt;server&gt; &lt;query&gt; [limit]&#96;",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "Search MCP resources using a tool.",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "**Usage**:",
+            "lineNumber": 58
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 59
+          },
+          {
+            "text": "/mcp search meditation-notes \"morning routine\"",
+            "lineNumber": 60
+          },
+          {
+            "text": "/mcp search meditation-notes \"meditation\" 5",
+            "lineNumber": 61
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 64
+          },
+          {
+            "text": "- Call search_notes tool (or equivalent) on specified server",
+            "lineNumber": 65
+          },
+          {
+            "text": "- Display search results",
+            "lineNumber": 66
+          },
+          {
+            "text": "- Limit results to specified number (default: 10)",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "**Output Format**:",
+            "lineNumber": 69
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 70
+          },
+          {
+            "text": "Search Results (meditation-notes): \"morning routine\"",
+            "lineNumber": 71
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "Found 3 notes:",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "1. Morning Meditation - Dec 1",
+            "lineNumber": 76
+          },
+          {
+            "text": "   meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 77
+          },
+          {
+            "text": "   Brief description...",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "2. Morning Routine",
+            "lineNumber": 80
+          },
+          {
+            "text": "   meditation://note/morning-routine",
+            "lineNumber": 81
+          },
+          {
+            "text": "   Brief description...",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### &#96;/mcp sync [server]&#96;",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "Sync MCP server repository and update index.",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "**Usage**:",
+            "lineNumber": 89
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 90
+          },
+          {
+            "text": "/mcp sync",
+            "lineNumber": 91
+          },
+          {
+            "text": "/mcp sync meditation-notes",
+            "lineNumber": 92
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 93
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 95
+          },
+          {
+            "text": "- If no server specified, sync all configured servers",
+            "lineNumber": 96
+          },
+          {
+            "text": "- If server specified, sync that server only",
+            "lineNumber": 97
+          },
+          {
+            "text": "- Call sync_repository tool (or equivalent)",
+            "lineNumber": 98
+          }
+        ]
+      },
+      "score": 0.49587905406951904
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n    \n    try:\n        from src.mcp.api import get_mcp_api\n        \n        api = get_mcp_api()\n        \n        if subcmd == \"status\":\n            # Show server status\n            status = api.get_status()\n            \n            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))\n            print(color_text(\"=\" * 60, \"grey\"))\n            print(f\"Repository URL: {status['repository_url']}\")\n            print(f\"Repository Path: {status['repository_path']}\")\n            print(f\"Branch: {status['branch']}\")\n            print(f\"Notes Indexed: {status['note_count']}\")\n            if status['last_sync']:\n                print(f\"Last Sync: {status['last_sync']}\")\n            if status['sync_error']:\n                print(color_text(f\"Sync Error: {status['sync_error']}\", \"orange\"))\n            print(color_text(\"=\" * 60, \"grey\"))\n        \n        elif subcmd == \"list\":\n            # List resources, optionally filtered by project",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 695
+          },
+          {
+            "text": "    ",
+            "lineNumber": 696
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 697
+          },
+          {
+            "text": "        from src.mcp.api import get_mcp_api",
+            "lineNumber": 698
+          },
+          {
+            "text": "        ",
+            "lineNumber": 699
+          },
+          {
+            "text": "        api = get_mcp_api()",
+            "lineNumber": 700
+          },
+          {
+            "text": "        ",
+            "lineNumber": 701
+          },
+          {
+            "text": "        if subcmd == \"status\":",
+            "lineNumber": 702
+          },
+          {
+            "text": "            # Show server status",
+            "lineNumber": 703
+          },
+          {
+            "text": "            status = api.get_status()",
+            "lineNumber": 704
+          },
+          {
+            "text": "            ",
+            "lineNumber": 705
+          },
+          {
+            "text": "            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))",
+            "lineNumber": 706
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 707
+          },
+          {
+            "text": "            print(f\"Repository URL: {status['repository_url']}\")",
+            "lineNumber": 708
+          },
+          {
+            "text": "            print(f\"Repository Path: {status['repository_path']}\")",
+            "lineNumber": 709
+          },
+          {
+            "text": "            print(f\"Branch: {status['branch']}\")",
+            "lineNumber": 710
+          },
+          {
+            "text": "            print(f\"Notes Indexed: {status['note_count']}\")",
+            "lineNumber": 711
+          },
+          {
+            "text": "            if status['last_sync']:",
+            "lineNumber": 712
+          },
+          {
+            "text": "                print(f\"Last Sync: {status['last_sync']}\")",
+            "lineNumber": 713
+          },
+          {
+            "text": "            if status['sync_error']:",
+            "lineNumber": 714
+          },
+          {
+            "text": "                print(color_text(f\"Sync Error: {status['sync_error']}\", \"orange\"))",
+            "lineNumber": 715
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 716
+          },
+          {
+            "text": "        ",
+            "lineNumber": 717
+          },
+          {
+            "text": "        elif subcmd == \"list\":",
+            "lineNumber": 718
+          },
+          {
+            "text": "            # List resources, optionally filtered by project",
+            "lineNumber": 719
+          }
+        ]
+      },
+      "score": 0.4526391923427582
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n            \n            # Save note content to conversation so AI can reference it\n            try:\n                from brain_core.db import save_message\n                note_message = (\n                    f\"[Note loaded: {title}]\\n\"\n                    f\"URI: {uri}\\n\"\n                    f\"File: {file_path}\\n\\n\"\n                    f\"{content}\"\n                )\n                save_message(\n                    conversation_id,\n                    \"system\",\n                    note_message,\n                    meta={\"note_read\": True, \"note_uri\": uri, \"note_title\": title, \"note_file_path\": file_path}\n                )\n                print(color_text(\"✓ Note added to conversation context\", \"green\"))\n            except Exception as e:\n                logger.warning(f\"Failed to save note to conversation: {e}\")\n                print(color_text(\"Note: Could not add note to conversation context\", \"orange\"))\n        \n        elif subcmd == \"search\":\n            if len(parts) &lt; 2:\n                print(color_text(\"Usage: /mcp search &lt;query&gt; [limit]\", \"orange\"))\n                return\n            \n            query = parts[1]\n            limit = int(parts[2]) if len(parts) &gt; 2 else 10\n            \n            result = api.search_notes(query, limit)\n            \n            if result and \"content\" in result:\n                for content_item in result[\"content\"]:\n                    if content_item.get(\"type\") == \"text\":\n                        print(color_text(f\"Search Results: \\\"{query}\\\"\", \"cyan\", bold=True))\n                        print(color_text(\"=\" * 60, \"grey\"))\n                        print(content_item.get(\"text\", \"\"))\n                        print(color_text(\"=\" * 60, \"grey\"))\n            else:\n                print(color_text(f\"No results found for '{query}'.\", \"grey\"))\n        \n        elif subcmd == \"sync\":\n            print",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 774
+          },
+          {
+            "text": "            ",
+            "lineNumber": 775
+          },
+          {
+            "text": "            # Save note content to conversation so AI can reference it",
+            "lineNumber": 776
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 777
+          },
+          {
+            "text": "                from brain_core.db import save_message",
+            "lineNumber": 778
+          },
+          {
+            "text": "                note_message = (",
+            "lineNumber": 779
+          },
+          {
+            "text": "                    f\"[Note loaded: {title}]\\n\"",
+            "lineNumber": 780
+          },
+          {
+            "text": "                    f\"URI: {uri}\\n\"",
+            "lineNumber": 781
+          },
+          {
+            "text": "                    f\"File: {file_path}\\n\\n\"",
+            "lineNumber": 782
+          },
+          {
+            "text": "                    f\"{content}\"",
+            "lineNumber": 783
+          },
+          {
+            "text": "                )",
+            "lineNumber": 784
+          },
+          {
+            "text": "                save_message(",
+            "lineNumber": 785
+          },
+          {
+            "text": "                    conversation_id,",
+            "lineNumber": 786
+          },
+          {
+            "text": "                    \"system\",",
+            "lineNumber": 787
+          },
+          {
+            "text": "                    note_message,",
+            "lineNumber": 788
+          },
+          {
+            "text": "                    meta={\"note_read\": True, \"note_uri\": uri, \"note_title\": title, \"note_file_path\": file_path}",
+            "lineNumber": 789
+          },
+          {
+            "text": "                )",
+            "lineNumber": 790
+          },
+          {
+            "text": "                print(color_text(\"✓ Note added to conversation context\", \"green\"))",
+            "lineNumber": 791
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 792
+          },
+          {
+            "text": "                logger.warning(f\"Failed to save note to conversation: {e}\")",
+            "lineNumber": 793
+          },
+          {
+            "text": "                print(color_text(\"Note: Could not add note to conversation context\", \"orange\"))",
+            "lineNumber": 794
+          },
+          {
+            "text": "        ",
+            "lineNumber": 795
+          },
+          {
+            "text": "        elif subcmd == \"search\":",
+            "lineNumber": 796
+          },
+          {
+            "text": "            if len(parts) &lt; 2:",
+            "lineNumber": 797
+          },
+          {
+            "text": "                print(color_text(\"Usage: /mcp search &lt;query&gt; [limit]\", \"orange\"))",
+            "lineNumber": 798
+          },
+          {
+            "text": "                return",
+            "lineNumber": 799
+          },
+          {
+            "text": "            ",
+            "lineNumber": 800
+          },
+          {
+            "text": "            query = parts[1]",
+            "lineNumber": 801
+          },
+          {
+            "text": "            limit = int(parts[2]) if len(parts) &gt; 2 else 10",
+            "lineNumber": 802
+          },
+          {
+            "text": "            ",
+            "lineNumber": 803
+          },
+          {
+            "text": "            result = api.search_notes(query, limit)",
+            "lineNumber": 804
+          },
+          {
+            "text": "            ",
+            "lineNumber": 805
+          },
+          {
+            "text": "            if result and \"content\" in result:",
+            "lineNumber": 806
+          },
+          {
+            "text": "                for content_item in result[\"content\"]:",
+            "lineNumber": 807
+          },
+          {
+            "text": "                    if content_item.get(\"type\") == \"text\":",
+            "lineNumber": 808
+          },
+          {
+            "text": "                        print(color_text(f\"Search Results: \\\"{query}\\\"\", \"cyan\", bold=True))",
+            "lineNumber": 809
+          },
+          {
+            "text": "                        print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 810
+          },
+          {
+            "text": "                        print(content_item.get(\"text\", \"\"))",
+            "lineNumber": 811
+          },
+          {
+            "text": "                        print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 812
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 813
+          },
+          {
+            "text": "                print(color_text(f\"No results found for '{query}'.\", \"grey\"))",
+            "lineNumber": 814
+          },
+          {
+            "text": "        ",
+            "lineNumber": 815
+          },
+          {
+            "text": "        elif subcmd == \"sync\":",
+            "lineNumber": 816
+          },
+          {
+            "text": "            print",
+            "lineNumber": 817
+          }
+        ]
+      },
+      "score": 0.42874428629875183
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/tools.py",
+        "range": {
+          "startPosition": {
+            "line": 16
+          },
+          "endPosition": {
+            "line": 219
+          }
+        },
+        "contents": "class ToolsHandler:\ndef search_notes(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n\n        for note in matches:\n            results_text += f\"## {note.title}\\n\"\n            results_text += f\"URI: {note.uri}\\n\"\n            # Include snippet of content\n            content_snippet = note.content[:200] + \"...\" if len(note.content) &gt; 200 else note.content\n            results_text += f\"\\n{content_snippet}\\n\\n\"\n        \n        logger.debug(f\"Searched for '{query}', found {len(matches)} results\")\n        return {\n            \"content\": [{\n                \"type\": \"text\",\n                \"text\": results_text\n            }]\n        }\n    \n    def sync_repository(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"\n        Handle sync_repository tool invocation.\n        \n        Args:\n            params: Tool parameters (unused)\n            \n        Returns:\n            Sync result response\n        \"\"\"\n        from ..services.index_builder import IndexBuilder\n        \n        logger.info(\"Syncing repository...\")\n        \n        # Create index builder and sync\n        builder = IndexBuilder(self.repository, self.index)\n        success, note_count, error = builder.sync_and_rebuild()\n        \n        if success:\n            message = f\"Repository synced successfully. Indexed {note_count} notes.\"\n            logger.info(message)\n            return {\n                \"content\": [{\n                    \"type\": \"text\",\n                    \"text\": message\n                }]\n            }\n        else:\n            error_message = f\"Sync failed: {error}\"\n            logger.error(error_message)\n            return {\n                \"content\": [{\n                    \"type\": \"text\",\n                    \"text\": error_message\n                }],\n                \"isError\": True\n            }\n    \n    def save_conversation(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 17,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 18,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 32,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 33,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class ToolsHandler:",
+            "lineNumber": 17,
+            "isSignature": true
+          },
+          {
+            "text": "def search_notes(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "        for note in matches:",
+            "lineNumber": 66
+          },
+          {
+            "text": "            results_text += f\"## {note.title}\\n\"",
+            "lineNumber": 67
+          },
+          {
+            "text": "            results_text += f\"URI: {note.uri}\\n\"",
+            "lineNumber": 68
+          },
+          {
+            "text": "            # Include snippet of content",
+            "lineNumber": 69
+          },
+          {
+            "text": "            content_snippet = note.content[:200] + \"...\" if len(note.content) &gt; 200 else note.content",
+            "lineNumber": 70
+          },
+          {
+            "text": "            results_text += f\"\\n{content_snippet}\\n\\n\"",
+            "lineNumber": 71
+          },
+          {
+            "text": "        ",
+            "lineNumber": 72
+          },
+          {
+            "text": "        logger.debug(f\"Searched for '{query}', found {len(matches)} results\")",
+            "lineNumber": 73
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 74
+          },
+          {
+            "text": "            \"content\": [{",
+            "lineNumber": 75
+          },
+          {
+            "text": "                \"type\": \"text\",",
+            "lineNumber": 76
+          },
+          {
+            "text": "                \"text\": results_text",
+            "lineNumber": 77
+          },
+          {
+            "text": "            }]",
+            "lineNumber": 78
+          },
+          {
+            "text": "        }",
+            "lineNumber": 79
+          },
+          {
+            "text": "    ",
+            "lineNumber": 80
+          },
+          {
+            "text": "    def sync_repository(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 81
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 82
+          },
+          {
+            "text": "        Handle sync_repository tool invocation.",
+            "lineNumber": 83
+          },
+          {
+            "text": "        ",
+            "lineNumber": 84
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 85
+          },
+          {
+            "text": "            params: Tool parameters (unused)",
+            "lineNumber": 86
+          },
+          {
+            "text": "            ",
+            "lineNumber": 87
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 88
+          },
+          {
+            "text": "            Sync result response",
+            "lineNumber": 89
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 90
+          },
+          {
+            "text": "        from ..services.index_builder import IndexBuilder",
+            "lineNumber": 91
+          },
+          {
+            "text": "        ",
+            "lineNumber": 92
+          },
+          {
+            "text": "        logger.info(\"Syncing repository...\")",
+            "lineNumber": 93
+          },
+          {
+            "text": "        ",
+            "lineNumber": 94
+          },
+          {
+            "text": "        # Create index builder and sync",
+            "lineNumber": 95
+          },
+          {
+            "text": "        builder = IndexBuilder(self.repository, self.index)",
+            "lineNumber": 96
+          },
+          {
+            "text": "        success, note_count, error = builder.sync_and_rebuild()",
+            "lineNumber": 97
+          },
+          {
+            "text": "        ",
+            "lineNumber": 98
+          },
+          {
+            "text": "        if success:",
+            "lineNumber": 99
+          },
+          {
+            "text": "            message = f\"Repository synced successfully. Indexed {note_count} notes.\"",
+            "lineNumber": 100
+          },
+          {
+            "text": "            logger.info(message)",
+            "lineNumber": 101
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 102
+          },
+          {
+            "text": "                \"content\": [{",
+            "lineNumber": 103
+          },
+          {
+            "text": "                    \"type\": \"text\",",
+            "lineNumber": 104
+          },
+          {
+            "text": "                    \"text\": message",
+            "lineNumber": 105
+          },
+          {
+            "text": "                }]",
+            "lineNumber": 106
+          },
+          {
+            "text": "            }",
+            "lineNumber": 107
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 108
+          },
+          {
+            "text": "            error_message = f\"Sync failed: {error}\"",
+            "lineNumber": 109
+          },
+          {
+            "text": "            logger.error(error_message)",
+            "lineNumber": 110
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 111
+          },
+          {
+            "text": "                \"content\": [{",
+            "lineNumber": 112
+          },
+          {
+            "text": "                    \"type\": \"text\",",
+            "lineNumber": 113
+          },
+          {
+            "text": "                    \"text\": error_message",
+            "lineNumber": 114
+          },
+          {
+            "text": "                }],",
+            "lineNumber": 115
+          },
+          {
+            "text": "                \"isError\": True",
+            "lineNumber": 116
+          },
+          {
+            "text": "            }",
+            "lineNumber": 117
+          },
+          {
+            "text": "    ",
+            "lineNumber": 118
+          },
+          {
+            "text": "    def save_conversation(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 119
+          },
+          {
+            "text": "        ",
+            "lineNumber": 120
+          }
+        ]
+      },
+      "score": 0.42477890849113464
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 55,
+            "column": 6
+          }
+        },
+        "contents": "# MCP Server Integration\n\n## Overview\n\nIntegrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.\n\n## Requirements\n\n### 1. MCP Client Infrastructure\n\n- Implement MCP client that communicates via JSON-RPC over stdio\n- Support stdio transport for MCP server communication\n- Handle MCP protocol initialization and capabilities negotiation\n- Support resource discovery and retrieval\n- Support tool invocation\n\n### 2. Configuration Management\n\n- Add MCP server configuration to project_chat config system\n- Support multiple MCP servers (extensible for future servers)\n- Configuration via environment variables or config file\n- Support for server-specific environment variables\n\n### 3. Meditation MCP Server Integration\n\n- Configure meditation MCP server connection\n- Access meditation notes as resources during conversations\n- Support search_notes tool for finding relevant meditation content\n- Support sync_repository tool for updating note index\n- Integrate meditation notes into conversation context when relevant\n\n### 4. Context Integration\n\n- Automatically include relevant MCP resources in conversation context\n- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)\n- Graceful degradation if MCP server unavailable\n- Cache MCP resources to reduce latency\n\n### 5. CLI Integration\n\n- Add &#96;/mcp&#96; command for manual MCP operations\n- Support listing available MCP resources\n- Support searching MCP resources\n- Support manual sync operations\n\n## Technical Details\n\n### MCP Server Configuration\n\nThe meditation MCP server should be configured as:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Integrate Model Context Protocol (MCP) server support into project_chat to enable access to external resources and tools. The initial integration will support the meditation MCP server, which provides access to meditation notes stored in a GitLab repository.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. MCP Client Infrastructure",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Implement MCP client that communicates via JSON-RPC over stdio",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Support stdio transport for MCP server communication",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Handle MCP protocol initialization and capabilities negotiation",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Support resource discovery and retrieval",
+            "lineNumber": 14
+          },
+          {
+            "text": "- Support tool invocation",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "### 2. Configuration Management",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "- Add MCP server configuration to project_chat config system",
+            "lineNumber": 19
+          },
+          {
+            "text": "- Support multiple MCP servers (extensible for future servers)",
+            "lineNumber": 20
+          },
+          {
+            "text": "- Configuration via environment variables or config file",
+            "lineNumber": 21
+          },
+          {
+            "text": "- Support for server-specific environment variables",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "### 3. Meditation MCP Server Integration",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "- Configure meditation MCP server connection",
+            "lineNumber": 26
+          },
+          {
+            "text": "- Access meditation notes as resources during conversations",
+            "lineNumber": 27
+          },
+          {
+            "text": "- Support search_notes tool for finding relevant meditation content",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Support sync_repository tool for updating note index",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Integrate meditation notes into conversation context when relevant",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "### 4. Context Integration",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "- Automatically include relevant MCP resources in conversation context",
+            "lineNumber": 34
+          },
+          {
+            "text": "- Support project-specific MCP server associations (e.g., meditation notes for DAAS project)",
+            "lineNumber": 35
+          },
+          {
+            "text": "- Graceful degradation if MCP server unavailable",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Cache MCP resources to reduce latency",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "### 5. CLI Integration",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- Add &#96;/mcp&#96; command for manual MCP operations",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Support listing available MCP resources",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Support searching MCP resources",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Support manual sync operations",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "## Technical Details",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "The meditation MCP server should be configured as:",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      ",
+            "lineNumber": 56
+          }
+        ]
+      },
+      "score": 0.4193713963031769
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 946
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n                result = api.save_conversation(\n                    current_project, \n                    messages, \n                    title=title,\n                    gitlab_username=gitlab_username if gitlab_username else None,\n                    gitlab_password=gitlab_password if gitlab_password else None\n                )\n                \n                if result.get(\"success\"):\n                    file_path = result.get(\"file_path\", \"unknown\")\n                    message = result.get(\"message\", \"Note saved\")\n                    print(color_text(f\"✓ {message}\", \"green\"))\n                    if \"Warning\" in message:\n                        print(color_text(f\"  Note: {message.split('(Warning:')[1].rstrip(')')}\", \"orange\"))\n                else:\n                    error_msg = result.get(\"message\", \"Unknown error\")\n                    print(color_text(f\"Error: {error_msg}\", \"orange\"))\n                    \n            except Exception as e:\n                print(color_text(f\"Error saving conversation: {e}\", \"orange\"))\n                logger.exception(\"Error in /mcp save command\")\n        \n        else:\n            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))\n            print(color_text(\"Usage: /mcp [status|list|read &lt;uri&gt;|search &lt;query&gt; [limit]|sync|save [title]]\", \"grey\"))\n    \n    except ImportError as e:\n        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))\n    except Exception as e:\n        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))\n        logger.exception(\"MCP command error\")\n\n\ndef show_project_memory_blurb(project: str, limit: int = 3):\n    \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 879
+          },
+          {
+            "text": "                result = api.save_conversation(",
+            "lineNumber": 880
+          },
+          {
+            "text": "                    current_project, ",
+            "lineNumber": 881
+          },
+          {
+            "text": "                    messages, ",
+            "lineNumber": 882
+          },
+          {
+            "text": "                    title=title,",
+            "lineNumber": 883
+          },
+          {
+            "text": "                    gitlab_username=gitlab_username if gitlab_username else None,",
+            "lineNumber": 884
+          },
+          {
+            "text": "                    gitlab_password=gitlab_password if gitlab_password else None",
+            "lineNumber": 885
+          },
+          {
+            "text": "                )",
+            "lineNumber": 886
+          },
+          {
+            "text": "                ",
+            "lineNumber": 887
+          },
+          {
+            "text": "                if result.get(\"success\"):",
+            "lineNumber": 888
+          },
+          {
+            "text": "                    file_path = result.get(\"file_path\", \"unknown\")",
+            "lineNumber": 889
+          },
+          {
+            "text": "                    message = result.get(\"message\", \"Note saved\")",
+            "lineNumber": 890
+          },
+          {
+            "text": "                    print(color_text(f\"✓ {message}\", \"green\"))",
+            "lineNumber": 891
+          },
+          {
+            "text": "                    if \"Warning\" in message:",
+            "lineNumber": 892
+          },
+          {
+            "text": "                        print(color_text(f\"  Note: {message.split('(Warning:')[1].rstrip(')')}\", \"orange\"))",
+            "lineNumber": 893
+          },
+          {
+            "text": "                else:",
+            "lineNumber": 894
+          },
+          {
+            "text": "                    error_msg = result.get(\"message\", \"Unknown error\")",
+            "lineNumber": 895
+          },
+          {
+            "text": "                    print(color_text(f\"Error: {error_msg}\", \"orange\"))",
+            "lineNumber": 896
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 897
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 898
+          },
+          {
+            "text": "                print(color_text(f\"Error saving conversation: {e}\", \"orange\"))",
+            "lineNumber": 899
+          },
+          {
+            "text": "                logger.exception(\"Error in /mcp save command\")",
+            "lineNumber": 900
+          },
+          {
+            "text": "        ",
+            "lineNumber": 901
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 902
+          },
+          {
+            "text": "            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))",
+            "lineNumber": 903
+          },
+          {
+            "text": "            print(color_text(\"Usage: /mcp [status|list|read &lt;uri&gt;|search &lt;query&gt; [limit]|sync|save [title]]\", \"grey\"))",
+            "lineNumber": 904
+          },
+          {
+            "text": "    ",
+            "lineNumber": 905
+          },
+          {
+            "text": "    except ImportError as e:",
+            "lineNumber": 906
+          },
+          {
+            "text": "        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))",
+            "lineNumber": 907
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 908
+          },
+          {
+            "text": "        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))",
+            "lineNumber": 909
+          },
+          {
+            "text": "        logger.exception(\"MCP command error\")",
+            "lineNumber": 910,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 911
+          },
+          {
+            "lineNumber": 912
+          },
+          {
+            "text": "def show_project_memory_blurb(project: str, limit: int = 3):",
+            "lineNumber": 913,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 914
+          }
+        ]
+      },
+      "score": 0.41243183612823486
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {
+            "line": 103
+          },
+          "endPosition": {
+            "line": 189
+          }
+        },
+        "contents": "You (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nSearch Results (meditation-notes): \"morning routine\"\n==================================================\n\nFound 3 notes:\n\n1. Morning Meditation - Dec 1\n   meditation://note/morning-meditation-2024-12-01\n   ...\n\n2. Morning Routine\n   meditation://note/morning-routine\n   ...\n&#96;&#96;&#96;\n\n### Example 4: Sync Repository\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp sync meditation-notes\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nSyncing meditation-notes...\nRepository sync completed. Found 45 notes (3 new). Index updated.\n✓ Sync complete\n&#96;&#96;&#96;\n\n### Example 5: Automatic Context Integration\n\nWhen discussing meditation topics in DAAS project, relevant meditation notes are automatically included in context:\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: What did I write about morning meditation last week?\n&#96;&#96;&#96;\n\nThe system automatically:\n1. Detects \"morning meditation\" keyword\n2. Searches meditation notes via MCP\n3. Includes relevant notes in conversation context\n4. AI responds with context from your notes\n\n## Troubleshooting\n\n### Issue: MCP Server Not Found\n\n**Symptoms**: &#96;/mcp status&#96; shows server as disconnected\n\n**Solutions**:\n1. Verify MCP server is installed and accessible\n2. Check &#96;command&#96; and &#96;args&#96; in &#96;mcp_config.json&#96;\n3. Verify Python path can find MCP server module\n4. Check server logs for errors\n\n### Issue: Connection Timeout\n\n**Symptoms**: MCP requests timeout\n\n**Solutions**:\n1. Verify GitLab repository is accessible\n2. Check network connectivity\n3. Verify environment variables are set correctly\n4. Check MCP server logs\n\n### Issue: Resources Not Found\n\n**Symptoms**: &#96;/mcp list&#96; returns empty list\n\n**Solutions**:\n1. Run &#96;/mcp sync&#96; to update index\n2. Verify repository has .md files\n3. Check MCP server logs for parsing errors\n4. Verify repository path in configuration\n\n### Issue: Slow Performance\n\n**Symptoms**: MCP commands take &gt;1 second\n\n**Solutions**:\n1. Check cache is working (resources should be cached)\n2. Verify MCP server is running (not restarting each time)\n3. Check repository size (should handle 1000+ notes)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "You (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"",
+            "lineNumber": 104
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 107
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 108
+          },
+          {
+            "text": "Search Results (meditation-notes): \"morning routine\"",
+            "lineNumber": 109
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 110
+          },
+          {
+            "lineNumber": 111
+          },
+          {
+            "text": "Found 3 notes:",
+            "lineNumber": 112
+          },
+          {
+            "lineNumber": 113
+          },
+          {
+            "text": "1. Morning Meditation - Dec 1",
+            "lineNumber": 114
+          },
+          {
+            "text": "   meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 115
+          },
+          {
+            "text": "   ...",
+            "lineNumber": 116
+          },
+          {
+            "lineNumber": 117
+          },
+          {
+            "text": "2. Morning Routine",
+            "lineNumber": 118
+          },
+          {
+            "text": "   meditation://note/morning-routine",
+            "lineNumber": 119
+          },
+          {
+            "text": "   ...",
+            "lineNumber": 120
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 121
+          },
+          {
+            "lineNumber": 122
+          },
+          {
+            "text": "### Example 4: Sync Repository",
+            "lineNumber": 123
+          },
+          {
+            "lineNumber": 124
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 125
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp sync meditation-notes",
+            "lineNumber": 126
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 127
+          },
+          {
+            "lineNumber": 128
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 129
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 130
+          },
+          {
+            "text": "Syncing meditation-notes...",
+            "lineNumber": 131
+          },
+          {
+            "text": "Repository sync completed. Found 45 notes (3 new). Index updated.",
+            "lineNumber": 132
+          },
+          {
+            "text": "✓ Sync complete",
+            "lineNumber": 133
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 134
+          },
+          {
+            "lineNumber": 135
+          },
+          {
+            "text": "### Example 5: Automatic Context Integration",
+            "lineNumber": 136
+          },
+          {
+            "lineNumber": 137
+          },
+          {
+            "text": "When discussing meditation topics in DAAS project, relevant meditation notes are automatically included in context:",
+            "lineNumber": 138
+          },
+          {
+            "lineNumber": 139
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 140
+          },
+          {
+            "text": "You (DAAS) 🟣: What did I write about morning meditation last week?",
+            "lineNumber": 141
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 142
+          },
+          {
+            "lineNumber": 143
+          },
+          {
+            "text": "The system automatically:",
+            "lineNumber": 144
+          },
+          {
+            "text": "1. Detects \"morning meditation\" keyword",
+            "lineNumber": 145
+          },
+          {
+            "text": "2. Searches meditation notes via MCP",
+            "lineNumber": 146
+          },
+          {
+            "text": "3. Includes relevant notes in conversation context",
+            "lineNumber": 147
+          },
+          {
+            "text": "4. AI responds with context from your notes",
+            "lineNumber": 148
+          },
+          {
+            "lineNumber": 149
+          },
+          {
+            "text": "## Troubleshooting",
+            "lineNumber": 150
+          },
+          {
+            "lineNumber": 151
+          },
+          {
+            "text": "### Issue: MCP Server Not Found",
+            "lineNumber": 152
+          },
+          {
+            "lineNumber": 153
+          },
+          {
+            "text": "**Symptoms**: &#96;/mcp status&#96; shows server as disconnected",
+            "lineNumber": 154
+          },
+          {
+            "lineNumber": 155
+          },
+          {
+            "text": "**Solutions**:",
+            "lineNumber": 156
+          },
+          {
+            "text": "1. Verify MCP server is installed and accessible",
+            "lineNumber": 157
+          },
+          {
+            "text": "2. Check &#96;command&#96; and &#96;args&#96; in &#96;mcp_config.json&#96;",
+            "lineNumber": 158
+          },
+          {
+            "text": "3. Verify Python path can find MCP server module",
+            "lineNumber": 159
+          },
+          {
+            "text": "4. Check server logs for errors",
+            "lineNumber": 160
+          },
+          {
+            "lineNumber": 161
+          },
+          {
+            "text": "### Issue: Connection Timeout",
+            "lineNumber": 162
+          },
+          {
+            "lineNumber": 163
+          },
+          {
+            "text": "**Symptoms**: MCP requests timeout",
+            "lineNumber": 164
+          },
+          {
+            "lineNumber": 165
+          },
+          {
+            "text": "**Solutions**:",
+            "lineNumber": 166
+          },
+          {
+            "text": "1. Verify GitLab repository is accessible",
+            "lineNumber": 167
+          },
+          {
+            "text": "2. Check network connectivity",
+            "lineNumber": 168
+          },
+          {
+            "text": "3. Verify environment variables are set correctly",
+            "lineNumber": 169
+          },
+          {
+            "text": "4. Check MCP server logs",
+            "lineNumber": 170
+          },
+          {
+            "lineNumber": 171
+          },
+          {
+            "text": "### Issue: Resources Not Found",
+            "lineNumber": 172
+          },
+          {
+            "lineNumber": 173
+          },
+          {
+            "text": "**Symptoms**: &#96;/mcp list&#96; returns empty list",
+            "lineNumber": 174
+          },
+          {
+            "lineNumber": 175
+          },
+          {
+            "text": "**Solutions**:",
+            "lineNumber": 176
+          },
+          {
+            "text": "1. Run &#96;/mcp sync&#96; to update index",
+            "lineNumber": 177
+          },
+          {
+            "text": "2. Verify repository has .md files",
+            "lineNumber": 178
+          },
+          {
+            "text": "3. Check MCP server logs for parsing errors",
+            "lineNumber": 179
+          },
+          {
+            "text": "4. Verify repository path in configuration",
+            "lineNumber": 180
+          },
+          {
+            "lineNumber": 181
+          },
+          {
+            "text": "### Issue: Slow Performance",
+            "lineNumber": 182
+          },
+          {
+            "lineNumber": 183
+          },
+          {
+            "text": "**Symptoms**: MCP commands take &gt;1 second",
+            "lineNumber": 184
+          },
+          {
+            "lineNumber": 185
+          },
+          {
+            "text": "**Solutions**:",
+            "lineNumber": 186
+          },
+          {
+            "text": "1. Check cache is working (resources should be cached)",
+            "lineNumber": 187
+          },
+          {
+            "text": "2. Verify MCP server is running (not restarting each time)",
+            "lineNumber": 188
+          },
+          {
+            "text": "3. Check repository size (should handle 1000+ notes)",
+            "lineNumber": 189
+          }
+        ]
+      },
+      "score": 0.4086194932460785
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/server.py",
+        "range": {
+          "startPosition": {
+            "line": 172,
+            "column": 19
+          },
+          "endPosition": {
+            "line": 202
+          }
+        },
+        "contents": "def _handle_tool_call(params: Dict[str, Any], tools_handler: ToolsHandler) -&gt; Dict[str, Any]:\n    \"\"\"\n    Handle tools/call request by routing to appropriate tool.\n    \n    Args:\n        params: Tool call parameters with 'name' and 'arguments'\n        tools_handler: ToolsHandler instance\n        \n    Returns:\n        Tool result\n    \"\"\"\n    tool_name = params.get(\"name\")\n    arguments = params.get(\"arguments\", {})\n    \n    if tool_name == \"search_notes\":\n        return tools_handler.search_notes(arguments)\n    elif tool_name == \"sync_repository\":\n        return tools_handler.sync_repository(arguments)\n    elif tool_name == \"save_conversation\":\n        return tools_handler.save_conversation(arguments)\n    else:\n        raise ValueError(f\"Unknown tool: {tool_name}\")\n\n\ndef main():\n    \"\"\"Main entry point for MCP server.\"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def _handle_tool_call(params: Dict[str, Any], tools_handler: ToolsHandler) -&gt; Dict[str, Any]:",
+            "lineNumber": 176,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 177
+          },
+          {
+            "text": "    Handle tools/call request by routing to appropriate tool.",
+            "lineNumber": 178
+          },
+          {
+            "text": "    ",
+            "lineNumber": 179
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 180
+          },
+          {
+            "text": "        params: Tool call parameters with 'name' and 'arguments'",
+            "lineNumber": 181
+          },
+          {
+            "text": "        tools_handler: ToolsHandler instance",
+            "lineNumber": 182
+          },
+          {
+            "text": "        ",
+            "lineNumber": 183
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 184
+          },
+          {
+            "text": "        Tool result",
+            "lineNumber": 185
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 186
+          },
+          {
+            "text": "    tool_name = params.get(\"name\")",
+            "lineNumber": 187
+          },
+          {
+            "text": "    arguments = params.get(\"arguments\", {})",
+            "lineNumber": 188
+          },
+          {
+            "text": "    ",
+            "lineNumber": 189
+          },
+          {
+            "text": "    if tool_name == \"search_notes\":",
+            "lineNumber": 190
+          },
+          {
+            "text": "        return tools_handler.search_notes(arguments)",
+            "lineNumber": 191
+          },
+          {
+            "text": "    elif tool_name == \"sync_repository\":",
+            "lineNumber": 192
+          },
+          {
+            "text": "        return tools_handler.sync_repository(arguments)",
+            "lineNumber": 193
+          },
+          {
+            "text": "    elif tool_name == \"save_conversation\":",
+            "lineNumber": 194
+          },
+          {
+            "text": "        return tools_handler.save_conversation(arguments)",
+            "lineNumber": 195
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 196
+          },
+          {
+            "text": "        raise ValueError(f\"Unknown tool: {tool_name}\")",
+            "lineNumber": 197,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 198
+          },
+          {
+            "lineNumber": 199
+          },
+          {
+            "text": "def main():",
+            "lineNumber": 200,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Main entry point for MCP server.\"\"\"",
+            "lineNumber": 201
+          }
+        ]
+      },
+      "score": 0.4082989990711212
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/contracts/cli.md",
+        "range": {
+          "startPosition": {
+            "line": 96
+          },
+          "endPosition": {
+            "line": 166
+          }
+        },
+        "contents": "- If server specified, sync that server only\n- Call sync_repository tool (or equivalent)\n- Invalidate resource cache after sync\n- Display sync status\n\n**Output Format**:\n&#96;&#96;&#96;\nSyncing meditation-notes...\nRepository sync completed. Found 45 notes (3 new). Index updated.\n✓ Sync complete\n&#96;&#96;&#96;\n\n### &#96;/mcp status&#96;\n\nShow status of all configured MCP servers.\n\n**Usage**:\n&#96;&#96;&#96;\n/mcp status\n&#96;&#96;&#96;\n\n**Behavior**:\n- List all configured MCP servers\n- Show connection status (connected/disconnected/error)\n- Show last error if any\n- Show number of cached resources\n\n**Output Format**:\n&#96;&#96;&#96;\nMCP Server Status:\n==================================================\nmeditation-notes: ✓ Connected (42 resources cached)\ncode-index: ✗ Disconnected (Error: Process not found)\n&#96;&#96;&#96;\n\n## Error Messages\n\n### Server Not Configured\n&#96;&#96;&#96;\nError: MCP server 'meditation-notes' not configured.\nUse /mcp status to see available servers.\n&#96;&#96;&#96;\n\n### Server Not Available\n&#96;&#96;&#96;\nError: MCP server 'meditation-notes' is not available.\nLast error: Connection timeout\n&#96;&#96;&#96;\n\n### Resource Not Found\n&#96;&#96;&#96;\nError: Resource 'meditation://note/non-existent' not found.\n&#96;&#96;&#96;\n\n### Tool Not Available\n&#96;&#96;&#96;\nError: Tool 'search_notes' not available on server 'meditation-notes'.\n&#96;&#96;&#96;\n\n## Integration with Existing Commands\n\n### Context Building\n\nMCP resources are automatically included in conversation context when:\n- Project is associated with an MCP server (via config)\n- User message contains keywords that match resource names\n- Context builder determines MCP resources are relevant\n\nNo CLI changes required - automatic background integration.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- If server specified, sync that server only",
+            "lineNumber": 97
+          },
+          {
+            "text": "- Call sync_repository tool (or equivalent)",
+            "lineNumber": 98
+          },
+          {
+            "text": "- Invalidate resource cache after sync",
+            "lineNumber": 99
+          },
+          {
+            "text": "- Display sync status",
+            "lineNumber": 100
+          },
+          {
+            "lineNumber": 101
+          },
+          {
+            "text": "**Output Format**:",
+            "lineNumber": 102
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 103
+          },
+          {
+            "text": "Syncing meditation-notes...",
+            "lineNumber": 104
+          },
+          {
+            "text": "Repository sync completed. Found 45 notes (3 new). Index updated.",
+            "lineNumber": 105
+          },
+          {
+            "text": "✓ Sync complete",
+            "lineNumber": 106
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 107
+          },
+          {
+            "lineNumber": 108
+          },
+          {
+            "text": "### &#96;/mcp status&#96;",
+            "lineNumber": 109
+          },
+          {
+            "lineNumber": 110
+          },
+          {
+            "text": "Show status of all configured MCP servers.",
+            "lineNumber": 111
+          },
+          {
+            "lineNumber": 112
+          },
+          {
+            "text": "**Usage**:",
+            "lineNumber": 113
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 114
+          },
+          {
+            "text": "/mcp status",
+            "lineNumber": 115
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 116
+          },
+          {
+            "lineNumber": 117
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 118
+          },
+          {
+            "text": "- List all configured MCP servers",
+            "lineNumber": 119
+          },
+          {
+            "text": "- Show connection status (connected/disconnected/error)",
+            "lineNumber": 120
+          },
+          {
+            "text": "- Show last error if any",
+            "lineNumber": 121
+          },
+          {
+            "text": "- Show number of cached resources",
+            "lineNumber": 122
+          },
+          {
+            "lineNumber": 123
+          },
+          {
+            "text": "**Output Format**:",
+            "lineNumber": 124
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 125
+          },
+          {
+            "text": "MCP Server Status:",
+            "lineNumber": 126
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 127
+          },
+          {
+            "text": "meditation-notes: ✓ Connected (42 resources cached)",
+            "lineNumber": 128
+          },
+          {
+            "text": "code-index: ✗ Disconnected (Error: Process not found)",
+            "lineNumber": 129
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 130
+          },
+          {
+            "lineNumber": 131
+          },
+          {
+            "text": "## Error Messages",
+            "lineNumber": 132
+          },
+          {
+            "lineNumber": 133
+          },
+          {
+            "text": "### Server Not Configured",
+            "lineNumber": 134
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 135
+          },
+          {
+            "text": "Error: MCP server 'meditation-notes' not configured.",
+            "lineNumber": 136
+          },
+          {
+            "text": "Use /mcp status to see available servers.",
+            "lineNumber": 137
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 138
+          },
+          {
+            "lineNumber": 139
+          },
+          {
+            "text": "### Server Not Available",
+            "lineNumber": 140
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 141
+          },
+          {
+            "text": "Error: MCP server 'meditation-notes' is not available.",
+            "lineNumber": 142
+          },
+          {
+            "text": "Last error: Connection timeout",
+            "lineNumber": 143
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 144
+          },
+          {
+            "lineNumber": 145
+          },
+          {
+            "text": "### Resource Not Found",
+            "lineNumber": 146
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 147
+          },
+          {
+            "text": "Error: Resource 'meditation://note/non-existent' not found.",
+            "lineNumber": 148
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 149
+          },
+          {
+            "lineNumber": 150
+          },
+          {
+            "text": "### Tool Not Available",
+            "lineNumber": 151
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 152
+          },
+          {
+            "text": "Error: Tool 'search_notes' not available on server 'meditation-notes'.",
+            "lineNumber": 153
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 154
+          },
+          {
+            "lineNumber": 155
+          },
+          {
+            "text": "## Integration with Existing Commands",
+            "lineNumber": 156
+          },
+          {
+            "lineNumber": 157
+          },
+          {
+            "text": "### Context Building",
+            "lineNumber": 158
+          },
+          {
+            "lineNumber": 159
+          },
+          {
+            "text": "MCP resources are automatically included in conversation context when:",
+            "lineNumber": 160
+          },
+          {
+            "text": "- Project is associated with an MCP server (via config)",
+            "lineNumber": 161
+          },
+          {
+            "text": "- User message contains keywords that match resource names",
+            "lineNumber": 162
+          },
+          {
+            "text": "- Context builder determines MCP resources are relevant",
+            "lineNumber": 163
+          },
+          {
+            "lineNumber": 164
+          },
+          {
+            "text": "No CLI changes required - automatic background integration.",
+            "lineNumber": 165
+          }
+        ]
+      },
+      "score": 0.40404269099235535
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/contracts/cli.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 73
+          }
+        },
+        "contents": "# CLI Contracts: Project-Organized Notes\n\n## &#96;/mcp save&#96; Command\n\n### Command Format\n\n&#96;&#96;&#96;\n/mcp save [title]\n&#96;&#96;&#96;\n\n### Description\n\nSaves the current conversation as a markdown note in the appropriate project directory of the Obsidian notebook repository.\n\n### Parameters\n\n- &#96;title&#96; (optional): Title for the saved note. If not provided, system generates a title from conversation content.\n\n### Behavior\n\n1. Collects all messages from the current conversation\n2. Determines project directory based on current project context\n3. Generates markdown content with YAML frontmatter\n4. Creates file in project directory (e.g., &#96;daas/conversation-title.md&#96;)\n5. Commits and pushes to GitLab repository\n6. Updates note index\n\n### Success Response\n\n&#96;&#96;&#96;\n✓ Conversation saved as note: daas/my-conversation-title.md\nNote synced to repository.\n&#96;&#96;&#96;\n\n### Error Responses\n\n&#96;&#96;&#96;\nError: No active conversation to save.\n&#96;&#96;&#96;\n\n&#96;&#96;&#96;\nError: Failed to save note: [error message]\n&#96;&#96;&#96;\n\n### Examples\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp save \"Morning Planning Session\"\n✓ Conversation saved as note: daas/morning-planning-session.md\nNote synced to repository.\n&#96;&#96;&#96;\n\n&#96;&#96;&#96;\nYou (THN) 🟣: /mcp save\n✓ Conversation saved as note: thn/conversation-2025-12-07-103045.md\nNote synced to repository.\n&#96;&#96;&#96;\n\n## Project-Scoped Note Retrieval\n\n### Automatic Behavior\n\nWhen building conversation context, the system automatically filters meditation notes by project directory:\n\n- **DAAS project**: Only notes from &#96;daas/&#96; directory\n- **THN project**: Only notes from &#96;thn/&#96; directory\n- **FF project**: Only notes from &#96;ff/&#96; directory\n- **General project**: Only notes from &#96;general/&#96; directory\n- **700B project**: Only notes from &#96;700b/&#96; directory\n\n### Integration\n\nThis happens automatically in &#96;build_project_context()&#96; - no user command needed. Notes are included in the context when relevant to the user's message.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# CLI Contracts: Project-Organized Notes",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## &#96;/mcp save&#96; Command",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### Command Format",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 7
+          },
+          {
+            "text": "/mcp save [title]",
+            "lineNumber": 8
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "### Description",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "Saves the current conversation as a markdown note in the appropriate project directory of the Obsidian notebook repository.",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "### Parameters",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;title&#96; (optional): Title for the saved note. If not provided, system generates a title from conversation content.",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "### Behavior",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "1. Collects all messages from the current conversation",
+            "lineNumber": 21
+          },
+          {
+            "text": "2. Determines project directory based on current project context",
+            "lineNumber": 22
+          },
+          {
+            "text": "3. Generates markdown content with YAML frontmatter",
+            "lineNumber": 23
+          },
+          {
+            "text": "4. Creates file in project directory (e.g., &#96;daas/conversation-title.md&#96;)",
+            "lineNumber": 24
+          },
+          {
+            "text": "5. Commits and pushes to GitLab repository",
+            "lineNumber": 25
+          },
+          {
+            "text": "6. Updates note index",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "### Success Response",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 30
+          },
+          {
+            "text": "✓ Conversation saved as note: daas/my-conversation-title.md",
+            "lineNumber": 31
+          },
+          {
+            "text": "Note synced to repository.",
+            "lineNumber": 32
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "### Error Responses",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 37
+          },
+          {
+            "text": "Error: No active conversation to save.",
+            "lineNumber": 38
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "text": "Error: Failed to save note: [error message]",
+            "lineNumber": 42
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "### Examples",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 47
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp save \"Morning Planning Session\"",
+            "lineNumber": 48
+          },
+          {
+            "text": "✓ Conversation saved as note: daas/morning-planning-session.md",
+            "lineNumber": 49
+          },
+          {
+            "text": "Note synced to repository.",
+            "lineNumber": 50
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 53
+          },
+          {
+            "text": "You (THN) 🟣: /mcp save",
+            "lineNumber": 54
+          },
+          {
+            "text": "✓ Conversation saved as note: thn/conversation-2025-12-07-103045.md",
+            "lineNumber": 55
+          },
+          {
+            "text": "Note synced to repository.",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Project-Scoped Note Retrieval",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "### Automatic Behavior",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "When building conversation context, the system automatically filters meditation notes by project directory:",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "- **DAAS project**: Only notes from &#96;daas/&#96; directory",
+            "lineNumber": 65
+          },
+          {
+            "text": "- **THN project**: Only notes from &#96;thn/&#96; directory",
+            "lineNumber": 66
+          },
+          {
+            "text": "- **FF project**: Only notes from &#96;ff/&#96; directory",
+            "lineNumber": 67
+          },
+          {
+            "text": "- **General project**: Only notes from &#96;general/&#96; directory",
+            "lineNumber": 68
+          },
+          {
+            "text": "- **700B project**: Only notes from &#96;700b/&#96; directory",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### Integration",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "This happens automatically in &#96;build_project_context()&#96; - no user command needed. Notes are included in the context when relevant to the user's message.",
+            "lineNumber": 73
+          }
+        ]
+      },
+      "score": 0.40207821130752563
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "\"\"\"\nPython API for MCP server.\n\nProvides direct Python interface to MCP server functionality\nwithout requiring stdio communication.\n\"\"\"\nimport os\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any, List, Optional\nfrom datetime import datetime\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\nfrom ..services.project_filter import ProjectDirectoryMapper\nfrom ..services.note_saver import ConversationNote, NoteSaver\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\n\nlogger = logging.getLogger(__name__)\n\n\nclass MCPApi:\n    \"\"\"Python API for accessing MCP server functionality.\"\"\"\n    \n    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):\n        \"\"\"\n        Initialize MCP API.\n        \n        Args:\n            gitlab_url: GitLab repository URL (defaults to env var or default)\n            repo_path: Local repository path (defaults to env var or default)\n            branch: Git branch (defaults to env var or 'main')\n        \"\"\"\n        # Get configuration from parameters or environment\n        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")\n        self.repo_path = Path(repo_path_str)\n        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")\n        \n        # Create repository model\n        self.repository = Repository(\n            url=self.gitlab_url,\n            local_path=self.repo_path,\n            branch=self.branch\n        )\n        \n        # Create note index\n        self.index = NoteIndex()\n        \n        # Create project directory mapper\n        self.project_mapper = ProjectDirectoryMapper()\n        \n        # Create handlers\n        self.resources_handler = ResourcesHandler(self.index)\n        self.tools_handler = ToolsHandler(self.index, self.repository)\n        \n        # Create note saver\n        self.note_saver = NoteSaver(self.repository, self.index)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Python API for MCP server.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides direct Python interface to MCP server functionality",
+            "lineNumber": 4
+          },
+          {
+            "text": "without requiring stdio communication.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "text": "import os",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 9
+          },
+          {
+            "text": "from typing import Dict, Any, List, Optional",
+            "lineNumber": 10
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 13
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 14
+          },
+          {
+            "text": "from ..services.index_builder import IndexBuilder",
+            "lineNumber": 15
+          },
+          {
+            "text": "from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 16
+          },
+          {
+            "text": "from ..services.note_saver import ConversationNote, NoteSaver",
+            "lineNumber": 17
+          },
+          {
+            "text": "from .resources import ResourcesHandler",
+            "lineNumber": 18
+          },
+          {
+            "text": "from .tools import ToolsHandler",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Python API for accessing MCP server functionality.\"\"\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    ",
+            "lineNumber": 26
+          },
+          {
+            "text": "    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):",
+            "lineNumber": 27
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 28
+          },
+          {
+            "text": "        Initialize MCP API.",
+            "lineNumber": 29
+          },
+          {
+            "text": "        ",
+            "lineNumber": 30
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 31
+          },
+          {
+            "text": "            gitlab_url: GitLab repository URL (defaults to env var or default)",
+            "lineNumber": 32
+          },
+          {
+            "text": "            repo_path: Local repository path (defaults to env var or default)",
+            "lineNumber": 33
+          },
+          {
+            "text": "            branch: Git branch (defaults to env var or 'main')",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        # Get configuration from parameters or environment",
+            "lineNumber": 36
+          },
+          {
+            "text": "        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")",
+            "lineNumber": 37
+          },
+          {
+            "text": "        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")",
+            "lineNumber": 38
+          },
+          {
+            "text": "        self.repo_path = Path(repo_path_str)",
+            "lineNumber": 39
+          },
+          {
+            "text": "        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")",
+            "lineNumber": 40
+          },
+          {
+            "text": "        ",
+            "lineNumber": 41
+          },
+          {
+            "text": "        # Create repository model",
+            "lineNumber": 42
+          },
+          {
+            "text": "        self.repository = Repository(",
+            "lineNumber": 43
+          },
+          {
+            "text": "            url=self.gitlab_url,",
+            "lineNumber": 44
+          },
+          {
+            "text": "            local_path=self.repo_path,",
+            "lineNumber": 45
+          },
+          {
+            "text": "            branch=self.branch",
+            "lineNumber": 46
+          },
+          {
+            "text": "        )",
+            "lineNumber": 47
+          },
+          {
+            "text": "        ",
+            "lineNumber": 48
+          },
+          {
+            "text": "        # Create note index",
+            "lineNumber": 49
+          },
+          {
+            "text": "        self.index = NoteIndex()",
+            "lineNumber": 50
+          },
+          {
+            "text": "        ",
+            "lineNumber": 51
+          },
+          {
+            "text": "        # Create project directory mapper",
+            "lineNumber": 52
+          },
+          {
+            "text": "        self.project_mapper = ProjectDirectoryMapper()",
+            "lineNumber": 53
+          },
+          {
+            "text": "        ",
+            "lineNumber": 54
+          },
+          {
+            "text": "        # Create handlers",
+            "lineNumber": 55
+          },
+          {
+            "text": "        self.resources_handler = ResourcesHandler(self.index)",
+            "lineNumber": 56
+          },
+          {
+            "text": "        self.tools_handler = ToolsHandler(self.index, self.repository)",
+            "lineNumber": 57
+          },
+          {
+            "text": "        ",
+            "lineNumber": 58
+          },
+          {
+            "text": "        # Create note saver",
+            "lineNumber": 59
+          },
+          {
+            "text": "        self.note_saver = NoteSaver(self.repository, self.index)",
+            "lineNumber": 60
+          }
+        ]
+      },
+      "score": 0.40042880177497864
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {
+            "line": 23
+          },
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "class MCPApi:\ndef read_resource(self, identifier: str, project: Optional[str] = None) -&gt; Optional[Dict[str, Any]]:\n\n        \n        # If multiple matches, prefer exact slug match, then exact title match\n        if len(matching_notes) &gt; 1:\n            exact_slug = next((n for n in matching_notes if n.slug.lower() == identifier_lower), None)\n            if exact_slug:\n                matching_notes = [exact_slug]\n            else:\n                exact_title = next((n for n in matching_notes if n.title.lower() == identifier_lower), None)\n                if exact_title:\n                    matching_notes = [exact_title]\n        \n        # Use first match\n        note = matching_notes[0]\n        return {\n            \"content\": note.content,\n            \"note\": note.to_dict()\n        }\n    \n    def search_notes(self, query: str, limit: int = 10) -&gt; Dict[str, Any]:\n        \"\"\"\n        Search notes.\n        \n        Args:\n            query: Search query\n            limit: Maximum number of results\n            \n        Returns:\n            Search results\n        \"\"\"\n        return self.tools_handler.search_notes({\"query\": query, \"limit\": limit})\n    \n    def sync_repository(self) -&gt; Dict[str, Any]:\n        \"\"\"\n        Sync repository from GitLab.\n        \n        Returns:\n            Sync result\n        \"\"\"\n        return self.tools_handler.sync_repository({})\n    \n    def list_resources_by_project(self, project: str) -&gt; List[Dict[str, Any]]:\n        ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 24,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 25,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 82,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 83,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "def read_resource(self, identifier: str, project: Optional[str] = None) -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 129
+          },
+          {
+            "text": "        ",
+            "lineNumber": 130
+          },
+          {
+            "text": "        # If multiple matches, prefer exact slug match, then exact title match",
+            "lineNumber": 131
+          },
+          {
+            "text": "        if len(matching_notes) &gt; 1:",
+            "lineNumber": 132
+          },
+          {
+            "text": "            exact_slug = next((n for n in matching_notes if n.slug.lower() == identifier_lower), None)",
+            "lineNumber": 133
+          },
+          {
+            "text": "            if exact_slug:",
+            "lineNumber": 134
+          },
+          {
+            "text": "                matching_notes = [exact_slug]",
+            "lineNumber": 135
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 136
+          },
+          {
+            "text": "                exact_title = next((n for n in matching_notes if n.title.lower() == identifier_lower), None)",
+            "lineNumber": 137
+          },
+          {
+            "text": "                if exact_title:",
+            "lineNumber": 138
+          },
+          {
+            "text": "                    matching_notes = [exact_title]",
+            "lineNumber": 139
+          },
+          {
+            "text": "        ",
+            "lineNumber": 140
+          },
+          {
+            "text": "        # Use first match",
+            "lineNumber": 141
+          },
+          {
+            "text": "        note = matching_notes[0]",
+            "lineNumber": 142
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 143
+          },
+          {
+            "text": "            \"content\": note.content,",
+            "lineNumber": 144
+          },
+          {
+            "text": "            \"note\": note.to_dict()",
+            "lineNumber": 145
+          },
+          {
+            "text": "        }",
+            "lineNumber": 146
+          },
+          {
+            "text": "    ",
+            "lineNumber": 147
+          },
+          {
+            "text": "    def search_notes(self, query: str, limit: int = 10) -&gt; Dict[str, Any]:",
+            "lineNumber": 148
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 149
+          },
+          {
+            "text": "        Search notes.",
+            "lineNumber": 150
+          },
+          {
+            "text": "        ",
+            "lineNumber": 151
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 152
+          },
+          {
+            "text": "            query: Search query",
+            "lineNumber": 153
+          },
+          {
+            "text": "            limit: Maximum number of results",
+            "lineNumber": 154
+          },
+          {
+            "text": "            ",
+            "lineNumber": 155
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 156
+          },
+          {
+            "text": "            Search results",
+            "lineNumber": 157
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 158
+          },
+          {
+            "text": "        return self.tools_handler.search_notes({\"query\": query, \"limit\": limit})",
+            "lineNumber": 159
+          },
+          {
+            "text": "    ",
+            "lineNumber": 160
+          },
+          {
+            "text": "    def sync_repository(self) -&gt; Dict[str, Any]:",
+            "lineNumber": 161
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 162
+          },
+          {
+            "text": "        Sync repository from GitLab.",
+            "lineNumber": 163
+          },
+          {
+            "text": "        ",
+            "lineNumber": 164
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 165
+          },
+          {
+            "text": "            Sync result",
+            "lineNumber": 166
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 167
+          },
+          {
+            "text": "        return self.tools_handler.sync_repository({})",
+            "lineNumber": 168
+          },
+          {
+            "text": "    ",
+            "lineNumber": 169
+          },
+          {
+            "text": "    def list_resources_by_project(self, project: str) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 170
+          },
+          {
+            "text": "        ",
+            "lineNumber": 171
+          }
+        ]
+      },
+      "score": 0.399703711271286
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n        \n        elif subcmd == \"read\":\n            if len(parts) &lt; 2:\n                print(color_text(\"Usage: /mcp read &lt;uri|title|slug&gt; [project]\", \"orange\"))\n                return\n            \n            if not conversation_id:\n                print(color_text(\"Error: No active conversation. Start a conversation first.\", \"orange\"))\n                return\n            \n            identifier = parts[1]\n            project_filter = parts[2] if len(parts) &gt; 2 else current_project\n            \n            result = api.read_resource(identifier, project=project_filter)\n            \n            if not result:\n                print(color_text(f\"Error: Note '{identifier}' not found.\", \"orange\"))\n                if not identifier.startswith(\"meditation://\"):\n                    print(color_text(\"Tip: Try using the full URI (meditation://note/...) or check the title/spelling.\", \"grey\"))\n                return\n            \n            note_info = result.get(\"note\", {})\n            content = result.get(\"content\", \"\")\n            title = note_info.get(\"title\", identifier)\n            uri = note_info.get(\"uri\", identifier)\n            file_path = note_info.get(\"file_path\", \"\")\n            \n            print(color_text(f\"Note: {title}\", \"cyan\", bold=True))\n            if file_path:\n                print(color_text(f\"Path: {file_path}\", \"grey\"))\n            print(color_text(f\"URI: {uri}\", \"grey\"))\n            print(color_text(\"=\" * 60, \"grey\"))\n            print(content)\n            print(color_text(\"=\" * 60, \"grey\"))\n            \n            # Save note content to conversation so AI can reference it",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 740
+          },
+          {
+            "text": "        ",
+            "lineNumber": 741
+          },
+          {
+            "text": "        elif subcmd == \"read\":",
+            "lineNumber": 742
+          },
+          {
+            "text": "            if len(parts) &lt; 2:",
+            "lineNumber": 743
+          },
+          {
+            "text": "                print(color_text(\"Usage: /mcp read &lt;uri|title|slug&gt; [project]\", \"orange\"))",
+            "lineNumber": 744
+          },
+          {
+            "text": "                return",
+            "lineNumber": 745
+          },
+          {
+            "text": "            ",
+            "lineNumber": 746
+          },
+          {
+            "text": "            if not conversation_id:",
+            "lineNumber": 747
+          },
+          {
+            "text": "                print(color_text(\"Error: No active conversation. Start a conversation first.\", \"orange\"))",
+            "lineNumber": 748
+          },
+          {
+            "text": "                return",
+            "lineNumber": 749
+          },
+          {
+            "text": "            ",
+            "lineNumber": 750
+          },
+          {
+            "text": "            identifier = parts[1]",
+            "lineNumber": 751
+          },
+          {
+            "text": "            project_filter = parts[2] if len(parts) &gt; 2 else current_project",
+            "lineNumber": 752
+          },
+          {
+            "text": "            ",
+            "lineNumber": 753
+          },
+          {
+            "text": "            result = api.read_resource(identifier, project=project_filter)",
+            "lineNumber": 754
+          },
+          {
+            "text": "            ",
+            "lineNumber": 755
+          },
+          {
+            "text": "            if not result:",
+            "lineNumber": 756
+          },
+          {
+            "text": "                print(color_text(f\"Error: Note '{identifier}' not found.\", \"orange\"))",
+            "lineNumber": 757
+          },
+          {
+            "text": "                if not identifier.startswith(\"meditation://\"):",
+            "lineNumber": 758
+          },
+          {
+            "text": "                    print(color_text(\"Tip: Try using the full URI (meditation://note/...) or check the title/spelling.\", \"grey\"))",
+            "lineNumber": 759
+          },
+          {
+            "text": "                return",
+            "lineNumber": 760
+          },
+          {
+            "text": "            ",
+            "lineNumber": 761
+          },
+          {
+            "text": "            note_info = result.get(\"note\", {})",
+            "lineNumber": 762
+          },
+          {
+            "text": "            content = result.get(\"content\", \"\")",
+            "lineNumber": 763
+          },
+          {
+            "text": "            title = note_info.get(\"title\", identifier)",
+            "lineNumber": 764
+          },
+          {
+            "text": "            uri = note_info.get(\"uri\", identifier)",
+            "lineNumber": 765
+          },
+          {
+            "text": "            file_path = note_info.get(\"file_path\", \"\")",
+            "lineNumber": 766
+          },
+          {
+            "text": "            ",
+            "lineNumber": 767
+          },
+          {
+            "text": "            print(color_text(f\"Note: {title}\", \"cyan\", bold=True))",
+            "lineNumber": 768
+          },
+          {
+            "text": "            if file_path:",
+            "lineNumber": 769
+          },
+          {
+            "text": "                print(color_text(f\"Path: {file_path}\", \"grey\"))",
+            "lineNumber": 770
+          },
+          {
+            "text": "            print(color_text(f\"URI: {uri}\", \"grey\"))",
+            "lineNumber": 771
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 772
+          },
+          {
+            "text": "            print(content)",
+            "lineNumber": 773
+          },
+          {
+            "text": "            print(color_text(\"=\" * 60, \"grey\"))",
+            "lineNumber": 774
+          },
+          {
+            "text": "            ",
+            "lineNumber": 775
+          },
+          {
+            "text": "            # Save note content to conversation so AI can reference it",
+            "lineNumber": 776
+          }
+        ]
+      },
+      "score": 0.3993072509765625
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 91
+          }
+        },
+        "contents": "# Data Model: MCP Server Integration\n\n## Overview\n\nThis integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.\n\n## Configuration Entities\n\n### MCP Server Configuration\n\n**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;\n\n**Structure**:\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects\n    }\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- &#96;command&#96;: Executable command to start MCP server\n- &#96;args&#96;: Command-line arguments\n- &#96;env&#96;: Environment variables for the server process\n- &#96;projects&#96;: Optional list of project tags that should use this server\n\n## In-Memory Entities\n\n### MCP Client State\n\n**Purpose**: Track active MCP server processes and connections\n\n**Fields**:\n- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")\n- &#96;process&#96;: subprocess.Popen instance\n- &#96;initialized&#96;: Boolean (has initialize been called)\n- &#96;capabilities&#96;: Dict of server capabilities\n- &#96;last_error&#96;: Timestamp and error message of last failure\n- &#96;retry_count&#96;: Number of consecutive failures\n\n### MCP Resource Cache\n\n**Purpose**: Cache MCP resources to reduce latency\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"meditation://note/morning-meditation-2024-12-01\": {\n    \"content\": \"...\",\n    \"mimeType\": \"text/markdown\",\n    \"cached_at\": timestamp,\n    \"ttl\": 300  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n**Fields**:\n- Resource URI as key\n- &#96;content&#96;: Resource content (text)\n- &#96;mimeType&#96;: MIME type of content\n- &#96;cached_at&#96;: Timestamp when cached\n- &#96;ttl&#96;: Time-to-live in seconds\n\n### MCP Resource List Cache\n\n**Purpose**: Cache list of available resources\n\n**Structure**:\n&#96;&#96;&#96;python\n{\n  \"server_name\": {\n    \"resources\": [...],\n    \"cached_at\": timestamp,\n    \"ttl\": 60  # seconds\n  }\n}\n&#96;&#96;&#96;\n\n## No Database Changes\n\n- No new tables required\n- No schema modifications\n- Configuration stored in files, not database",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This integration does not introduce new database tables. MCP resources and configuration are managed in memory and via configuration files.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Configuration Entities",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### MCP Server Configuration",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Location**: &#96;mcp_config.json&#96; or &#96;config.py&#96;",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 13
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 14
+          },
+          {
+            "text": "{",
+            "lineNumber": 15
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 16
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 17
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 18
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 19
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 20
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "      },",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]  // Optional: associate with specific projects",
+            "lineNumber": 23
+          },
+          {
+            "text": "    }",
+            "lineNumber": 24
+          },
+          {
+            "text": "  }",
+            "lineNumber": 25
+          },
+          {
+            "text": "}",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 29
+          },
+          {
+            "text": "- &#96;command&#96;: Executable command to start MCP server",
+            "lineNumber": 30
+          },
+          {
+            "text": "- &#96;args&#96;: Command-line arguments",
+            "lineNumber": 31
+          },
+          {
+            "text": "- &#96;env&#96;: Environment variables for the server process",
+            "lineNumber": 32
+          },
+          {
+            "text": "- &#96;projects&#96;: Optional list of project tags that should use this server",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "## In-Memory Entities",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "### MCP Client State",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Purpose**: Track active MCP server processes and connections",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 41
+          },
+          {
+            "text": "- &#96;server_name&#96;: String identifier (e.g., \"meditation-notes\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "- &#96;process&#96;: subprocess.Popen instance",
+            "lineNumber": 43
+          },
+          {
+            "text": "- &#96;initialized&#96;: Boolean (has initialize been called)",
+            "lineNumber": 44
+          },
+          {
+            "text": "- &#96;capabilities&#96;: Dict of server capabilities",
+            "lineNumber": 45
+          },
+          {
+            "text": "- &#96;last_error&#96;: Timestamp and error message of last failure",
+            "lineNumber": 46
+          },
+          {
+            "text": "- &#96;retry_count&#96;: Number of consecutive failures",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### MCP Resource Cache",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Purpose**: Cache MCP resources to reduce latency",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 53
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 54
+          },
+          {
+            "text": "{",
+            "lineNumber": 55
+          },
+          {
+            "text": "  \"meditation://note/morning-meditation-2024-12-01\": {",
+            "lineNumber": 56
+          },
+          {
+            "text": "    \"content\": \"...\",",
+            "lineNumber": 57
+          },
+          {
+            "text": "    \"mimeType\": \"text/markdown\",",
+            "lineNumber": 58
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 59
+          },
+          {
+            "text": "    \"ttl\": 300  # seconds",
+            "lineNumber": 60
+          },
+          {
+            "text": "  }",
+            "lineNumber": 61
+          },
+          {
+            "text": "}",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 65
+          },
+          {
+            "text": "- Resource URI as key",
+            "lineNumber": 66
+          },
+          {
+            "text": "- &#96;content&#96;: Resource content (text)",
+            "lineNumber": 67
+          },
+          {
+            "text": "- &#96;mimeType&#96;: MIME type of content",
+            "lineNumber": 68
+          },
+          {
+            "text": "- &#96;cached_at&#96;: Timestamp when cached",
+            "lineNumber": 69
+          },
+          {
+            "text": "- &#96;ttl&#96;: Time-to-live in seconds",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "### MCP Resource List Cache",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "**Purpose**: Cache list of available resources",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "**Structure**:",
+            "lineNumber": 76
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 77
+          },
+          {
+            "text": "{",
+            "lineNumber": 78
+          },
+          {
+            "text": "  \"server_name\": {",
+            "lineNumber": 79
+          },
+          {
+            "text": "    \"resources\": [...],",
+            "lineNumber": 80
+          },
+          {
+            "text": "    \"cached_at\": timestamp,",
+            "lineNumber": 81
+          },
+          {
+            "text": "    \"ttl\": 60  # seconds",
+            "lineNumber": 82
+          },
+          {
+            "text": "  }",
+            "lineNumber": 83
+          },
+          {
+            "text": "}",
+            "lineNumber": 84
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "## No Database Changes",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "- No new tables required",
+            "lineNumber": 89
+          },
+          {
+            "text": "- No schema modifications",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Configuration stored in files, not database",
+            "lineNumber": 91
+          }
+        ]
+      },
+      "score": 0.3977476954460144
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 107
+          }
+        },
+        "contents": "# Quickstart: MCP Server Integration\n\n## Overview\n\nThis guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.\n\n## Prerequisites\n\n1. Meditation MCP server installed and accessible\n2. GitLab repository accessible (for meditation notes)\n3. Python 3.10+ (existing requirement)\n\n## Configuration\n\n### Step 1: Create MCP Configuration File\n\nCreate &#96;mcp_config.json&#96; in project root:\n\n&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      },\n      \"projects\": [\"DAAS\"]\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### Step 2: Set Environment Variables (Optional)\n\nIf you need to pass additional environment variables:\n\n&#96;&#96;&#96;bash\nexport MCP_MEDITATION_GITLAB_TOKEN=your-token-here\nexport MCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\nOr add to &#96;.env&#96; file:\n&#96;&#96;&#96;\nMCP_MEDITATION_GITLAB_TOKEN=your-token-here\nMCP_MEDITATION_GITLAB_BRANCH=main\n&#96;&#96;&#96;\n\n### Step 3: Verify Configuration\n\nStart project_chat and check MCP status:\n\n&#96;&#96;&#96;bash\npython3 chat_cli.py\n&#96;&#96;&#96;\n\nIn chat, run:\n&#96;&#96;&#96;\n/mcp status\n&#96;&#96;&#96;\n\nExpected output:\n&#96;&#96;&#96;\nMCP Server Status:\n==================================================\nmeditation-notes: ✓ Connected (42 resources cached)\n&#96;&#96;&#96;\n\n## Usage Examples\n\n### Example 1: List Meditation Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp list meditation-notes\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nMCP Resources (meditation-notes):\n  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1\n  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1\n  ...\n&#96;&#96;&#96;\n\n### Example 2: Read a Specific Note\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01\n&#96;&#96;&#96;\n\nOutput:\n&#96;&#96;&#96;\nResource: meditation://note/morning-meditation-2024-12-01\n==================================================\n\n# Morning Meditation\n\nToday's meditation focused on...\n&#96;&#96;&#96;\n\n### Example 3: Search Notes\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"\n&#96;&#96;&#96;\n\nOutput:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: MCP Server Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This guide shows how to configure and use MCP server integration in project_chat, specifically for the meditation MCP server.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "1. Meditation MCP server installed and accessible",
+            "lineNumber": 9
+          },
+          {
+            "text": "2. GitLab repository accessible (for meditation notes)",
+            "lineNumber": 10
+          },
+          {
+            "text": "3. Python 3.10+ (existing requirement)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "## Configuration",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "### Step 1: Create MCP Configuration File",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "Create &#96;mcp_config.json&#96; in project root:",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 19
+          },
+          {
+            "text": "{",
+            "lineNumber": 20
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 21
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 22
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 23
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 24
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 25
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 26
+          },
+          {
+            "text": "      },",
+            "lineNumber": 27
+          },
+          {
+            "text": "      \"projects\": [\"DAAS\"]",
+            "lineNumber": 28
+          },
+          {
+            "text": "    }",
+            "lineNumber": 29
+          },
+          {
+            "text": "  }",
+            "lineNumber": 30
+          },
+          {
+            "text": "}",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Step 2: Set Environment Variables (Optional)",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "If you need to pass additional environment variables:",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 38
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 39
+          },
+          {
+            "text": "export MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "Or add to &#96;.env&#96; file:",
+            "lineNumber": 43
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 44
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_TOKEN=your-token-here",
+            "lineNumber": 45
+          },
+          {
+            "text": "MCP_MEDITATION_GITLAB_BRANCH=main",
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### Step 3: Verify Configuration",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "Start project_chat and check MCP status:",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 53
+          },
+          {
+            "text": "python3 chat_cli.py",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "In chat, run:",
+            "lineNumber": 57
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 58
+          },
+          {
+            "text": "/mcp status",
+            "lineNumber": 59
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "Expected output:",
+            "lineNumber": 62
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 63
+          },
+          {
+            "text": "MCP Server Status:",
+            "lineNumber": 64
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 65
+          },
+          {
+            "text": "meditation-notes: ✓ Connected (42 resources cached)",
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Usage Examples",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### Example 1: List Meditation Notes",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 73
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp list meditation-notes",
+            "lineNumber": 74
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 77
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 78
+          },
+          {
+            "text": "MCP Resources (meditation-notes):",
+            "lineNumber": 79
+          },
+          {
+            "text": "  meditation://note/morning-meditation-2024-12-01 - Morning Meditation - Dec 1",
+            "lineNumber": 80
+          },
+          {
+            "text": "  meditation://note/evening-meditation-2024-12-01 - Evening Meditation - Dec 1",
+            "lineNumber": 81
+          },
+          {
+            "text": "  ...",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### Example 2: Read a Specific Note",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 87
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp read meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 88
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 91
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 92
+          },
+          {
+            "text": "Resource: meditation://note/morning-meditation-2024-12-01",
+            "lineNumber": 93
+          },
+          {
+            "text": "==================================================",
+            "lineNumber": 94
+          },
+          {
+            "lineNumber": 95
+          },
+          {
+            "text": "# Morning Meditation",
+            "lineNumber": 96
+          },
+          {
+            "lineNumber": 97
+          },
+          {
+            "text": "Today's meditation focused on...",
+            "lineNumber": 98
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "### Example 3: Search Notes",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 103
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp search meditation-notes \"morning routine\"",
+            "lineNumber": 104
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "Output:",
+            "lineNumber": 107
+          }
+        ]
+      },
+      "score": 0.3911491632461548
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 50
+          },
+          "endPosition": {
+            "line": 95
+          }
+        },
+        "contents": "&#96;&#96;&#96;json\n{\n  \"mcpServers\": {\n    \"meditation-notes\": {\n      \"command\": \"python\",\n      \"args\": [\"-m\", \"src.mcp.server\"],\n      \"env\": {\n        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"\n      }\n    }\n  }\n}\n&#96;&#96;&#96;\n\n### MCP Protocol Support\n\n- JSON-RPC 2.0 over stdio\n- Protocol version: 2024-11-05\n- Resources: list and read operations\n- Tools: call operations\n- Error handling with appropriate JSON-RPC error codes\n\n### Integration Points\n\n1. **Context Building**: MCP resources can be included in conversation context\n2. **Tool Invocation**: MCP tools can be called during conversations\n3. **Resource Access**: MCP resources can be read and included in responses\n4. **Project Association**: MCP servers can be associated with specific projects\n\n## Use Cases\n\n1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes\n2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;\n3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;\n4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;\n\n## Constraints\n\n- Must not break existing functionality\n- Must handle MCP server failures gracefully\n- Must support async/background operations for MCP calls\n- Must cache MCP resources to avoid excessive calls\n- Must respect rate limits if MCP server has them",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 52
+          },
+          {
+            "text": "{",
+            "lineNumber": 53
+          },
+          {
+            "text": "  \"mcpServers\": {",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"meditation-notes\": {",
+            "lineNumber": 55
+          },
+          {
+            "text": "      \"command\": \"python\",",
+            "lineNumber": 56
+          },
+          {
+            "text": "      \"args\": [\"-m\", \"src.mcp.server\"],",
+            "lineNumber": 57
+          },
+          {
+            "text": "      \"env\": {",
+            "lineNumber": 58
+          },
+          {
+            "text": "        \"GITLAB_URL\": \"http://192.168.119.200:8201/tumultymedia/meditations\"",
+            "lineNumber": 59
+          },
+          {
+            "text": "      }",
+            "lineNumber": 60
+          },
+          {
+            "text": "    }",
+            "lineNumber": 61
+          },
+          {
+            "text": "  }",
+            "lineNumber": 62
+          },
+          {
+            "text": "}",
+            "lineNumber": 63
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### MCP Protocol Support",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "- JSON-RPC 2.0 over stdio",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Protocol version: 2024-11-05",
+            "lineNumber": 69
+          },
+          {
+            "text": "- Resources: list and read operations",
+            "lineNumber": 70
+          },
+          {
+            "text": "- Tools: call operations",
+            "lineNumber": 71
+          },
+          {
+            "text": "- Error handling with appropriate JSON-RPC error codes",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "### Integration Points",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "1. **Context Building**: MCP resources can be included in conversation context",
+            "lineNumber": 76
+          },
+          {
+            "text": "2. **Tool Invocation**: MCP tools can be called during conversations",
+            "lineNumber": 77
+          },
+          {
+            "text": "3. **Resource Access**: MCP resources can be read and included in responses",
+            "lineNumber": 78
+          },
+          {
+            "text": "4. **Project Association**: MCP servers can be associated with specific projects",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "## Use Cases",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "1. **Automatic Context**: When discussing meditation topics in DAAS project, automatically include relevant meditation notes",
+            "lineNumber": 83
+          },
+          {
+            "text": "2. **Manual Search**: User can search meditation notes using &#96;/mcp search meditation-notes \"morning routine\"&#96;",
+            "lineNumber": 84
+          },
+          {
+            "text": "3. **Resource Access**: User can read specific meditation notes using &#96;/mcp read meditation://note/morning-meditation-2024-12-01&#96;",
+            "lineNumber": 85
+          },
+          {
+            "text": "4. **Sync**: User can sync meditation repository using &#96;/mcp sync meditation-notes&#96;",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "## Constraints",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "- Must not break existing functionality",
+            "lineNumber": 90
+          },
+          {
+            "text": "- Must handle MCP server failures gracefully",
+            "lineNumber": 91
+          },
+          {
+            "text": "- Must support async/background operations for MCP calls",
+            "lineNumber": 92
+          },
+          {
+            "text": "- Must cache MCP resources to avoid excessive calls",
+            "lineNumber": 93
+          },
+          {
+            "text": "- Must respect rate limits if MCP server has them",
+            "lineNumber": 94
+          }
+        ]
+      },
+      "score": 0.3883396089076996
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 117
+          },
+          "endPosition": {
+            "line": 157
+          }
+        },
+        "contents": "**Checkpoint**: At this point, Requirement 4 should be complete with automatic context integration functional\n\n---\n\n## Phase 7: Requirement 5 - CLI Integration (Priority: P2)\n\n**Goal**: Add /mcp command for manual MCP operations\n\n**Independent Test**: Run /mcp status, /mcp list, /mcp read, /mcp search, /mcp sync commands, verify output\n\n### Implementation for Requirement 5\n\n- [X] T037 [R5] Add /mcp command handler in handle_command function in chat_cli.py\n- [X] T038 [R5] Implement /mcp status command to show server status in chat_cli.py\n- [X] T039 [R5] Implement /mcp list command to list resources in chat_cli.py\n- [X] T040 [R5] Implement /mcp read command to read a resource in chat_cli.py\n- [X] T041 [R5] Implement /mcp search command to search resources in chat_cli.py\n- [X] T042 [R5] Implement /mcp sync command to sync repositories in chat_cli.py\n- [X] T043 [R5] Add error message formatting for MCP commands in chat_cli.py\n- [X] T044 [R5] Implement output formatting for MCP command results in chat_cli.py\n\n**Checkpoint**: At this point, Requirement 5 should be complete with CLI commands functional\n\n---\n\n## Phase 8: Polish &amp; Cross-Cutting Concerns\n\n**Purpose**: Final verification and improvements\n\n- [X] T045 [P] Add comprehensive error handling throughout MCP client in brain_core/mcp_client.py\n- [X] T046 [P] Add logging for MCP operations in brain_core/mcp_client.py\n- [X] T047 [P] Add type hints to all MCP functions in brain_core/mcp_client.py\n- [X] T048 [P] Add type hints to all MCP config functions in brain_core/mcp_config.py\n- [X] T049 [P] Update function docstrings with comprehensive documentation in brain_core/mcp_client.py\n- [X] T050 [P] Update function docstrings with comprehensive documentation in brain_core/mcp_config.py\n- [X] T051 Code cleanup and refactoring in brain_core/mcp_client.py\n- [X] T052 Code cleanup and refactoring in brain_core/mcp_config.py\n- [X] T053 Verify graceful degradation when MCP servers unavailable\n- [ ] T054 Test with meditation MCP server end-to-end\n- [ ] T055 Run quickstart.md validation scenarios",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Checkpoint**: At this point, Requirement 4 should be complete with automatic context integration functional",
+            "lineNumber": 118
+          },
+          {
+            "lineNumber": 119
+          },
+          {
+            "text": "---",
+            "lineNumber": 120
+          },
+          {
+            "lineNumber": 121
+          },
+          {
+            "text": "## Phase 7: Requirement 5 - CLI Integration (Priority: P2)",
+            "lineNumber": 122
+          },
+          {
+            "lineNumber": 123
+          },
+          {
+            "text": "**Goal**: Add /mcp command for manual MCP operations",
+            "lineNumber": 124
+          },
+          {
+            "lineNumber": 125
+          },
+          {
+            "text": "**Independent Test**: Run /mcp status, /mcp list, /mcp read, /mcp search, /mcp sync commands, verify output",
+            "lineNumber": 126
+          },
+          {
+            "lineNumber": 127
+          },
+          {
+            "text": "### Implementation for Requirement 5",
+            "lineNumber": 128
+          },
+          {
+            "lineNumber": 129
+          },
+          {
+            "text": "- [X] T037 [R5] Add /mcp command handler in handle_command function in chat_cli.py",
+            "lineNumber": 130
+          },
+          {
+            "text": "- [X] T038 [R5] Implement /mcp status command to show server status in chat_cli.py",
+            "lineNumber": 131
+          },
+          {
+            "text": "- [X] T039 [R5] Implement /mcp list command to list resources in chat_cli.py",
+            "lineNumber": 132
+          },
+          {
+            "text": "- [X] T040 [R5] Implement /mcp read command to read a resource in chat_cli.py",
+            "lineNumber": 133
+          },
+          {
+            "text": "- [X] T041 [R5] Implement /mcp search command to search resources in chat_cli.py",
+            "lineNumber": 134
+          },
+          {
+            "text": "- [X] T042 [R5] Implement /mcp sync command to sync repositories in chat_cli.py",
+            "lineNumber": 135
+          },
+          {
+            "text": "- [X] T043 [R5] Add error message formatting for MCP commands in chat_cli.py",
+            "lineNumber": 136
+          },
+          {
+            "text": "- [X] T044 [R5] Implement output formatting for MCP command results in chat_cli.py",
+            "lineNumber": 137
+          },
+          {
+            "lineNumber": 138
+          },
+          {
+            "text": "**Checkpoint**: At this point, Requirement 5 should be complete with CLI commands functional",
+            "lineNumber": 139
+          },
+          {
+            "lineNumber": 140
+          },
+          {
+            "text": "---",
+            "lineNumber": 141
+          },
+          {
+            "lineNumber": 142
+          },
+          {
+            "text": "## Phase 8: Polish &amp; Cross-Cutting Concerns",
+            "lineNumber": 143
+          },
+          {
+            "lineNumber": 144
+          },
+          {
+            "text": "**Purpose**: Final verification and improvements",
+            "lineNumber": 145
+          },
+          {
+            "lineNumber": 146
+          },
+          {
+            "text": "- [X] T045 [P] Add comprehensive error handling throughout MCP client in brain_core/mcp_client.py",
+            "lineNumber": 147
+          },
+          {
+            "text": "- [X] T046 [P] Add logging for MCP operations in brain_core/mcp_client.py",
+            "lineNumber": 148
+          },
+          {
+            "text": "- [X] T047 [P] Add type hints to all MCP functions in brain_core/mcp_client.py",
+            "lineNumber": 149
+          },
+          {
+            "text": "- [X] T048 [P] Add type hints to all MCP config functions in brain_core/mcp_config.py",
+            "lineNumber": 150
+          },
+          {
+            "text": "- [X] T049 [P] Update function docstrings with comprehensive documentation in brain_core/mcp_client.py",
+            "lineNumber": 151
+          },
+          {
+            "text": "- [X] T050 [P] Update function docstrings with comprehensive documentation in brain_core/mcp_config.py",
+            "lineNumber": 152
+          },
+          {
+            "text": "- [X] T051 Code cleanup and refactoring in brain_core/mcp_client.py",
+            "lineNumber": 153
+          },
+          {
+            "text": "- [X] T052 Code cleanup and refactoring in brain_core/mcp_config.py",
+            "lineNumber": 154
+          },
+          {
+            "text": "- [X] T053 Verify graceful degradation when MCP servers unavailable",
+            "lineNumber": 155
+          },
+          {
+            "text": "- [ ] T054 Test with meditation MCP server end-to-end",
+            "lineNumber": 156
+          },
+          {
+            "text": "- [ ] T055 Run quickstart.md validation scenarios",
+            "lineNumber": 157
+          }
+        ]
+      },
+      "score": 0.3840829133987427
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n  # Remove quotes if user added them\n            \n            # Load conversation messages from database\n            try:\n                from brain_core.db import get_conn\n                from brain_core.chat import load_conversation_messages\n                \n                messages_data = load_conversation_messages(conversation_id, limit=1000)\n                \n                # Convert to format expected by MCP API\n                messages = []\n                for msg in messages_data:\n                    role = msg.get(\"role\", \"unknown\")\n                    content = msg.get(\"content\", \"\")\n                    # Get timestamp from meta or use current time\n                    timestamp = None\n                    if \"meta\" in msg and isinstance(msg[\"meta\"], dict):\n                        timestamp = msg[\"meta\"].get(\"created_at\")\n                    if not timestamp:\n                        timestamp = datetime.datetime.utcnow().isoformat() + \"Z\"\n                    \n                    messages.append({\n                        \"role\": role,\n                        \"content\": content,\n                        \"timestamp\": timestamp\n                    })\n                \n                if not messages:\n                    print(color_text(\"Error: No messages found in conversation.\", \"orange\"))\n                    return\n                \n                # Prompt for GitLab credentials\n                print(color_text(\"GitLab credentials required for push:\", \"grey\"))\n                gitlab_username = input(\"GitLab username: \").strip()\n                gitlab_password = getpass.getpass(\"GitLab password/token: \").strip()\n                \n                if not gitlab_username or not gitlab_password:\n                    print(color_text(\"Warning: No credentials provided. Note will be saved locally but may fail to push.\", \"orange\"))\n                \n                # Save conversation\n                print(color_text(\"Saving conversation...\", \"grey\"))\n                result = api.save_conversation(\n                    current_project, \n                    messages,",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "text": "  # Remove quotes if user added them",
+            "lineNumber": 839
+          },
+          {
+            "text": "            ",
+            "lineNumber": 840
+          },
+          {
+            "text": "            # Load conversation messages from database",
+            "lineNumber": 841
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 842
+          },
+          {
+            "text": "                from brain_core.db import get_conn",
+            "lineNumber": 843
+          },
+          {
+            "text": "                from brain_core.chat import load_conversation_messages",
+            "lineNumber": 844
+          },
+          {
+            "text": "                ",
+            "lineNumber": 845
+          },
+          {
+            "text": "                messages_data = load_conversation_messages(conversation_id, limit=1000)",
+            "lineNumber": 846
+          },
+          {
+            "text": "                ",
+            "lineNumber": 847
+          },
+          {
+            "text": "                # Convert to format expected by MCP API",
+            "lineNumber": 848
+          },
+          {
+            "text": "                messages = []",
+            "lineNumber": 849
+          },
+          {
+            "text": "                for msg in messages_data:",
+            "lineNumber": 850
+          },
+          {
+            "text": "                    role = msg.get(\"role\", \"unknown\")",
+            "lineNumber": 851
+          },
+          {
+            "text": "                    content = msg.get(\"content\", \"\")",
+            "lineNumber": 852
+          },
+          {
+            "text": "                    # Get timestamp from meta or use current time",
+            "lineNumber": 853
+          },
+          {
+            "text": "                    timestamp = None",
+            "lineNumber": 854
+          },
+          {
+            "text": "                    if \"meta\" in msg and isinstance(msg[\"meta\"], dict):",
+            "lineNumber": 855
+          },
+          {
+            "text": "                        timestamp = msg[\"meta\"].get(\"created_at\")",
+            "lineNumber": 856
+          },
+          {
+            "text": "                    if not timestamp:",
+            "lineNumber": 857
+          },
+          {
+            "text": "                        timestamp = datetime.datetime.utcnow().isoformat() + \"Z\"",
+            "lineNumber": 858
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 859
+          },
+          {
+            "text": "                    messages.append({",
+            "lineNumber": 860
+          },
+          {
+            "text": "                        \"role\": role,",
+            "lineNumber": 861
+          },
+          {
+            "text": "                        \"content\": content,",
+            "lineNumber": 862
+          },
+          {
+            "text": "                        \"timestamp\": timestamp",
+            "lineNumber": 863
+          },
+          {
+            "text": "                    })",
+            "lineNumber": 864
+          },
+          {
+            "text": "                ",
+            "lineNumber": 865
+          },
+          {
+            "text": "                if not messages:",
+            "lineNumber": 866
+          },
+          {
+            "text": "                    print(color_text(\"Error: No messages found in conversation.\", \"orange\"))",
+            "lineNumber": 867
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 868
+          },
+          {
+            "text": "                ",
+            "lineNumber": 869
+          },
+          {
+            "text": "                # Prompt for GitLab credentials",
+            "lineNumber": 870
+          },
+          {
+            "text": "                print(color_text(\"GitLab credentials required for push:\", \"grey\"))",
+            "lineNumber": 871
+          },
+          {
+            "text": "                gitlab_username = input(\"GitLab username: \").strip()",
+            "lineNumber": 872
+          },
+          {
+            "text": "                gitlab_password = getpass.getpass(\"GitLab password/token: \").strip()",
+            "lineNumber": 873
+          },
+          {
+            "text": "                ",
+            "lineNumber": 874
+          },
+          {
+            "text": "                if not gitlab_username or not gitlab_password:",
+            "lineNumber": 875
+          },
+          {
+            "text": "                    print(color_text(\"Warning: No credentials provided. Note will be saved locally but may fail to push.\", \"orange\"))",
+            "lineNumber": 876
+          },
+          {
+            "text": "                ",
+            "lineNumber": 877
+          },
+          {
+            "text": "                # Save conversation",
+            "lineNumber": 878
+          },
+          {
+            "text": "                print(color_text(\"Saving conversation...\", \"grey\"))",
+            "lineNumber": 879
+          },
+          {
+            "text": "                result = api.save_conversation(",
+            "lineNumber": 880
+          },
+          {
+            "text": "                    current_project, ",
+            "lineNumber": 881
+          },
+          {
+            "text": "                    messages,",
+            "lineNumber": 882
+          }
+        ]
+      },
+      "score": 0.38343319296836853
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 861
+          },
+          "endPosition": {
+            "line": 1048
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None\n    try:\n        from src.mcp.api import get_mcp_api\n        api = get_mcp_api()\n        # Get relevant notes for this project\n        project_notes = api.get_project_notes(project, user_message, limit=5)\n        if project_notes:\n            # Format notes for context\n            notes_parts = []\n            for note in project_notes:\n                notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n            if notes_parts:\n                mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n    except Exception as e:\n        logger.debug(f\"MCP notes not available for project {project}: {e}\")\n    \n    # Default behavior for non-DAAS/THN projects or fallback\n    # Fetch project_knowledge summaries (stable overview) - FIRST\n    knowledge_summaries = fetch_project_knowledge(project)\n    \n    # Query conversation_index for this project\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(\n                \"\"\"\n                SELECT session_id, title, tags, summary_short, summary_detailed,\n                       key_topics, memory_snippet, indexed_at\n                FROM conversation_index\n                WHERE project = %s\n                ORDER BY indexed_at DESC\n                LIMIT %s\n                \"\"\",\n                (project, limit_memories),\n            )\n            rows = cur.fetchall()\n    \n    top_memories = []\n    if rows:\n        # Simple relevance scoring: count word matches in tags, key_topics, summary_detailed",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 862,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 868,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 862,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 863,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 864,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 865,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 866,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 867,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 905
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 906
+          },
+          {
+            "text": "    ",
+            "lineNumber": 907
+          },
+          {
+            "text": "    # Get project-scoped meditation notes (if MCP available)",
+            "lineNumber": 908
+          },
+          {
+            "text": "    mcp_notes_context = None",
+            "lineNumber": 909
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 910
+          },
+          {
+            "text": "        from src.mcp.api import get_mcp_api",
+            "lineNumber": 911
+          },
+          {
+            "text": "        api = get_mcp_api()",
+            "lineNumber": 912
+          },
+          {
+            "text": "        # Get relevant notes for this project",
+            "lineNumber": 913
+          },
+          {
+            "text": "        project_notes = api.get_project_notes(project, user_message, limit=5)",
+            "lineNumber": 914
+          },
+          {
+            "text": "        if project_notes:",
+            "lineNumber": 915
+          },
+          {
+            "text": "            # Format notes for context",
+            "lineNumber": 916
+          },
+          {
+            "text": "            notes_parts = []",
+            "lineNumber": 917
+          },
+          {
+            "text": "            for note in project_notes:",
+            "lineNumber": 918
+          },
+          {
+            "text": "                notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")",
+            "lineNumber": 919
+          },
+          {
+            "text": "            if notes_parts:",
+            "lineNumber": 920
+          },
+          {
+            "text": "                mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)",
+            "lineNumber": 921
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 922
+          },
+          {
+            "text": "        logger.debug(f\"MCP notes not available for project {project}: {e}\")",
+            "lineNumber": 923
+          },
+          {
+            "text": "    ",
+            "lineNumber": 924
+          },
+          {
+            "text": "    # Default behavior for non-DAAS/THN projects or fallback",
+            "lineNumber": 925
+          },
+          {
+            "text": "    # Fetch project_knowledge summaries (stable overview) - FIRST",
+            "lineNumber": 926
+          },
+          {
+            "text": "    knowledge_summaries = fetch_project_knowledge(project)",
+            "lineNumber": 927
+          },
+          {
+            "text": "    ",
+            "lineNumber": 928
+          },
+          {
+            "text": "    # Query conversation_index for this project",
+            "lineNumber": 929
+          },
+          {
+            "text": "    with get_conn() as conn:",
+            "lineNumber": 930
+          },
+          {
+            "text": "        with conn.cursor() as cur:",
+            "lineNumber": 931
+          },
+          {
+            "text": "            cur.execute(",
+            "lineNumber": 932
+          },
+          {
+            "text": "                \"\"\"",
+            "lineNumber": 933
+          },
+          {
+            "text": "                SELECT session_id, title, tags, summary_short, summary_detailed,",
+            "lineNumber": 934
+          },
+          {
+            "text": "                       key_topics, memory_snippet, indexed_at",
+            "lineNumber": 935
+          },
+          {
+            "text": "                FROM conversation_index",
+            "lineNumber": 936
+          },
+          {
+            "text": "                WHERE project = %s",
+            "lineNumber": 937
+          },
+          {
+            "text": "                ORDER BY indexed_at DESC",
+            "lineNumber": 938
+          },
+          {
+            "text": "                LIMIT %s",
+            "lineNumber": 939
+          },
+          {
+            "text": "                \"\"\",",
+            "lineNumber": 940
+          },
+          {
+            "text": "                (project, limit_memories),",
+            "lineNumber": 941
+          },
+          {
+            "text": "            )",
+            "lineNumber": 942
+          },
+          {
+            "text": "            rows = cur.fetchall()",
+            "lineNumber": 943
+          },
+          {
+            "text": "    ",
+            "lineNumber": 944
+          },
+          {
+            "text": "    top_memories = []",
+            "lineNumber": 945
+          },
+          {
+            "text": "    if rows:",
+            "lineNumber": 946
+          },
+          {
+            "text": "        # Simple relevance scoring: count word matches in tags, key_topics, summary_detailed",
+            "lineNumber": 947
+          }
+        ]
+      },
+      "score": 0.37502118945121765
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/server.py",
+        "range": {
+          "startPosition": {
+            "line": 34,
+            "column": 15
+          },
+          "endPosition": {
+            "line": 172
+          }
+        },
+        "contents": "env_local = find_env_file(\".env.local\")\nif env_local:\n    load_dotenv(env_local)\n    print(f\"Loaded environment from: {env_local}\", file=sys.stderr)\n\nenv_file = find_env_file(\".env\")\nif env_file:\n    load_dotenv(env_file)\n    print(f\"Loaded environment from: {env_file}\", file=sys.stderr)\nelse:\n    # Fallback to default behavior\n    load_dotenv()\n\n# Configure logging\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',\n    stream=sys.stderr  # Log to stderr so stdout is only for JSON-RPC\n)\n\nlogger = logging.getLogger(__name__)\n\n\ndef create_server() -&gt; MCPProtocolHandler:\n    \"\"\"\n    Create and configure MCP server.\n    \n    Returns:\n        Configured MCPProtocolHandler\n    \"\"\"\n    # Get configuration from environment\n    gitlab_url = os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n    repo_path = Path(os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\"))\n    branch = os.environ.get(\"BRANCH\", \"main\")\n    \n    logger.info(f\"Initializing MCP server with GitLab URL: {gitlab_url}\")\n    \n    # Create repository model\n    repository = Repository(\n        url=gitlab_url,\n        local_path=repo_path,\n        branch=branch\n    )\n    \n    # Create note index\n    index = NoteIndex()\n    \n    # Create handlers\n    resources_handler = ResourcesHandler(index)\n    tools_handler = ToolsHandler(index, repository)\n    \n    # Create protocol handler\n    protocol = MCPProtocolHandler()\n    \n    # Register resource methods\n    protocol.register_method(\"resources/list\", resources_handler.list_resources)\n    protocol.register_method(\"resources/read\", resources_handler.read_resource)\n    \n    # Register tool methods\n    protocol.register_method",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "env_local = find_env_file(\".env.local\")",
+            "lineNumber": 37
+          },
+          {
+            "text": "if env_local:",
+            "lineNumber": 38
+          },
+          {
+            "text": "    load_dotenv(env_local)",
+            "lineNumber": 39
+          },
+          {
+            "text": "    print(f\"Loaded environment from: {env_local}\", file=sys.stderr)",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "env_file = find_env_file(\".env\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "if env_file:",
+            "lineNumber": 43
+          },
+          {
+            "text": "    load_dotenv(env_file)",
+            "lineNumber": 44
+          },
+          {
+            "text": "    print(f\"Loaded environment from: {env_file}\", file=sys.stderr)",
+            "lineNumber": 45
+          },
+          {
+            "text": "else:",
+            "lineNumber": 46
+          },
+          {
+            "text": "    # Fallback to default behavior",
+            "lineNumber": 47
+          },
+          {
+            "text": "    load_dotenv()",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "# Configure logging",
+            "lineNumber": 50
+          },
+          {
+            "text": "logging.basicConfig(",
+            "lineNumber": 51
+          },
+          {
+            "text": "    level=logging.INFO,",
+            "lineNumber": 52
+          },
+          {
+            "text": "    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',",
+            "lineNumber": 53
+          },
+          {
+            "text": "    stream=sys.stderr  # Log to stderr so stdout is only for JSON-RPC",
+            "lineNumber": 54
+          },
+          {
+            "text": ")",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "def create_server() -&gt; MCPProtocolHandler:",
+            "lineNumber": 60,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 61
+          },
+          {
+            "text": "    Create and configure MCP server.",
+            "lineNumber": 62
+          },
+          {
+            "text": "    ",
+            "lineNumber": 63
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 64
+          },
+          {
+            "text": "        Configured MCPProtocolHandler",
+            "lineNumber": 65
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 66
+          },
+          {
+            "text": "    # Get configuration from environment",
+            "lineNumber": 67
+          },
+          {
+            "text": "    gitlab_url = os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")",
+            "lineNumber": 68
+          },
+          {
+            "text": "    repo_path = Path(os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\"))",
+            "lineNumber": 69
+          },
+          {
+            "text": "    branch = os.environ.get(\"BRANCH\", \"main\")",
+            "lineNumber": 70
+          },
+          {
+            "text": "    ",
+            "lineNumber": 71
+          },
+          {
+            "text": "    logger.info(f\"Initializing MCP server with GitLab URL: {gitlab_url}\")",
+            "lineNumber": 72
+          },
+          {
+            "text": "    ",
+            "lineNumber": 73
+          },
+          {
+            "text": "    # Create repository model",
+            "lineNumber": 74
+          },
+          {
+            "text": "    repository = Repository(",
+            "lineNumber": 75
+          },
+          {
+            "text": "        url=gitlab_url,",
+            "lineNumber": 76
+          },
+          {
+            "text": "        local_path=repo_path,",
+            "lineNumber": 77
+          },
+          {
+            "text": "        branch=branch",
+            "lineNumber": 78
+          },
+          {
+            "text": "    )",
+            "lineNumber": 79
+          },
+          {
+            "text": "    ",
+            "lineNumber": 80
+          },
+          {
+            "text": "    # Create note index",
+            "lineNumber": 81
+          },
+          {
+            "text": "    index = NoteIndex()",
+            "lineNumber": 82
+          },
+          {
+            "text": "    ",
+            "lineNumber": 83
+          },
+          {
+            "text": "    # Create handlers",
+            "lineNumber": 84
+          },
+          {
+            "text": "    resources_handler = ResourcesHandler(index)",
+            "lineNumber": 85
+          },
+          {
+            "text": "    tools_handler = ToolsHandler(index, repository)",
+            "lineNumber": 86
+          },
+          {
+            "text": "    ",
+            "lineNumber": 87
+          },
+          {
+            "text": "    # Create protocol handler",
+            "lineNumber": 88
+          },
+          {
+            "text": "    protocol = MCPProtocolHandler()",
+            "lineNumber": 89
+          },
+          {
+            "text": "    ",
+            "lineNumber": 90
+          },
+          {
+            "text": "    # Register resource methods",
+            "lineNumber": 91
+          },
+          {
+            "text": "    protocol.register_method(\"resources/list\", resources_handler.list_resources)",
+            "lineNumber": 92
+          },
+          {
+            "text": "    protocol.register_method(\"resources/read\", resources_handler.read_resource)",
+            "lineNumber": 93
+          },
+          {
+            "text": "    ",
+            "lineNumber": 94
+          },
+          {
+            "text": "    # Register tool methods",
+            "lineNumber": 95
+          },
+          {
+            "text": "    protocol.register_method",
+            "lineNumber": 96
+          }
+        ]
+      },
+      "score": 0.3741631507873535
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/tools.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 219
+          }
+        },
+        "contents": "\"\"\"\nMCP tool handlers.\n\nHandles tool invocation requests.\n\"\"\"\nimport logging\nfrom typing import Dict, Any\n\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\nfrom ..models.repository import Repository\nfrom ..services.note_saver import ConversationNote, NoteSaver\n\nlogger = logging.getLogger(__name__)\n\n\nclass ToolsHandler:\n    \"\"\"Handler for MCP tool operations.\"\"\"\n    \n    def __init__(self, index: NoteIndex, repository: Repository):\n        \"\"\"\n        Initialize tools handler.\n        \n        Args:\n            index: NoteIndex instance\n            repository: Repository instance\n        \"\"\"\n        self.index = index\n        self.repository = repository\n        self.note_saver = NoteSaver(repository, index)\n    \n    def search_notes(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"\n        Handle search_notes tool invocation.\n        \n        Args:\n            params: Tool parameters with 'query' and optional 'limit'\n            \n        Returns:\n            Search results response\n        \"\"\"\n        query = params.get(\"query\", \"\")\n        limit = params.get(\"limit\", 10)\n        \n        if not query:\n            return {\n                \"content\": [{\n                    \"type\": \"text\",\n                    \"text\": \"No search query provided\"\n                }]\n            }\n        \n        # Search notes\n        matches = self.index.search(query, limit=limit)\n        \n        if not matches:\n            return {\n                \"content\": [{\n                    \"type\": \"text\",\n                    \"text\": f\"No notes found matching '{query}'\"\n                }]\n            }\n        \n        # Format results\n        results_text = f\"Found {len(matches)} note(s) matching '{query}':\\n\\n\"\n        for note in matches:\n            results_text += f\"## {note.title}\\n\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "MCP tool handlers.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Handles tool invocation requests.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Dict, Any",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 9
+          },
+          {
+            "text": "from ..services.index_builder import IndexBuilder",
+            "lineNumber": 10
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 11
+          },
+          {
+            "text": "from ..services.note_saver import ConversationNote, NoteSaver",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "class ToolsHandler:",
+            "lineNumber": 17,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Handler for MCP tool operations.\"\"\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "    ",
+            "lineNumber": 19
+          },
+          {
+            "text": "    def __init__(self, index: NoteIndex, repository: Repository):",
+            "lineNumber": 20
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "        Initialize tools handler.",
+            "lineNumber": 22
+          },
+          {
+            "text": "        ",
+            "lineNumber": 23
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 24
+          },
+          {
+            "text": "            index: NoteIndex instance",
+            "lineNumber": 25
+          },
+          {
+            "text": "            repository: Repository instance",
+            "lineNumber": 26
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 27
+          },
+          {
+            "text": "        self.index = index",
+            "lineNumber": 28
+          },
+          {
+            "text": "        self.repository = repository",
+            "lineNumber": 29
+          },
+          {
+            "text": "        self.note_saver = NoteSaver(repository, index)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    def search_notes(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 32
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 33
+          },
+          {
+            "text": "        Handle search_notes tool invocation.",
+            "lineNumber": 34
+          },
+          {
+            "text": "        ",
+            "lineNumber": 35
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 36
+          },
+          {
+            "text": "            params: Tool parameters with 'query' and optional 'limit'",
+            "lineNumber": 37
+          },
+          {
+            "text": "            ",
+            "lineNumber": 38
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            Search results response",
+            "lineNumber": 40
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 41
+          },
+          {
+            "text": "        query = params.get(\"query\", \"\")",
+            "lineNumber": 42
+          },
+          {
+            "text": "        limit = params.get(\"limit\", 10)",
+            "lineNumber": 43
+          },
+          {
+            "text": "        ",
+            "lineNumber": 44
+          },
+          {
+            "text": "        if not query:",
+            "lineNumber": 45
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 46
+          },
+          {
+            "text": "                \"content\": [{",
+            "lineNumber": 47
+          },
+          {
+            "text": "                    \"type\": \"text\",",
+            "lineNumber": 48
+          },
+          {
+            "text": "                    \"text\": \"No search query provided\"",
+            "lineNumber": 49
+          },
+          {
+            "text": "                }]",
+            "lineNumber": 50
+          },
+          {
+            "text": "            }",
+            "lineNumber": 51
+          },
+          {
+            "text": "        ",
+            "lineNumber": 52
+          },
+          {
+            "text": "        # Search notes",
+            "lineNumber": 53
+          },
+          {
+            "text": "        matches = self.index.search(query, limit=limit)",
+            "lineNumber": 54
+          },
+          {
+            "text": "        ",
+            "lineNumber": 55
+          },
+          {
+            "text": "        if not matches:",
+            "lineNumber": 56
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 57
+          },
+          {
+            "text": "                \"content\": [{",
+            "lineNumber": 58
+          },
+          {
+            "text": "                    \"type\": \"text\",",
+            "lineNumber": 59
+          },
+          {
+            "text": "                    \"text\": f\"No notes found matching '{query}'\"",
+            "lineNumber": 60
+          },
+          {
+            "text": "                }]",
+            "lineNumber": 61
+          },
+          {
+            "text": "            }",
+            "lineNumber": 62
+          },
+          {
+            "text": "        ",
+            "lineNumber": 63
+          },
+          {
+            "text": "        # Format results",
+            "lineNumber": 64
+          },
+          {
+            "text": "        results_text = f\"Found {len(matches)} note(s) matching '{query}':\\n\\n\"",
+            "lineNumber": 65
+          },
+          {
+            "text": "        for note in matches:",
+            "lineNumber": 66
+          },
+          {
+            "text": "            results_text += f\"## {note.title}\\n\"",
+            "lineNumber": 67
+          }
+        ]
+      },
+      "score": 0.3729304075241089
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/resources.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 88
+          }
+        },
+        "contents": "\"\"\"\nMCP resource handlers.\n\nHandles resources/list and resources/read requests.\n\"\"\"\nimport logging\nfrom typing import Dict, Any, List\n\nfrom ..models.index import NoteIndex\n\nlogger = logging.getLogger(__name__)\n\n\nclass ResourcesHandler:\n    \"\"\"Handler for MCP resource operations.\"\"\"\n    \n    def __init__(self, index: NoteIndex):\n        \"\"\"\n        Initialize resources handler.\n        \n        Args:\n            index: NoteIndex instance\n        \"\"\"\n        self.index = index\n    \n    def list_resources(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"\n        Handle resources/list request.\n        \n        Args:\n            params: Request parameters (optional 'project' filter)\n            \n        Returns:\n            Resources list response\n        \"\"\"\n        resources = []\n        \n        # Check if project filter is provided\n        project = params.get(\"project\")\n        \n        if project:\n            # Filter by project directory\n            from ..services.project_filter import ProjectDirectoryMapper\n            mapper = ProjectDirectoryMapper()\n            directory = mapper.get_directory(project)\n            notes = self.index.get_by_project(directory)\n        else:\n            # Return all notes\n            notes = self.index.all_notes()\n        \n        for note in notes:\n            resources.append({\n                \"uri\": note.uri,\n                \"name\": note.title,\n                \"description\": note.title,\n                \"mimeType\": \"text/markdown\"\n            })\n        \n        logger.debug(f\"Listed {len(resources)} resources\" + (f\" for project {project}\" if project else \"\"))\n        return {\n            \"resources\": resources\n        }\n    \n    def read_resource(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "MCP resource handlers.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Handles resources/list and resources/read requests.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Dict, Any, List",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "class ResourcesHandler:",
+            "lineNumber": 14,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Handler for MCP resource operations.\"\"\"",
+            "lineNumber": 15
+          },
+          {
+            "text": "    ",
+            "lineNumber": 16
+          },
+          {
+            "text": "    def __init__(self, index: NoteIndex):",
+            "lineNumber": 17
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "        Initialize resources handler.",
+            "lineNumber": 19
+          },
+          {
+            "text": "        ",
+            "lineNumber": 20
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 21
+          },
+          {
+            "text": "            index: NoteIndex instance",
+            "lineNumber": 22
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 23
+          },
+          {
+            "text": "        self.index = index",
+            "lineNumber": 24
+          },
+          {
+            "text": "    ",
+            "lineNumber": 25
+          },
+          {
+            "text": "    def list_resources(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 26
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 27
+          },
+          {
+            "text": "        Handle resources/list request.",
+            "lineNumber": 28
+          },
+          {
+            "text": "        ",
+            "lineNumber": 29
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 30
+          },
+          {
+            "text": "            params: Request parameters (optional 'project' filter)",
+            "lineNumber": 31
+          },
+          {
+            "text": "            ",
+            "lineNumber": 32
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 33
+          },
+          {
+            "text": "            Resources list response",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        resources = []",
+            "lineNumber": 36
+          },
+          {
+            "text": "        ",
+            "lineNumber": 37
+          },
+          {
+            "text": "        # Check if project filter is provided",
+            "lineNumber": 38
+          },
+          {
+            "text": "        project = params.get(\"project\")",
+            "lineNumber": 39
+          },
+          {
+            "text": "        ",
+            "lineNumber": 40
+          },
+          {
+            "text": "        if project:",
+            "lineNumber": 41
+          },
+          {
+            "text": "            # Filter by project directory",
+            "lineNumber": 42
+          },
+          {
+            "text": "            from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 43
+          },
+          {
+            "text": "            mapper = ProjectDirectoryMapper()",
+            "lineNumber": 44
+          },
+          {
+            "text": "            directory = mapper.get_directory(project)",
+            "lineNumber": 45
+          },
+          {
+            "text": "            notes = self.index.get_by_project(directory)",
+            "lineNumber": 46
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 47
+          },
+          {
+            "text": "            # Return all notes",
+            "lineNumber": 48
+          },
+          {
+            "text": "            notes = self.index.all_notes()",
+            "lineNumber": 49
+          },
+          {
+            "text": "        ",
+            "lineNumber": 50
+          },
+          {
+            "text": "        for note in notes:",
+            "lineNumber": 51
+          },
+          {
+            "text": "            resources.append({",
+            "lineNumber": 52
+          },
+          {
+            "text": "                \"uri\": note.uri,",
+            "lineNumber": 53
+          },
+          {
+            "text": "                \"name\": note.title,",
+            "lineNumber": 54
+          },
+          {
+            "text": "                \"description\": note.title,",
+            "lineNumber": 55
+          },
+          {
+            "text": "                \"mimeType\": \"text/markdown\"",
+            "lineNumber": 56
+          },
+          {
+            "text": "            })",
+            "lineNumber": 57
+          },
+          {
+            "text": "        ",
+            "lineNumber": 58
+          },
+          {
+            "text": "        logger.debug(f\"Listed {len(resources)} resources\" + (f\" for project {project}\" if project else \"\"))",
+            "lineNumber": 59
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 60
+          },
+          {
+            "text": "            \"resources\": resources",
+            "lineNumber": 61
+          },
+          {
+            "text": "        }",
+            "lineNumber": 62
+          },
+          {
+            "text": "    ",
+            "lineNumber": 63
+          },
+          {
+            "text": "    def read_resource(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 64
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 65
+          }
+        ]
+      },
+      "score": 0.37186574935913086
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n        \n        elif subcmd == \"sync\":\n            print(color_text(\"Syncing repository...\", \"grey\"))\n            result = api.sync_repository()\n            \n            if result and \"content\" in result:\n                for content_item in result[\"content\"]:\n                    if content_item.get(\"type\") == \"text\":\n                        if result.get(\"isError\"):\n                            print(color_text(content_item.get(\"text\", \"\"), \"orange\"))\n                        else:\n                            print(content_item.get(\"text\", \"\"))\n                            print(color_text(\"✓ Sync complete\", \"green\"))\n            else:\n                print(color_text(\"Sync completed (no output)\", \"grey\"))\n        \n        elif subcmd == \"save\":\n            if not conversation_id:\n                print(color_text(\"Error: No active conversation to save.\", \"orange\"))\n                return\n            \n            # Extract title if provided\n            title = \" \".join(parts[1:]) if len(parts) &gt; 1 else None\n            if title:\n                title = title.strip('\"\\'')  # Remove quotes if user added them\n            \n            # Load conversation messages from database\n            try",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 814
+          },
+          {
+            "text": "        ",
+            "lineNumber": 815
+          },
+          {
+            "text": "        elif subcmd == \"sync\":",
+            "lineNumber": 816
+          },
+          {
+            "text": "            print(color_text(\"Syncing repository...\", \"grey\"))",
+            "lineNumber": 817
+          },
+          {
+            "text": "            result = api.sync_repository()",
+            "lineNumber": 818
+          },
+          {
+            "text": "            ",
+            "lineNumber": 819
+          },
+          {
+            "text": "            if result and \"content\" in result:",
+            "lineNumber": 820
+          },
+          {
+            "text": "                for content_item in result[\"content\"]:",
+            "lineNumber": 821
+          },
+          {
+            "text": "                    if content_item.get(\"type\") == \"text\":",
+            "lineNumber": 822
+          },
+          {
+            "text": "                        if result.get(\"isError\"):",
+            "lineNumber": 823
+          },
+          {
+            "text": "                            print(color_text(content_item.get(\"text\", \"\"), \"orange\"))",
+            "lineNumber": 824
+          },
+          {
+            "text": "                        else:",
+            "lineNumber": 825
+          },
+          {
+            "text": "                            print(content_item.get(\"text\", \"\"))",
+            "lineNumber": 826
+          },
+          {
+            "text": "                            print(color_text(\"✓ Sync complete\", \"green\"))",
+            "lineNumber": 827
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 828
+          },
+          {
+            "text": "                print(color_text(\"Sync completed (no output)\", \"grey\"))",
+            "lineNumber": 829
+          },
+          {
+            "text": "        ",
+            "lineNumber": 830
+          },
+          {
+            "text": "        elif subcmd == \"save\":",
+            "lineNumber": 831
+          },
+          {
+            "text": "            if not conversation_id:",
+            "lineNumber": 832
+          },
+          {
+            "text": "                print(color_text(\"Error: No active conversation to save.\", \"orange\"))",
+            "lineNumber": 833
+          },
+          {
+            "text": "                return",
+            "lineNumber": 834
+          },
+          {
+            "text": "            ",
+            "lineNumber": 835
+          },
+          {
+            "text": "            # Extract title if provided",
+            "lineNumber": 836
+          },
+          {
+            "text": "            title = \" \".join(parts[1:]) if len(parts) &gt; 1 else None",
+            "lineNumber": 837
+          },
+          {
+            "text": "            if title:",
+            "lineNumber": 838
+          },
+          {
+            "text": "                title = title.strip('\"\\'')  # Remove quotes if user added them",
+            "lineNumber": 839
+          },
+          {
+            "text": "            ",
+            "lineNumber": 840
+          },
+          {
+            "text": "            # Load conversation messages from database",
+            "lineNumber": 841
+          },
+          {
+            "text": "            try",
+            "lineNumber": 842
+          }
+        ]
+      },
+      "score": 0.36469408869743347
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/010-mcp-server-integration/contracts/mcp-client.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 131
+          }
+        },
+        "contents": "# MCP Client Contract\n\n## Overview\n\nThe MCP client communicates with MCP servers using JSON-RPC 2.0 over stdio.\n\n## Protocol\n\n### Transport\n- **Method**: stdio (stdin/stdout)\n- **Format**: JSON-RPC 2.0\n- **Encoding**: UTF-8\n\n### Protocol Version\n- **Version**: 2024-11-05\n\n## Initialization\n\n### Initialize Request\n\n**Method**: &#96;initialize&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"project_chat\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"result\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {\n      \"resources\": {},\n      \"tools\": {}\n    },\n    \"serverInfo\": {\n      \"name\": \"meditation-mcp\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n&#96;&#96;&#96;\n\n## Resources\n\n### List Resources\n\n**Method**: &#96;resources/list&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"resources/list\"\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"result\": {\n    \"resources\": [\n      {\n        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",\n        \"name\": \"Morning Meditation - Dec 1\",\n        \"description\": \"Meditation note\",\n        \"mimeType\": \"text/markdown\"\n      }\n    ]\n  }\n}\n&#96;&#96;&#96;\n\n### Read Resource\n\n**Method**: &#96;resources/read&#96;\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"resources/read\",\n  \"params\": {\n    \"uri\": \"meditation://note/morning-meditation-2024-12-01\"\n  }\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"result\": {\n    \"contents\": [\n      {\n        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",\n        \"mimeType\": \"text/markdown\",\n        \"text\": \"# Morning Meditation\\n\\nContent here...\"\n      }\n    ]\n  }\n}\n&#96;&#96;&#96;\n\n**Error Response**:\n&#96;&#96;&#96;json\n{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"error\": {\n    \"code\": -32000,",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# MCP Client Contract",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "The MCP client communicates with MCP servers using JSON-RPC 2.0 over stdio.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Protocol",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### Transport",
+            "lineNumber": 9
+          },
+          {
+            "text": "- **Method**: stdio (stdin/stdout)",
+            "lineNumber": 10
+          },
+          {
+            "text": "- **Format**: JSON-RPC 2.0",
+            "lineNumber": 11
+          },
+          {
+            "text": "- **Encoding**: UTF-8",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "### Protocol Version",
+            "lineNumber": 14
+          },
+          {
+            "text": "- **Version**: 2024-11-05",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "## Initialization",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "### Initialize Request",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Method**: &#96;initialize&#96;",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 23
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 24
+          },
+          {
+            "text": "{",
+            "lineNumber": 25
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 26
+          },
+          {
+            "text": "  \"id\": 1,",
+            "lineNumber": 27
+          },
+          {
+            "text": "  \"method\": \"initialize\",",
+            "lineNumber": 28
+          },
+          {
+            "text": "  \"params\": {",
+            "lineNumber": 29
+          },
+          {
+            "text": "    \"protocolVersion\": \"2024-11-05\",",
+            "lineNumber": 30
+          },
+          {
+            "text": "    \"capabilities\": {},",
+            "lineNumber": 31
+          },
+          {
+            "text": "    \"clientInfo\": {",
+            "lineNumber": 32
+          },
+          {
+            "text": "      \"name\": \"project_chat\",",
+            "lineNumber": 33
+          },
+          {
+            "text": "      \"version\": \"1.0\"",
+            "lineNumber": 34
+          },
+          {
+            "text": "    }",
+            "lineNumber": 35
+          },
+          {
+            "text": "  }",
+            "lineNumber": 36
+          },
+          {
+            "text": "}",
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 41
+          },
+          {
+            "text": "{",
+            "lineNumber": 42
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 43
+          },
+          {
+            "text": "  \"id\": 1,",
+            "lineNumber": 44
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 45
+          },
+          {
+            "text": "    \"protocolVersion\": \"2024-11-05\",",
+            "lineNumber": 46
+          },
+          {
+            "text": "    \"capabilities\": {",
+            "lineNumber": 47
+          },
+          {
+            "text": "      \"resources\": {},",
+            "lineNumber": 48
+          },
+          {
+            "text": "      \"tools\": {}",
+            "lineNumber": 49
+          },
+          {
+            "text": "    },",
+            "lineNumber": 50
+          },
+          {
+            "text": "    \"serverInfo\": {",
+            "lineNumber": 51
+          },
+          {
+            "text": "      \"name\": \"meditation-mcp\",",
+            "lineNumber": 52
+          },
+          {
+            "text": "      \"version\": \"1.0\"",
+            "lineNumber": 53
+          },
+          {
+            "text": "    }",
+            "lineNumber": 54
+          },
+          {
+            "text": "  }",
+            "lineNumber": 55
+          },
+          {
+            "text": "}",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Resources",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "### List Resources",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "**Method**: &#96;resources/list&#96;",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 65
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 66
+          },
+          {
+            "text": "{",
+            "lineNumber": 67
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 68
+          },
+          {
+            "text": "  \"id\": 2,",
+            "lineNumber": 69
+          },
+          {
+            "text": "  \"method\": \"resources/list\"",
+            "lineNumber": 70
+          },
+          {
+            "text": "}",
+            "lineNumber": 71
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 74
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 75
+          },
+          {
+            "text": "{",
+            "lineNumber": 76
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 77
+          },
+          {
+            "text": "  \"id\": 2,",
+            "lineNumber": 78
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 79
+          },
+          {
+            "text": "    \"resources\": [",
+            "lineNumber": 80
+          },
+          {
+            "text": "      {",
+            "lineNumber": 81
+          },
+          {
+            "text": "        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",",
+            "lineNumber": 82
+          },
+          {
+            "text": "        \"name\": \"Morning Meditation - Dec 1\",",
+            "lineNumber": 83
+          },
+          {
+            "text": "        \"description\": \"Meditation note\",",
+            "lineNumber": 84
+          },
+          {
+            "text": "        \"mimeType\": \"text/markdown\"",
+            "lineNumber": 85
+          },
+          {
+            "text": "      }",
+            "lineNumber": 86
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 87
+          },
+          {
+            "text": "  }",
+            "lineNumber": 88
+          },
+          {
+            "text": "}",
+            "lineNumber": 89
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "### Read Resource",
+            "lineNumber": 92
+          },
+          {
+            "lineNumber": 93
+          },
+          {
+            "text": "**Method**: &#96;resources/read&#96;",
+            "lineNumber": 94
+          },
+          {
+            "lineNumber": 95
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 96
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 97
+          },
+          {
+            "text": "{",
+            "lineNumber": 98
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 99
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 100
+          },
+          {
+            "text": "  \"method\": \"resources/read\",",
+            "lineNumber": 101
+          },
+          {
+            "text": "  \"params\": {",
+            "lineNumber": 102
+          },
+          {
+            "text": "    \"uri\": \"meditation://note/morning-meditation-2024-12-01\"",
+            "lineNumber": 103
+          },
+          {
+            "text": "  }",
+            "lineNumber": 104
+          },
+          {
+            "text": "}",
+            "lineNumber": 105
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 108
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 109
+          },
+          {
+            "text": "{",
+            "lineNumber": 110
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 111
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 112
+          },
+          {
+            "text": "  \"result\": {",
+            "lineNumber": 113
+          },
+          {
+            "text": "    \"contents\": [",
+            "lineNumber": 114
+          },
+          {
+            "text": "      {",
+            "lineNumber": 115
+          },
+          {
+            "text": "        \"uri\": \"meditation://note/morning-meditation-2024-12-01\",",
+            "lineNumber": 116
+          },
+          {
+            "text": "        \"mimeType\": \"text/markdown\",",
+            "lineNumber": 117
+          },
+          {
+            "text": "        \"text\": \"# Morning Meditation\\n\\nContent here...\"",
+            "lineNumber": 118
+          },
+          {
+            "text": "      }",
+            "lineNumber": 119
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 120
+          },
+          {
+            "text": "  }",
+            "lineNumber": 121
+          },
+          {
+            "text": "}",
+            "lineNumber": 122
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 123
+          },
+          {
+            "lineNumber": 124
+          },
+          {
+            "text": "**Error Response**:",
+            "lineNumber": 125
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 126
+          },
+          {
+            "text": "{",
+            "lineNumber": 127
+          },
+          {
+            "text": "  \"jsonrpc\": \"2.0\",",
+            "lineNumber": 128
+          },
+          {
+            "text": "  \"id\": 3,",
+            "lineNumber": 129
+          },
+          {
+            "text": "  \"error\": {",
+            "lineNumber": 130
+          },
+          {
+            "text": "    \"code\": -32000,",
+            "lineNumber": 131
+          }
+        ]
+      },
+      "score": 0.3579084873199463
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "/mcp|mcp",
+  "path": "chat_cli.py",
+  "caseInsensitive": true
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "/mcp|mcp",
+    "path": "chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "569:    # MCP commands",
+              "matches": [
+                {
+                  "lineNumber": 570,
+                  "content": "    if cmd == \"mcp\":"
+                },
+                {
+                  "lineNumber": 571,
+                  "content": "        return current_project, True, arg, \"mcp\""
+                },
+                {
+                  "lineNumber": 669,
+                  "content": "        \"/mcp [status|list [server]|read &lt;uri&gt;|search &lt;server&gt; &lt;query&gt;|sync [server]]\","
+                },
+                {
+                  "lineNumber": 678,
+                  "content": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):"
+                },
+                {
+                  "lineNumber": 680,
+                  "content": "    Handle /mcp command with subcommands."
+                },
+                {
+                  "lineNumber": 683,
+                  "content": "    - /mcp status - Show status of MCP server"
+                },
+                {
+                  "lineNumber": 684,
+                  "content": "    - /mcp list [project] - List all meditation note resources (optionally filtered by project)"
+                },
+                {
+                  "lineNumber": 685,
+                  "content": "    - /mcp read &lt;uri|title|slug&gt; [project] - Read a specific note by URI, title, or slug"
+                },
+                {
+                  "lineNumber": 686,
+                  "content": "    - /mcp search &lt;query&gt; [limit] - Search notes"
+                },
+                {
+                  "lineNumber": 687,
+                  "content": "    - /mcp sync - Sync repository from GitLab"
+                },
+                {
+                  "lineNumber": 688,
+                  "content": "    - /mcp save [title] - Save current conversation as a note"
+                },
+                {
+                  "lineNumber": 691,
+                  "content": "        print(color_text(\"Usage: /mcp [status|list [project]|read &lt;uri|title|slug&gt; [project]|search &lt;query&gt; [limit]|sync|save [title]]\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 698,
+                  "content": "        from src.mcp.api import get_mcp_api"
+                },
+                {
+                  "lineNumber": 700,
+                  "content": "        api = get_mcp_api()"
+                },
+                {
+                  "lineNumber": 706,
+                  "content": "            print(color_text(\"MCP Server Status:\", \"cyan\", bold=True))"
+                },
+                {
+                  "lineNumber": 726,
+                  "content": "                    print(color_text(f\"No resources found for project '{project_filter}'. Try running /mcp sync first.\", \"grey\"))"
+                },
+                {
+                  "lineNumber": 728,
+                  "content": "                print(color_text(f\"MCP Resources for {project_filter} ({len(resources)} total):\", \"cyan\", bold=True))"
+                },
+                {
+                  "lineNumber": 733,
+                  "content": "                    print(color_text(\"No resources found. Try running /mcp sync first.\", \"grey\"))"
+                },
+                {
+                  "lineNumber": 735,
+                  "content": "                print(color_text(f\"MCP Resources ({len(resources)} total):\", \"cyan\", bold=True))"
+                },
+                {
+                  "lineNumber": 744,
+                  "content": "                print(color_text(\"Usage: /mcp read &lt;uri|title|slug&gt; [project]\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 798,
+                  "content": "                print(color_text(\"Usage: /mcp search &lt;query&gt; [limit]\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 848,
+                  "content": "                # Convert to format expected by MCP API"
+                },
+                {
+                  "lineNumber": 900,
+                  "content": "                logger.exception(\"Error in /mcp save command\")"
+                },
+                {
+                  "lineNumber": 903,
+                  "content": "            print(color_text(f\"Unknown MCP command: {subcmd}\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 904,
+                  "content": "            print(color_text(\"Usage: /mcp [status|list|read &lt;uri&gt;|search &lt;query&gt; [limit]|sync|save [title]]\", \"grey\"))"
+                },
+                {
+                  "lineNumber": 907,
+                  "content": "        print(color_text(f\"MCP integration not available: {e}\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 909,
+                  "content": "        print(color_text(f\"Error executing MCP command: {e}\", \"orange\"))"
+                },
+                {
+                  "lineNumber": 910,
+                  "content": "        logger.exception(\"MCP command error\")"
+                },
+                {
+                  "lineNumber": 982,
+                  "content": "        # Shutdown MCP clients"
+                },
+                {
+                  "lineNumber": 984,
+                  "content": "            from brain_core.context_builder import _mcp_clients"
+                },
+                {
+                  "lineNumber": 985,
+                  "content": "            for client in _mcp_clients.values():"
+                },
+                {
+                  "lineNumber": 1448,
+                  "content": "            elif special == \"mcp\":"
+                },
+                {
+                  "lineNumber": 1449,
+                  "content": "                _handle_mcp_command(msg, current_project, conv_id)"
+                }
+              ]
+            }
+          ],
+          "totalLines": 33,
+          "totalMatchedLines": 33
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reviewing the MCP implementation to understand the current structure:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/api.py",
+  "offset": 1,
+  "limit": 100,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/api.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nPython API for MCP server.\n\nProvides direct Python interface to MCP server functionality\nwithout requiring stdio communication.\n\"\"\"\nimport os\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any, List, Optional\nfrom datetime import datetime\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\nfrom ..services.project_filter import ProjectDirectoryMapper\nfrom ..services.note_saver import ConversationNote, NoteSaver\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\n\nlogger = logging.getLogger(__name__)\n\n\nclass MCPApi:\n    \"\"\"Python API for accessing MCP server functionality.\"\"\"\n    \n    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):\n        \"\"\"\n        Initialize MCP API.\n        \n        Args:\n            gitlab_url: GitLab repository URL (defaults to env var or default)\n            repo_path: Local repository path (defaults to env var or default)\n            branch: Git branch (defaults to env var or 'main')\n        \"\"\"\n        # Get configuration from parameters or environment\n        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")\n        self.repo_path = Path(repo_path_str)\n        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")\n        \n        # Create repository model\n        self.repository = Repository(\n            url=self.gitlab_url,\n            local_path=self.repo_path,\n            branch=self.branch\n        )\n        \n        # Create note index\n        self.index = NoteIndex()\n        \n        # Create project directory mapper\n        self.project_mapper = ProjectDirectoryMapper()\n        \n        # Create handlers\n        self.resources_handler = ResourcesHandler(self.index)\n        self.tools_handler = ToolsHandler(self.index, self.repository)\n        \n        # Create note saver\n        self.note_saver = NoteSaver(self.repository, self.index)\n        \n        # Build initial index if repository exists\n        if self.repository.local_path.exists() and (self.repository.local_path / \".git\").exists():\n            logger.info(\"Building initial index from existing repository...\")\n            builder = IndexBuilder(self.repository, self.index)\n            try:\n                note_count = builder.rebuild_index()\n                logger.info(f\"Indexed {note_count} notes\")\n            except Exception as e:\n                logger.warning(f\"Failed to build initial index: {e}\")\n    \n    def list_resources(self) -&gt; List[Dict[str, Any]]:\n        \"\"\"\n        List all available resources.\n        \n        Returns:\n            List of resource dictionaries\n        \"\"\"\n        result = self.resources_handler.list_resources({})\n        return result.get(\"resources\", [])\n    \n    def read_resource(self, identifier: str, project: Optional[str] = None) -&gt; Optional[Dict[str, Any]]:\n        \"\"\"\n        Read a resource by URI, slug, or title.\n        \n        Args:\n            identifier: Resource URI (meditation://note/...), slug, or title\n            project: Optional project name to filter search\n            \n        Returns:\n            Dict with 'content' and 'note' info, or None if not found\n        \"\"\"\n        # Check if it's a URI\n        if identifier.startswith(\"meditation://\"):\n            try:\n                result = self.resources_handler.read_resource({\"uri\": identifier})\n                contents = result.get(\"contents\", [])\n                if contents:\n                    note = self.index.get_by_uri(identifier)\n                    return {",
+  "totalLinesInFile": 342
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 718,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        elif subcmd == \"list\":\n            # List resources, optionally filtered by project\n            project_filter = parts[1] if len(parts) &gt; 1 else None\n            \n            if project_filter:\n                # List resources for specific project\n                resources = api.list_resources_by_project(project_filter)\n                if not resources:\n                    print(color_text(f\"No resources found for project '{project_filter}'. Try running /mcp sync first.\", \"grey\"))\n                    return\n                print(color_text(f\"MCP Resources for {project_filter} ({len(resources)} total):\", \"cyan\", bold=True))\n            else:\n                # List all resources\n                resources = api.list_resources()\n                if not resources:\n                    print(color_text(\"No resources found. Try running /mcp sync first.\", \"grey\"))\n                    return\n                print(color_text(f\"MCP Resources ({len(resources)} total):\", \"cyan\", bold=True))\n            \n            for resource in resources:\n                uri = resource.get(\"uri\", \"\")\n                name = resource.get(\"name\", uri)\n                print(f\"  {uri} - {name}\")\n        \n        elif subcmd == \"read\":\n            if len(parts) &lt; 2:\n                print(color_text(\"Usage: /mcp read &lt;uri|title|slug&gt; [project]\", \"orange\"))\n                return\n            \n            if not conversation_id:",
+  "totalLinesInFile": 1674
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/memory/constitution.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/memory/constitution.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# [PROJECT_NAME] Constitution\n&lt;!-- Example: Spec Constitution, TaskFlow Constitution, etc. --&gt;\n\n## Core Principles\n\n### [PRINCIPLE_1_NAME]\n&lt;!-- Example: I. Library-First --&gt;\n[PRINCIPLE_1_DESCRIPTION]\n&lt;!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries --&gt;\n\n### [PRINCIPLE_2_NAME]\n&lt;!-- Example: II. CLI Interface --&gt;\n[PRINCIPLE_2_DESCRIPTION]\n&lt;!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats --&gt;\n\n### [PRINCIPLE_3_NAME]\n&lt;!-- Example: III. Test-First (NON-NEGOTIABLE) --&gt;\n[PRINCIPLE_3_DESCRIPTION]\n&lt;!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced --&gt;\n\n### [PRINCIPLE_4_NAME]\n&lt;!-- Example: IV. Integration Testing --&gt;\n[PRINCIPLE_4_DESCRIPTION]\n&lt;!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas --&gt;\n\n### [PRINCIPLE_5_NAME]\n&lt;!-- Example: V. Observability, VI. Versioning &amp; Breaking Changes, VII. Simplicity --&gt;\n[PRINCIPLE_5_DESCRIPTION]\n&lt;!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles --&gt;\n\n## [SECTION_2_NAME]\n&lt;!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. --&gt;\n\n[SECTION_2_CONTENT]\n&lt;!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. --&gt;\n\n## [SECTION_3_NAME]\n&lt;!-- Example: Development Workflow, Review Process, Quality Gates, etc. --&gt;\n\n[SECTION_3_CONTENT]\n&lt;!-- Example: Code review requirements, testing gates, deployment approval process, etc. --&gt;\n\n## Governance\n&lt;!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan --&gt;\n\n[GOVERNANCE_RULES]\n&lt;!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance --&gt;\n\n**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]\n&lt;!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 --&gt;\n",
+  "totalLinesInFile": 51
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **19** results in **1** directory</summary>
+
+Directory: **specs** (19 files)
+
+| File |
+|------|
+| `013-enhance-thn-rag/plan.md` |
+| `014-revamp-daas-rag/plan.md` |
+| `012-expand-project-extension/plan.md` |
+| `011-improve-context-building/plan.md` |
+| `010-mcp-server-integration/plan.md` |
+| `001-project-organized-notes/plan.md` |
+| `009-refactor-script-organization/plan.md` |
+| `008-thn-code-rag-pipeline/plan.md` |
+| `007-fix-ollama-json-extraction/plan.md` |
+| `006-fix-api-usage-and-pause-feature/plan.md` |
+| `005-conversation-audit-tool/plan.md` |
+| `004-fix-conversation-saving/plan.md` |
+| `003-seamless-setup/plan.md` |
+| `002-daas-semantic-retrieval/plan.md` |
+| `001-ollama-organizer/plan.md` |
+| `001-database-backup/plan.md` |
+| `001-usage-tracking/plan.md` |
+| `001-large-text-input/plan.md` |
+| `001-dev-environment/plan.md` |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the spec directory and reading a recent plan template:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; mkdir -p specs/015-rag-and-notes-improvements",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "mkdir",
+        "args": [
+          {
+            "type": "word",
+            "value": "-p"
+          },
+          {
+            "type": "word",
+            "value": "specs/015-rag-and-notes-improvements"
+          }
+        ],
+        "fullText": "mkdir -p specs/015-rag-and-notes-improvements"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md",
+  "offset": 1,
+  "limit": 150,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: Revamp DAAS RAG System\n\n**Branch**: &#96;014-revamp-daas-rag&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)\n**Input**: Feature specification from &#96;/specs/014-revamp-daas-rag/spec.md&#96;\n\n## Summary\n\nRevamp the DAAS RAG system to provide focused, cost-effective dream analysis retrieval. Remove existing DAAS retrieval code that uses conversation history, and implement a new system that retrieves related dreams by themes, symbols, or events while keeping each dream's events separate and self-contained. Remove debugging \"Thinking\" messages from the chat interface.\n\n## Technical Context\n\n**Language/Version**: Python 3.10+ (existing project standard)  \n**Primary Dependencies**: Existing dependencies (psycopg2, OpenAI, pgvector)  \n**Storage**: PostgreSQL with &#96;conversation_index&#96; table (existing schema)  \n**Testing**: Manual testing (consistent with project standards)  \n**Target Platform**: Linux/macOS CLI application  \n**Project Type**: Single project (Python CLI)  \n**Performance Goals**: RAG generation &lt;500ms (similar to THN RAG target)  \n**Constraints**:\n\n- Token limit: &lt;1000 tokens for RAG context\n- No conversation history in RAG\n- DAAS-tagged data only\n- Cost-conscious retrieval (limit retrieved content)\n  **Scale/Scope**:\n- Single DAAS project retrieval\n- 3-5 dreams per query (configurable)\n- Existing database schema (no migrations needed)\n\n## Constitution Check\n\n_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._\n\nNo constitution violations identified. This feature:\n\n- Follows existing project patterns (similar to THN RAG implementation)\n- Uses existing database schema\n- Maintains separation of concerns\n- No breaking changes to existing functionality\n\n## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/014-revamp-daas-rag/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n\n&#96;&#96;&#96;text\nbrain_core/\n├── context_builder.py    # Modify: Remove old DAAS retrieval, add new implementation\n├── daas_retrieval.py    # DELETE: Remove entire file\n└── embedding_service.py  # Use existing: Vector similarity search\n\nchat_cli.py              # Modify: Remove \"Thinking for [PROJECT]\" spinner messages\n&#96;&#96;&#96;\n\n**Structure Decision**: Single project structure. All changes are modifications to existing files in &#96;brain_core/&#96; and &#96;chat_cli.py&#96;. No new modules required.\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**\n\nNo violations identified.\n\n## Phase 0: Research &amp; Design Decisions ✅\n\n**Status**: Complete - See &#96;research.md&#96; for all decisions.\n\n### Research Tasks\n\n1. **Vector Similarity Search for DAAS Dreams**\n\n   - Research: How to extract themes/symbols/events from user query for vector search\n   - Decision: Use full user message for embedding generation (similar to THN code search)\n   - Rationale: Simpler than parsing themes/symbols, leverages existing embedding infrastructure\n\n2. **Dream Formatting and Separation**\n\n   - Research: Best format for presenting multiple dreams with clear boundaries\n   - Decision: Use markdown-style separation with clear headers and separators\n   - Rationale: Maintains readability while keeping dreams distinct\n\n3. **Token Optimization Strategies**\n\n   - Research: How to limit retrieved content while maintaining usefulness\n   - Decision:\n     - Truncate summaries to 300 chars\n     - Truncate memory snippets to 200 chars\n     - Limit to 3-5 dreams (configurable)\n   - Rationale: Balances context richness with token efficiency\n\n4. **Removing Debugging Messages**\n   - Research: Where \"Thinking\" spinner is implemented\n   - Decision: Remove spinner thread and thinking label from chat_cli.py\n   - Rationale: Improves user experience by removing unnecessary visual noise\n\n## Phase 1: Design &amp; Contracts ✅\n\n**Status**: Complete - See &#96;data-model.md&#96;, &#96;contracts/api.md&#96;, and &#96;quickstart.md&#96;.\n\n### Data Model\n\n**Existing Tables Used:**\n\n- &#96;conversation_index&#96;: Contains DAAS dreams with embeddings\n  - Fields used: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;, &#96;embedding&#96;\n  - Filter: &#96;project = 'DAAS'&#96;\n  - Search: Vector similarity using &#96;embedding &lt;=&gt; query_embedding&#96;\n\n**No Schema Changes Required**\n\n### API Contracts\n\n**Function: &#96;build_daas_rag_context(user_message: str) -&gt; Dict[str, Any]&#96;**\n\n- **Location**: &#96;brain_core/context_builder.py&#96;\n- **Purpose**: Build RAG context for DAAS project\n- **Input**: User message string\n- **Output**: Dict with &#96;context&#96; (formatted string) and &#96;notes&#96; (list of source notes)\n- **Behavior**:\n  - Generate embedding for user_message\n  - Query &#96;conversation_index&#96; WHERE &#96;project = 'DAAS'&#96; using vector similarity\n  - Return top 3-5 dreams (configurable)\n  - Format with clear separation between dreams\n  - Truncate content to stay within token limits\n\n**Integration Point: &#96;build_project_context()&#96;**\n\n- Remove old DAAS retrieval logic (lines 704-786)\n- Add call to &#96;build_daas_rag_context()&#96; for DAAS project\n- Follow pattern similar to THN RAG implementation\n\n### Quickstart Guide\n\n**For Developers:**\n\n1. Remove &#96;brain_core/daas_retrieval.py&#96; file\n2. Remove DAAS-specific code from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n3. Implement &#96;build_daas_rag_context()&#96; function\n4. Remove \"Thinking\" spinner from &#96;chat_cli.py&#96; (3 locations)\n5. Test with DAAS project conversation",
+  "totalLinesInFile": 173
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/api.py",
+  "offset": 140,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/mcp/api.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        \n        # Use first match\n        note = matching_notes[0]\n        return {\n            \"content\": note.content,\n            \"note\": note.to_dict()\n        }\n    \n    def search_notes(self, query: str, limit: int = 10) -&gt; Dict[str, Any]:\n        \"\"\"\n        Search notes.\n        \n        Args:\n            query: Search query\n            limit: Maximum number of results\n            \n        Returns:\n            Search results\n        \"\"\"\n        return self.tools_handler.search_notes({\"query\": query, \"limit\": limit})\n    \n    def sync_repository(self) -&gt; Dict[str, Any]:\n        \"\"\"\n        Sync repository from GitLab.\n        \n        Returns:\n            Sync result\n        \"\"\"\n        return self.tools_handler.sync_repository({})\n    \n    def list_resources_by_project(self, project: str) -&gt; List[Dict[str, Any]]:\n        \"\"\"\n        List all resources filtered by project directory.\n        \n        Args:\n            project: Project name (DAAS, THN, FF, General, 700B)\n            \n        Returns:\n            List of resource dictionaries with uri, name, description, mimeType\n        \"\"\"\n        # Get directory name for project\n        directory = self.project_mapper.get_directory(project)\n        \n        # Get notes for this project directory\n        notes = self.index.get_by_project(directory)\n        \n        # Convert to resource format\n        resources = []\n        for note in notes:\n            resources.append({",
+  "totalLinesInFile": 342
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How does list_resources_by_project filter notes by project directory?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {
+            "line": 23
+          },
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "class MCPApi:\n\n    \n    def list_resources_by_project(self, project: str) -&gt; List[Dict[str, Any]]:\n        \"\"\"\n        List all resources filtered by project directory.\n        \n        Args:\n            project: Project name (DAAS, THN, FF, General, 700B)\n            \n        Returns:\n            List of resource dictionaries with uri, name, description, mimeType\n        \"\"\"\n        # Get directory name for project\n        directory = self.project_mapper.get_directory(project)\n        \n        # Get notes for this project directory\n        notes = self.index.get_by_project(directory)\n        \n        # Convert to resource format\n        resources = []\n        for note in notes:\n            resources.append({\n                \"uri\": note.uri,\n                \"name\": note.title,\n                \"description\": note.title,\n                \"mimeType\": \"text/markdown\"\n            })\n        \n        return resources\n    \n    def get_project_notes(self, project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]:\n        ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 24,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 25,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 168
+          },
+          {
+            "text": "    ",
+            "lineNumber": 169
+          },
+          {
+            "text": "    def list_resources_by_project(self, project: str) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 170
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 171
+          },
+          {
+            "text": "        List all resources filtered by project directory.",
+            "lineNumber": 172
+          },
+          {
+            "text": "        ",
+            "lineNumber": 173
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 174
+          },
+          {
+            "text": "            project: Project name (DAAS, THN, FF, General, 700B)",
+            "lineNumber": 175
+          },
+          {
+            "text": "            ",
+            "lineNumber": 176
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 177
+          },
+          {
+            "text": "            List of resource dictionaries with uri, name, description, mimeType",
+            "lineNumber": 178
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 179
+          },
+          {
+            "text": "        # Get directory name for project",
+            "lineNumber": 180
+          },
+          {
+            "text": "        directory = self.project_mapper.get_directory(project)",
+            "lineNumber": 181
+          },
+          {
+            "text": "        ",
+            "lineNumber": 182
+          },
+          {
+            "text": "        # Get notes for this project directory",
+            "lineNumber": 183
+          },
+          {
+            "text": "        notes = self.index.get_by_project(directory)",
+            "lineNumber": 184
+          },
+          {
+            "text": "        ",
+            "lineNumber": 185
+          },
+          {
+            "text": "        # Convert to resource format",
+            "lineNumber": 186
+          },
+          {
+            "text": "        resources = []",
+            "lineNumber": 187
+          },
+          {
+            "text": "        for note in notes:",
+            "lineNumber": 188
+          },
+          {
+            "text": "            resources.append({",
+            "lineNumber": 189
+          },
+          {
+            "text": "                \"uri\": note.uri,",
+            "lineNumber": 190
+          },
+          {
+            "text": "                \"name\": note.title,",
+            "lineNumber": 191
+          },
+          {
+            "text": "                \"description\": note.title,",
+            "lineNumber": 192
+          },
+          {
+            "text": "                \"mimeType\": \"text/markdown\"",
+            "lineNumber": 193
+          },
+          {
+            "text": "            })",
+            "lineNumber": 194
+          },
+          {
+            "text": "        ",
+            "lineNumber": 195
+          },
+          {
+            "text": "        return resources",
+            "lineNumber": 196
+          },
+          {
+            "text": "    ",
+            "lineNumber": 197
+          },
+          {
+            "text": "    def get_project_notes(self, project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 198
+          },
+          {
+            "text": "        ",
+            "lineNumber": 199
+          }
+        ]
+      },
+      "score": 0.5509212613105774
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/resources.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 88
+          }
+        },
+        "contents": "\"\"\"\nMCP resource handlers.\n\nHandles resources/list and resources/read requests.\n\"\"\"\nimport logging\nfrom typing import Dict, Any, List\n\nfrom ..models.index import NoteIndex\n\nlogger = logging.getLogger(__name__)\n\n\nclass ResourcesHandler:\n    \"\"\"Handler for MCP resource operations.\"\"\"\n    \n    def __init__(self, index: NoteIndex):\n        \"\"\"\n        Initialize resources handler.\n        \n        Args:\n            index: NoteIndex instance\n        \"\"\"\n        self.index = index\n    \n    def list_resources(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"\n        Handle resources/list request.\n        \n        Args:\n            params: Request parameters (optional 'project' filter)\n            \n        Returns:\n            Resources list response\n        \"\"\"\n        resources = []\n        \n        # Check if project filter is provided\n        project = params.get(\"project\")\n        \n        if project:\n            # Filter by project directory\n            from ..services.project_filter import ProjectDirectoryMapper\n            mapper = ProjectDirectoryMapper()\n            directory = mapper.get_directory(project)\n            notes = self.index.get_by_project(directory)\n        else:\n            # Return all notes\n            notes = self.index.all_notes()\n        \n        for note in notes:\n            resources.append({\n                \"uri\": note.uri,\n                \"name\": note.title,\n                \"description\": note.title,\n                \"mimeType\": \"text/markdown\"\n            })\n        \n        logger.debug(f\"Listed {len(resources)} resources\" + (f\" for project {project}\" if project else \"\"))\n        return {\n            \"resources\": resources\n        }\n    \n    def read_resource(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:\n        \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "MCP resource handlers.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Handles resources/list and resources/read requests.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Dict, Any, List",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "class ResourcesHandler:",
+            "lineNumber": 14,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Handler for MCP resource operations.\"\"\"",
+            "lineNumber": 15
+          },
+          {
+            "text": "    ",
+            "lineNumber": 16
+          },
+          {
+            "text": "    def __init__(self, index: NoteIndex):",
+            "lineNumber": 17
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 18
+          },
+          {
+            "text": "        Initialize resources handler.",
+            "lineNumber": 19
+          },
+          {
+            "text": "        ",
+            "lineNumber": 20
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 21
+          },
+          {
+            "text": "            index: NoteIndex instance",
+            "lineNumber": 22
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 23
+          },
+          {
+            "text": "        self.index = index",
+            "lineNumber": 24
+          },
+          {
+            "text": "    ",
+            "lineNumber": 25
+          },
+          {
+            "text": "    def list_resources(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 26
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 27
+          },
+          {
+            "text": "        Handle resources/list request.",
+            "lineNumber": 28
+          },
+          {
+            "text": "        ",
+            "lineNumber": 29
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 30
+          },
+          {
+            "text": "            params: Request parameters (optional 'project' filter)",
+            "lineNumber": 31
+          },
+          {
+            "text": "            ",
+            "lineNumber": 32
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 33
+          },
+          {
+            "text": "            Resources list response",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        resources = []",
+            "lineNumber": 36
+          },
+          {
+            "text": "        ",
+            "lineNumber": 37
+          },
+          {
+            "text": "        # Check if project filter is provided",
+            "lineNumber": 38
+          },
+          {
+            "text": "        project = params.get(\"project\")",
+            "lineNumber": 39
+          },
+          {
+            "text": "        ",
+            "lineNumber": 40
+          },
+          {
+            "text": "        if project:",
+            "lineNumber": 41
+          },
+          {
+            "text": "            # Filter by project directory",
+            "lineNumber": 42
+          },
+          {
+            "text": "            from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 43
+          },
+          {
+            "text": "            mapper = ProjectDirectoryMapper()",
+            "lineNumber": 44
+          },
+          {
+            "text": "            directory = mapper.get_directory(project)",
+            "lineNumber": 45
+          },
+          {
+            "text": "            notes = self.index.get_by_project(directory)",
+            "lineNumber": 46
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 47
+          },
+          {
+            "text": "            # Return all notes",
+            "lineNumber": 48
+          },
+          {
+            "text": "            notes = self.index.all_notes()",
+            "lineNumber": 49
+          },
+          {
+            "text": "        ",
+            "lineNumber": 50
+          },
+          {
+            "text": "        for note in notes:",
+            "lineNumber": 51
+          },
+          {
+            "text": "            resources.append({",
+            "lineNumber": 52
+          },
+          {
+            "text": "                \"uri\": note.uri,",
+            "lineNumber": 53
+          },
+          {
+            "text": "                \"name\": note.title,",
+            "lineNumber": 54
+          },
+          {
+            "text": "                \"description\": note.title,",
+            "lineNumber": 55
+          },
+          {
+            "text": "                \"mimeType\": \"text/markdown\"",
+            "lineNumber": 56
+          },
+          {
+            "text": "            })",
+            "lineNumber": 57
+          },
+          {
+            "text": "        ",
+            "lineNumber": 58
+          },
+          {
+            "text": "        logger.debug(f\"Listed {len(resources)} resources\" + (f\" for project {project}\" if project else \"\"))",
+            "lineNumber": 59
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 60
+          },
+          {
+            "text": "            \"resources\": resources",
+            "lineNumber": 61
+          },
+          {
+            "text": "        }",
+            "lineNumber": 62
+          },
+          {
+            "text": "    ",
+            "lineNumber": 63
+          },
+          {
+            "text": "    def read_resource(self, params: Dict[str, Any]) -&gt; Dict[str, Any]:",
+            "lineNumber": 64
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 65
+          }
+        ]
+      },
+      "score": 0.5424153804779053
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/models/index.py",
+        "range": {
+          "startPosition": {
+            "line": 10
+          },
+          "endPosition": {
+            "line": 146
+          }
+        },
+        "contents": "class NoteIndex:\n\n    \n    def search(self, query: str, limit: int = 10) -&gt; list[Note]:\n        \"\"\"\n        Simple text search through notes.\n        \n        Args:\n            query: Search query (case-insensitive)\n            limit: Maximum number of results\n            \n        Returns:\n            List of matching notes\n        \"\"\"\n        query_lower = query.lower()\n        matches = []\n        \n        for note in self._by_slug.values():\n            # Search in title and content\n            if (query_lower in note.title.lower() or \n                query_lower in note.content.lower()):\n                matches.append(note)\n                if len(matches) &gt;= limit:\n                    break\n        \n        return matches\n    \n    def get_by_project(self, project: str) -&gt; list[Note]:\n        \"\"\"\n        Filter notes by project using ProjectDirectoryMapper.\n        \n        Args:\n            project: Project name (e.g., \"DAAS\", \"THN\") or directory name (e.g., \"daas\", \"thn\")\n            \n        Returns:\n            List of notes in the specified project directory\n        \"\"\"\n        if not project:\n            return []\n        \n        # Use ProjectDirectoryMapper to get directory name\n        mapper = ProjectDirectoryMapper()\n        project_directory = mapper.get_directory(project)\n        \n        if not project_directory:\n            return []\n        \n        matches = []\n        for note in self._by_slug.values():\n            # Check if note's file_path starts with project directory\n            if note.file_path.startswith(f\"{project_directory}/\"):\n                matches.append(note)\n        \n        return matches\n    \n    def search_by_project(self, project: str, query: str, limit: int = 10) -&gt; list[Note]:\n        ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 11,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 12,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteIndex:",
+            "lineNumber": 11,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "    ",
+            "lineNumber": 57
+          },
+          {
+            "text": "    def search(self, query: str, limit: int = 10) -&gt; list[Note]:",
+            "lineNumber": 58
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 59
+          },
+          {
+            "text": "        Simple text search through notes.",
+            "lineNumber": 60
+          },
+          {
+            "text": "        ",
+            "lineNumber": 61
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 62
+          },
+          {
+            "text": "            query: Search query (case-insensitive)",
+            "lineNumber": 63
+          },
+          {
+            "text": "            limit: Maximum number of results",
+            "lineNumber": 64
+          },
+          {
+            "text": "            ",
+            "lineNumber": 65
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 66
+          },
+          {
+            "text": "            List of matching notes",
+            "lineNumber": 67
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 68
+          },
+          {
+            "text": "        query_lower = query.lower()",
+            "lineNumber": 69
+          },
+          {
+            "text": "        matches = []",
+            "lineNumber": 70
+          },
+          {
+            "text": "        ",
+            "lineNumber": 71
+          },
+          {
+            "text": "        for note in self._by_slug.values():",
+            "lineNumber": 72
+          },
+          {
+            "text": "            # Search in title and content",
+            "lineNumber": 73
+          },
+          {
+            "text": "            if (query_lower in note.title.lower() or ",
+            "lineNumber": 74
+          },
+          {
+            "text": "                query_lower in note.content.lower()):",
+            "lineNumber": 75
+          },
+          {
+            "text": "                matches.append(note)",
+            "lineNumber": 76
+          },
+          {
+            "text": "                if len(matches) &gt;= limit:",
+            "lineNumber": 77
+          },
+          {
+            "text": "                    break",
+            "lineNumber": 78
+          },
+          {
+            "text": "        ",
+            "lineNumber": 79
+          },
+          {
+            "text": "        return matches",
+            "lineNumber": 80
+          },
+          {
+            "text": "    ",
+            "lineNumber": 81
+          },
+          {
+            "text": "    def get_by_project(self, project: str) -&gt; list[Note]:",
+            "lineNumber": 82
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 83
+          },
+          {
+            "text": "        Filter notes by project using ProjectDirectoryMapper.",
+            "lineNumber": 84
+          },
+          {
+            "text": "        ",
+            "lineNumber": 85
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 86
+          },
+          {
+            "text": "            project: Project name (e.g., \"DAAS\", \"THN\") or directory name (e.g., \"daas\", \"thn\")",
+            "lineNumber": 87
+          },
+          {
+            "text": "            ",
+            "lineNumber": 88
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 89
+          },
+          {
+            "text": "            List of notes in the specified project directory",
+            "lineNumber": 90
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 91
+          },
+          {
+            "text": "        if not project:",
+            "lineNumber": 92
+          },
+          {
+            "text": "            return []",
+            "lineNumber": 93
+          },
+          {
+            "text": "        ",
+            "lineNumber": 94
+          },
+          {
+            "text": "        # Use ProjectDirectoryMapper to get directory name",
+            "lineNumber": 95
+          },
+          {
+            "text": "        mapper = ProjectDirectoryMapper()",
+            "lineNumber": 96
+          },
+          {
+            "text": "        project_directory = mapper.get_directory(project)",
+            "lineNumber": 97
+          },
+          {
+            "text": "        ",
+            "lineNumber": 98
+          },
+          {
+            "text": "        if not project_directory:",
+            "lineNumber": 99
+          },
+          {
+            "text": "            return []",
+            "lineNumber": 100
+          },
+          {
+            "text": "        ",
+            "lineNumber": 101
+          },
+          {
+            "text": "        matches = []",
+            "lineNumber": 102
+          },
+          {
+            "text": "        for note in self._by_slug.values():",
+            "lineNumber": 103
+          },
+          {
+            "text": "            # Check if note's file_path starts with project directory",
+            "lineNumber": 104
+          },
+          {
+            "text": "            if note.file_path.startswith(f\"{project_directory}/\"):",
+            "lineNumber": 105
+          },
+          {
+            "text": "                matches.append(note)",
+            "lineNumber": 106
+          },
+          {
+            "text": "        ",
+            "lineNumber": 107
+          },
+          {
+            "text": "        return matches",
+            "lineNumber": 108
+          },
+          {
+            "text": "    ",
+            "lineNumber": 109
+          },
+          {
+            "text": "    def search_by_project(self, project: str, query: str, limit: int = 10) -&gt; list[Note]:",
+            "lineNumber": 110
+          },
+          {
+            "text": "        ",
+            "lineNumber": 111
+          }
+        ]
+      },
+      "score": 0.5087169408798218
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/models/index.py",
+        "range": {
+          "startPosition": {
+            "line": 10
+          },
+          "endPosition": {
+            "line": 146,
+            "column": 22
+          }
+        },
+        "contents": "class NoteIndex:\ndef get_by_project(self, project: str) -&gt; list[Note]:\n\n        \n        return matches\n    \n    def search_by_project(self, project: str, query: str, limit: int = 10) -&gt; list[Note]:\n        \"\"\"\n        Search notes within a specific project using ProjectDirectoryMapper.\n        \n        Args:\n            project: Project name (e.g., \"DAAS\", \"THN\") or directory name (e.g., \"daas\", \"thn\")\n            query: Search query (case-insensitive)\n            limit: Maximum number of results\n            \n        Returns:\n            List of matching notes from the specified project directory\n        \"\"\"\n        if not project:\n            return []\n        \n        # Use ProjectDirectoryMapper to get directory name\n        mapper = ProjectDirectoryMapper()\n        project_directory = mapper.get_directory(project)\n        \n        if not project_directory:\n            return []\n        \n        query_lower = query.lower()\n        matches = []\n        \n        for note in self._by_slug.values():\n            # Check project directory first\n            if not note.file_path.startswith(f\"{project_directory}/\"):\n                continue\n            \n            # Then search in title and content\n            if (query_lower in note.title.lower() or \n                query_lower in note.content.lower()):\n                matches.append(note)\n                if len(matches) &gt;= limit:\n                    break\n        \n        return matches",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 11,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 12,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteIndex:",
+            "lineNumber": 11,
+            "isSignature": true
+          },
+          {
+            "text": "def get_by_project(self, project: str) -&gt; list[Note]:",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "        ",
+            "lineNumber": 107
+          },
+          {
+            "text": "        return matches",
+            "lineNumber": 108
+          },
+          {
+            "text": "    ",
+            "lineNumber": 109
+          },
+          {
+            "text": "    def search_by_project(self, project: str, query: str, limit: int = 10) -&gt; list[Note]:",
+            "lineNumber": 110
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 111
+          },
+          {
+            "text": "        Search notes within a specific project using ProjectDirectoryMapper.",
+            "lineNumber": 112
+          },
+          {
+            "text": "        ",
+            "lineNumber": 113
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 114
+          },
+          {
+            "text": "            project: Project name (e.g., \"DAAS\", \"THN\") or directory name (e.g., \"daas\", \"thn\")",
+            "lineNumber": 115
+          },
+          {
+            "text": "            query: Search query (case-insensitive)",
+            "lineNumber": 116
+          },
+          {
+            "text": "            limit: Maximum number of results",
+            "lineNumber": 117
+          },
+          {
+            "text": "            ",
+            "lineNumber": 118
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 119
+          },
+          {
+            "text": "            List of matching notes from the specified project directory",
+            "lineNumber": 120
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 121
+          },
+          {
+            "text": "        if not project:",
+            "lineNumber": 122
+          },
+          {
+            "text": "            return []",
+            "lineNumber": 123
+          },
+          {
+            "text": "        ",
+            "lineNumber": 124
+          },
+          {
+            "text": "        # Use ProjectDirectoryMapper to get directory name",
+            "lineNumber": 125
+          },
+          {
+            "text": "        mapper = ProjectDirectoryMapper()",
+            "lineNumber": 126
+          },
+          {
+            "text": "        project_directory = mapper.get_directory(project)",
+            "lineNumber": 127
+          },
+          {
+            "text": "        ",
+            "lineNumber": 128
+          },
+          {
+            "text": "        if not project_directory:",
+            "lineNumber": 129
+          },
+          {
+            "text": "            return []",
+            "lineNumber": 130
+          },
+          {
+            "text": "        ",
+            "lineNumber": 131
+          },
+          {
+            "text": "        query_lower = query.lower()",
+            "lineNumber": 132
+          },
+          {
+            "text": "        matches = []",
+            "lineNumber": 133
+          },
+          {
+            "text": "        ",
+            "lineNumber": 134
+          },
+          {
+            "text": "        for note in self._by_slug.values():",
+            "lineNumber": 135
+          },
+          {
+            "text": "            # Check project directory first",
+            "lineNumber": 136
+          },
+          {
+            "text": "            if not note.file_path.startswith(f\"{project_directory}/\"):",
+            "lineNumber": 137
+          },
+          {
+            "text": "                continue",
+            "lineNumber": 138
+          },
+          {
+            "text": "            ",
+            "lineNumber": 139
+          },
+          {
+            "text": "            # Then search in title and content",
+            "lineNumber": 140
+          },
+          {
+            "text": "            if (query_lower in note.title.lower() or ",
+            "lineNumber": 141
+          },
+          {
+            "text": "                query_lower in note.content.lower()):",
+            "lineNumber": 142
+          },
+          {
+            "text": "                matches.append(note)",
+            "lineNumber": 143
+          },
+          {
+            "text": "                if len(matches) &gt;= limit:",
+            "lineNumber": 144
+          },
+          {
+            "text": "                    break",
+            "lineNumber": 145
+          },
+          {
+            "text": "        ",
+            "lineNumber": 146
+          },
+          {
+            "text": "        return matches",
+            "lineNumber": 147,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.49200868606567383
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 74
+          }
+        },
+        "contents": "# Data Model: Project-Organized Meditation Notes\n\n## Overview\n\nThis feature extends the existing MCP server data model to support project-based organization and conversation saving. No new database tables are required - all data is managed in-memory and via the GitLab repository.\n\n## Extended Entities\n\n### Note Entity (Extended)\n\n**Location**: &#96;src/models/note.py&#96;\n\n**Existing Fields**:\n\n- &#96;slug&#96;: String identifier for the note\n- &#96;title&#96;: Note title\n- &#96;content&#96;: Note content (markdown)\n- &#96;frontmatter&#96;: Dict of YAML frontmatter metadata\n- &#96;file_path&#96;: Relative path from repository root (e.g., &#96;daas/morning-meditation.md&#96;)\n- &#96;last_modified&#96;: Optional datetime\n\n**New Derived Property**:\n\n- &#96;project_directory&#96;: String - extracted from file_path (e.g., &#96;daas&#96; from &#96;daas/morning-meditation.md&#96;)\n\n**Example**:\n\n&#96;&#96;&#96;python\nNote(\n    slug=\"morning-meditation\",\n    title=\"Morning Meditation\",\n    content=\"# Morning Meditation\\n\\n...\",\n    frontmatter={\"tags\": [\"meditation\"]},\n    file_path=\"daas/morning-meditation.md\",\n    last_modified=datetime(2025, 12, 7, 10, 0)\n)\n# project_directory = \"daas\" (derived)\n&#96;&#96;&#96;\n\n### NoteIndex Entity (Extended)\n\n**Location**: &#96;src/models/index.py&#96;\n\n**Existing Methods**:\n\n- &#96;add(note)&#96;: Add note to index\n- &#96;get_by_slug(slug)&#96;: Get note by slug\n- &#96;get_by_uri(uri)&#96;: Get note by URI\n- &#96;get_by_file_path(file_path)&#96;: Get note by file path\n- &#96;all_notes()&#96;: Get all notes\n- &#96;search(query, limit)&#96;: Search notes by content\n\n**New Methods**:\n\n- &#96;get_by_project(project: str) -&gt; list[Note]&#96;: Filter notes by project directory\n- &#96;search_by_project(project: str, query: str, limit: int) -&gt; list[Note]&#96;: Search notes within a project\n\n**Implementation**: Filter &#96;all_notes()&#96; by checking if &#96;file_path&#96; starts with project directory name.\n\n## New Entities\n\n### ProjectDirectoryMapper\n\n**Location**: &#96;src/services/project_filter.py&#96;\n\n**Purpose**: Maps project names to directory names\n\n**Fields**:\n\n- &#96;_mapping&#96;: Dict[str, str] - project name to directory name mapping\n\n**Methods**:\n\n- &#96;get_directory(project: str) -&gt; str&#96;: Get directory name for project",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: Project-Organized Meditation Notes",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature extends the existing MCP server data model to support project-based organization and conversation saving. No new database tables are required - all data is managed in-memory and via the GitLab repository.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Extended Entities",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### Note Entity (Extended)",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Location**: &#96;src/models/note.py&#96;",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Existing Fields**:",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "- &#96;slug&#96;: String identifier for the note",
+            "lineNumber": 15
+          },
+          {
+            "text": "- &#96;title&#96;: Note title",
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;content&#96;: Note content (markdown)",
+            "lineNumber": 17
+          },
+          {
+            "text": "- &#96;frontmatter&#96;: Dict of YAML frontmatter metadata",
+            "lineNumber": 18
+          },
+          {
+            "text": "- &#96;file_path&#96;: Relative path from repository root (e.g., &#96;daas/morning-meditation.md&#96;)",
+            "lineNumber": 19
+          },
+          {
+            "text": "- &#96;last_modified&#96;: Optional datetime",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**New Derived Property**:",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "- &#96;project_directory&#96;: String - extracted from file_path (e.g., &#96;daas&#96; from &#96;daas/morning-meditation.md&#96;)",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 28
+          },
+          {
+            "text": "Note(",
+            "lineNumber": 29
+          },
+          {
+            "text": "    slug=\"morning-meditation\",",
+            "lineNumber": 30
+          },
+          {
+            "text": "    title=\"Morning Meditation\",",
+            "lineNumber": 31
+          },
+          {
+            "text": "    content=\"# Morning Meditation\\n\\n...\",",
+            "lineNumber": 32
+          },
+          {
+            "text": "    frontmatter={\"tags\": [\"meditation\"]},",
+            "lineNumber": 33
+          },
+          {
+            "text": "    file_path=\"daas/morning-meditation.md\",",
+            "lineNumber": 34
+          },
+          {
+            "text": "    last_modified=datetime(2025, 12, 7, 10, 0)",
+            "lineNumber": 35
+          },
+          {
+            "text": ")",
+            "lineNumber": 36
+          },
+          {
+            "text": "# project_directory = \"daas\" (derived)",
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "### NoteIndex Entity (Extended)",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "**Location**: &#96;src/models/index.py&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "**Existing Methods**:",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "- &#96;add(note)&#96;: Add note to index",
+            "lineNumber": 46
+          },
+          {
+            "text": "- &#96;get_by_slug(slug)&#96;: Get note by slug",
+            "lineNumber": 47
+          },
+          {
+            "text": "- &#96;get_by_uri(uri)&#96;: Get note by URI",
+            "lineNumber": 48
+          },
+          {
+            "text": "- &#96;get_by_file_path(file_path)&#96;: Get note by file path",
+            "lineNumber": 49
+          },
+          {
+            "text": "- &#96;all_notes()&#96;: Get all notes",
+            "lineNumber": 50
+          },
+          {
+            "text": "- &#96;search(query, limit)&#96;: Search notes by content",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**New Methods**:",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "- &#96;get_by_project(project: str) -&gt; list[Note]&#96;: Filter notes by project directory",
+            "lineNumber": 55
+          },
+          {
+            "text": "- &#96;search_by_project(project: str, query: str, limit: int) -&gt; list[Note]&#96;: Search notes within a project",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "**Implementation**: Filter &#96;all_notes()&#96; by checking if &#96;file_path&#96; starts with project directory name.",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "## New Entities",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "### ProjectDirectoryMapper",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "**Location**: &#96;src/services/project_filter.py&#96;",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "**Purpose**: Maps project names to directory names",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "- &#96;_mapping&#96;: Dict[str, str] - project name to directory name mapping",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "**Methods**:",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "- &#96;get_directory(project: str) -&gt; str&#96;: Get directory name for project",
+            "lineNumber": 74
+          }
+        ]
+      },
+      "score": 0.43627628684043884
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {
+            "line": 23
+          },
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "class MCPApi:\n\n    \n    def get_project_notes(self, project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]:\n        \"\"\"\n        Get relevant notes for a project based on user message.\n        \n        Args:\n            project: Project name\n            user_message: User message for keyword matching\n            limit: Maximum number of notes to return\n            \n        Returns:\n            List of note dictionaries with uri, title, content snippet\n        \"\"\"\n        # Get directory name for project\n        directory = self.project_mapper.get_directory(project)\n        \n        # Search notes in this project directory\n        notes = self.index.search_by_project(directory, user_message, limit=limit)\n        \n        # Convert to dict format\n        result = []\n        for note in notes:\n            # Include snippet of content (first 200 chars)\n            content_snippet = note.content[:200] + \"...\" if len(note.content) &gt; 200 else note.content\n            result.append({\n                \"uri\": note.uri,\n                \"title\": note.title,\n                \"content_snippet\": content_snippet,\n                \"file_path\": note.file_path\n            })\n        \n        return result\n    \n    def save_conversation(\n        self, \n        project: str, \n        messages: List[Dict[str, Any]], \n        title: Optional[str] = None,\n        gitlab_username: Optional[str] = None,\n        gitlab_password: Optional[str] = None\n    ) -&gt; Dict[str, Any]:\n        ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 24,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 25,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 196
+          },
+          {
+            "text": "    ",
+            "lineNumber": 197
+          },
+          {
+            "text": "    def get_project_notes(self, project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]:",
+            "lineNumber": 198
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 199
+          },
+          {
+            "text": "        Get relevant notes for a project based on user message.",
+            "lineNumber": 200
+          },
+          {
+            "text": "        ",
+            "lineNumber": 201
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 202
+          },
+          {
+            "text": "            project: Project name",
+            "lineNumber": 203
+          },
+          {
+            "text": "            user_message: User message for keyword matching",
+            "lineNumber": 204
+          },
+          {
+            "text": "            limit: Maximum number of notes to return",
+            "lineNumber": 205
+          },
+          {
+            "text": "            ",
+            "lineNumber": 206
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 207
+          },
+          {
+            "text": "            List of note dictionaries with uri, title, content snippet",
+            "lineNumber": 208
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 209
+          },
+          {
+            "text": "        # Get directory name for project",
+            "lineNumber": 210
+          },
+          {
+            "text": "        directory = self.project_mapper.get_directory(project)",
+            "lineNumber": 211
+          },
+          {
+            "text": "        ",
+            "lineNumber": 212
+          },
+          {
+            "text": "        # Search notes in this project directory",
+            "lineNumber": 213
+          },
+          {
+            "text": "        notes = self.index.search_by_project(directory, user_message, limit=limit)",
+            "lineNumber": 214
+          },
+          {
+            "text": "        ",
+            "lineNumber": 215
+          },
+          {
+            "text": "        # Convert to dict format",
+            "lineNumber": 216
+          },
+          {
+            "text": "        result = []",
+            "lineNumber": 217
+          },
+          {
+            "text": "        for note in notes:",
+            "lineNumber": 218
+          },
+          {
+            "text": "            # Include snippet of content (first 200 chars)",
+            "lineNumber": 219
+          },
+          {
+            "text": "            content_snippet = note.content[:200] + \"...\" if len(note.content) &gt; 200 else note.content",
+            "lineNumber": 220
+          },
+          {
+            "text": "            result.append({",
+            "lineNumber": 221
+          },
+          {
+            "text": "                \"uri\": note.uri,",
+            "lineNumber": 222
+          },
+          {
+            "text": "                \"title\": note.title,",
+            "lineNumber": 223
+          },
+          {
+            "text": "                \"content_snippet\": content_snippet,",
+            "lineNumber": 224
+          },
+          {
+            "text": "                \"file_path\": note.file_path",
+            "lineNumber": 225
+          },
+          {
+            "text": "            })",
+            "lineNumber": 226
+          },
+          {
+            "text": "        ",
+            "lineNumber": 227
+          },
+          {
+            "text": "        return result",
+            "lineNumber": 228
+          },
+          {
+            "text": "    ",
+            "lineNumber": 229
+          },
+          {
+            "text": "    def save_conversation(",
+            "lineNumber": 230
+          },
+          {
+            "text": "        self, ",
+            "lineNumber": 231
+          },
+          {
+            "text": "        project: str, ",
+            "lineNumber": 232
+          },
+          {
+            "text": "        messages: List[Dict[str, Any]], ",
+            "lineNumber": 233
+          },
+          {
+            "text": "        title: Optional[str] = None,",
+            "lineNumber": 234
+          },
+          {
+            "text": "        gitlab_username: Optional[str] = None,",
+            "lineNumber": 235
+          },
+          {
+            "text": "        gitlab_password: Optional[str] = None",
+            "lineNumber": 236
+          },
+          {
+            "text": "    ) -&gt; Dict[str, Any]:",
+            "lineNumber": 237
+          },
+          {
+            "text": "        ",
+            "lineNumber": 238
+          }
+        ]
+      },
+      "score": 0.42648065090179443
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 82
+          }
+        },
+        "contents": "# API Contracts: Project-Organized Notes\n\n## MCP API Extensions\n\n### &#96;list_resources_by_project(project: str) -&gt; List[Dict[str, Any]]&#96;\n\nList all resources filtered by project directory.\n\n**Parameters**:\n\n- &#96;project&#96;: Project name (DAAS, THN, FF, General, 700B)\n\n**Returns**: List of resource dictionaries with uri, name, description, mimeType\n\n**Example**:\n\n&#96;&#96;&#96;python\napi = get_mcp_api()\nresources = api.list_resources_by_project(\"DAAS\")\n# Returns only notes from \"daas/\" directory\n&#96;&#96;&#96;\n\n### &#96;get_project_notes(project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]&#96;\n\nGet relevant notes for a project based on user message.\n\n**Parameters**:\n\n- &#96;project&#96;: Project name\n- &#96;user_message&#96;: User message for keyword matching\n- &#96;limit&#96;: Maximum number of notes to return\n\n**Returns**: List of note dictionaries with uri, title, content snippet\n\n**Example**:\n\n&#96;&#96;&#96;python\napi = get_mcp_api()\nnotes = api.get_project_notes(\"DAAS\", \"morning routine\", limit=3)\n&#96;&#96;&#96;\n\n### &#96;save_conversation(project: str, messages: List[Dict], title: Optional[str] = None) -&gt; Dict[str, Any]&#96;\n\nSave a conversation as a note in the project directory.\n\n**Parameters**:\n\n- &#96;project&#96;: Project name\n- &#96;messages&#96;: List of message dicts with role, content, timestamp\n- &#96;title&#96;: Optional title for the note\n\n**Returns**: Dict with success status, file_path, and message\n\n**Example**:\n\n&#96;&#96;&#96;python\napi = get_mcp_api()\nresult = api.save_conversation(\n    project=\"DAAS\",\n    messages=[\n        {\"role\": \"user\", \"content\": \"Hello\", \"timestamp\": \"2025-12-07T10:30:00Z\"},\n        {\"role\": \"assistant\", \"content\": \"Hi there!\", \"timestamp\": \"2025-12-07T10:30:05Z\"}\n    ],\n    title=\"My Conversation\"\n)\n# Returns: {\"success\": True, \"file_path\": \"daas/my-conversation.md\", \"message\": \"Note saved\"}\n&#96;&#96;&#96;\n\n## Project Directory Mapper\n\n### &#96;get_directory(project: str) -&gt; str&#96;\n\nMap project name to directory name.\n\n**Parameters**:\n\n- &#96;project&#96;: Project name (DAAS, THN, FF, General, 700B)\n\n**Returns**: Directory name (daas, thn, ff, general, 700b)\n\n**Example**:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contracts: Project-Organized Notes",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## MCP API Extensions",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### &#96;list_resources_by_project(project: str) -&gt; List[Dict[str, Any]]&#96;",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "List all resources filtered by project directory.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- &#96;project&#96;: Project name (DAAS, THN, FF, General, 700B)",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Returns**: List of resource dictionaries with uri, name, description, mimeType",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 17
+          },
+          {
+            "text": "api = get_mcp_api()",
+            "lineNumber": 18
+          },
+          {
+            "text": "resources = api.list_resources_by_project(\"DAAS\")",
+            "lineNumber": 19
+          },
+          {
+            "text": "# Returns only notes from \"daas/\" directory",
+            "lineNumber": 20
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "### &#96;get_project_notes(project: str, user_message: str, limit: int = 5) -&gt; List[Dict[str, Any]]&#96;",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "Get relevant notes for a project based on user message.",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "- &#96;project&#96;: Project name",
+            "lineNumber": 29
+          },
+          {
+            "text": "- &#96;user_message&#96;: User message for keyword matching",
+            "lineNumber": 30
+          },
+          {
+            "text": "- &#96;limit&#96;: Maximum number of notes to return",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Returns**: List of note dictionaries with uri, title, content snippet",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 37
+          },
+          {
+            "text": "api = get_mcp_api()",
+            "lineNumber": 38
+          },
+          {
+            "text": "notes = api.get_project_notes(\"DAAS\", \"morning routine\", limit=3)",
+            "lineNumber": 39
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "### &#96;save_conversation(project: str, messages: List[Dict], title: Optional[str] = None) -&gt; Dict[str, Any]&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "Save a conversation as a note in the project directory.",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "- &#96;project&#96;: Project name",
+            "lineNumber": 48
+          },
+          {
+            "text": "- &#96;messages&#96;: List of message dicts with role, content, timestamp",
+            "lineNumber": 49
+          },
+          {
+            "text": "- &#96;title&#96;: Optional title for the note",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "**Returns**: Dict with success status, file_path, and message",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 56
+          },
+          {
+            "text": "api = get_mcp_api()",
+            "lineNumber": 57
+          },
+          {
+            "text": "result = api.save_conversation(",
+            "lineNumber": 58
+          },
+          {
+            "text": "    project=\"DAAS\",",
+            "lineNumber": 59
+          },
+          {
+            "text": "    messages=[",
+            "lineNumber": 60
+          },
+          {
+            "text": "        {\"role\": \"user\", \"content\": \"Hello\", \"timestamp\": \"2025-12-07T10:30:00Z\"},",
+            "lineNumber": 61
+          },
+          {
+            "text": "        {\"role\": \"assistant\", \"content\": \"Hi there!\", \"timestamp\": \"2025-12-07T10:30:05Z\"}",
+            "lineNumber": 62
+          },
+          {
+            "text": "    ],",
+            "lineNumber": 63
+          },
+          {
+            "text": "    title=\"My Conversation\"",
+            "lineNumber": 64
+          },
+          {
+            "text": ")",
+            "lineNumber": 65
+          },
+          {
+            "text": "# Returns: {\"success\": True, \"file_path\": \"daas/my-conversation.md\", \"message\": \"Note saved\"}",
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Project Directory Mapper",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### &#96;get_directory(project: str) -&gt; str&#96;",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "Map project name to directory name.",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "- &#96;project&#96;: Project name (DAAS, THN, FF, General, 700B)",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "**Returns**: Directory name (daas, thn, ff, general, 700b)",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 81
+          }
+        ]
+      },
+      "score": 0.4246968924999237
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 52
+          }
+        },
+        "contents": "# Research: Project-Organized Meditation Notes Integration\n\n## Project Directory Mapping\n\n### Decision: Lowercase mapping with explicit configuration\n\n**Rationale**: Project names in the system (DAAS, THN, FF, General, 700B) need to map to directory names in the Obsidian repository (daas, thn, ff, general, 700b). The mapping should be explicit and configurable to handle edge cases.\n\n**Implementation approach**:\n\n- Create a mapping dictionary: &#96;{\"DAAS\": \"daas\", \"THN\": \"thn\", \"FF\": \"ff\", \"General\": \"general\", \"700B\": \"700b\"}&#96;\n- Default to lowercase conversion if no explicit mapping exists\n- Handle case-insensitive matching for robustness\n\n**Alternatives considered**:\n\n- Automatic lowercase conversion: Rejected - \"700B\" → \"700b\" works, but explicit mapping is clearer\n- Case-sensitive matching: Rejected - too fragile if directory names change slightly\n\n## Note Filtering by Project Directory\n\n### Decision: Filter by file path prefix\n\n**Rationale**: Notes are organized in project directories (e.g., &#96;daas/note1.md&#96;, &#96;thn/note2.md&#96;). The Note entity already has a &#96;file_path&#96; field that includes the relative path from repository root. We can filter notes by checking if the file_path starts with the project directory name.\n\n**Implementation approach**:\n\n- Add project directory path to Note model (or derive from file_path)\n- Filter NoteIndex results by checking file_path prefix\n- Support notes in subdirectories (e.g., &#96;daas/subfolder/note.md&#96;)\n\n**Alternatives considered**:\n\n- Separate indexes per project: Rejected - adds complexity, current single index is sufficient\n- Database storage: Rejected - notes are already in-memory for performance, no need for DB\n\n## Conversation Saving Format\n\n### Decision: Obsidian markdown with YAML frontmatter\n\n**Rationale**: Saved conversations should be readable in Obsidian and follow the same format as existing notes. Obsidian uses YAML frontmatter for metadata and standard markdown for content.\n\n**Format structure**:\n\n&#96;&#96;&#96;markdown\n---\ntitle: Conversation Title\nproject: DAAS\ncreated: 2025-12-07T10:30:00Z\ntags: [conversation, ai-chat]\n---",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research: Project-Organized Meditation Notes Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Project Directory Mapping",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### Decision: Lowercase mapping with explicit configuration",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Rationale**: Project names in the system (DAAS, THN, FF, General, 700B) need to map to directory names in the Obsidian repository (daas, thn, ff, general, 700b). The mapping should be explicit and configurable to handle edge cases.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Create a mapping dictionary: &#96;{\"DAAS\": \"daas\", \"THN\": \"thn\", \"FF\": \"ff\", \"General\": \"general\", \"700B\": \"700b\"}&#96;",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Default to lowercase conversion if no explicit mapping exists",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Handle case-insensitive matching for robustness",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "- Automatic lowercase conversion: Rejected - \"700B\" → \"700b\" works, but explicit mapping is clearer",
+            "lineNumber": 17
+          },
+          {
+            "text": "- Case-sensitive matching: Rejected - too fragile if directory names change slightly",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "## Note Filtering by Project Directory",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "### Decision: Filter by file path prefix",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "**Rationale**: Notes are organized in project directories (e.g., &#96;daas/note1.md&#96;, &#96;thn/note2.md&#96;). The Note entity already has a &#96;file_path&#96; field that includes the relative path from repository root. We can filter notes by checking if the file_path starts with the project directory name.",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "- Add project directory path to Note model (or derive from file_path)",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Filter NoteIndex results by checking file_path prefix",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Support notes in subdirectories (e.g., &#96;daas/subfolder/note.md&#96;)",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "- Separate indexes per project: Rejected - adds complexity, current single index is sufficient",
+            "lineNumber": 34
+          },
+          {
+            "text": "- Database storage: Rejected - notes are already in-memory for performance, no need for DB",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "## Conversation Saving Format",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "### Decision: Obsidian markdown with YAML frontmatter",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "**Rationale**: Saved conversations should be readable in Obsidian and follow the same format as existing notes. Obsidian uses YAML frontmatter for metadata and standard markdown for content.",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "**Format structure**:",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "&#96;&#96;&#96;markdown",
+            "lineNumber": 45
+          },
+          {
+            "text": "---",
+            "lineNumber": 46
+          },
+          {
+            "text": "title: Conversation Title",
+            "lineNumber": 47
+          },
+          {
+            "text": "project: DAAS",
+            "lineNumber": 48
+          },
+          {
+            "text": "created: 2025-12-07T10:30:00Z",
+            "lineNumber": 49
+          },
+          {
+            "text": "tags: [conversation, ai-chat]",
+            "lineNumber": 50
+          },
+          {
+            "text": "---",
+            "lineNumber": 51
+          }
+        ]
+      },
+      "score": 0.40233469009399414
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 47
+          },
+          "endPosition": {
+            "line": 77
+          }
+        },
+        "contents": "**Goal**: Enable project-scoped meditation note retrieval and natural recall/referencing throughout conversations\n\n**Independent Test**: Set project context to \"DAAS\", ask \"What did I write about morning routines?\", verify system recalls and references relevant content from \"daas\" directory notes\n\n### Implementation for User Story 1\n\n- [x] T007 [P] [US1] Add project_directory property to Note model in src/models/note.py (extract from file_path)\n- [x] T008 [P] [US1] Add get_by_project(project: str) method to NoteIndex in src/models/index.py\n- [x] T009 [P] [US1] Add search_by_project(project: str, query: str, limit: int) method to NoteIndex in src/models/index.py\n- [x] T010 [US1] Add list_resources_by_project(project: str) method to MCPApi in src/mcp/api.py (uses ProjectDirectoryMapper and NoteIndex.get_by_project)\n- [x] T011 [US1] Add get_project_notes(project: str, user_message: str, limit: int) method to MCPApi in src/mcp/api.py (uses NoteIndex.search_by_project)\n- [x] T012 [US1] Update ResourcesHandler.list_resources() in src/mcp/resources.py to support optional project filter parameter\n- [x] T013 [US1] Integrate project-scoped note retrieval into build_project_context() in brain_core/context_builder.py\n- [x] T014 [US1] Add MCP note context to conversation context when project-scoped notes are available\n- [x] T015 [US1] Update context messages to emphasize natural recall and referencing of note content\n\n**Checkpoint**: At this point, User Story 1 should be fully functional - project-scoped notes are retrieved and included in conversation context, and system can recall/reference them naturally\n\n---\n\n## Phase 4: User Story 2 - Save Conversation as Note (Priority: P1)\n\n**Goal**: Enable saving conversations as markdown notes in the appropriate project directory with Git commit/push\n\n**Independent Test**: Run &#96;/mcp save \"Test Title\"&#96; in a DAAS conversation, verify markdown file created in \"daas/\" directory and pushed to repository\n\n### Implementation for User Story 2\n\n- [x] T016 [P] [US2] Create ConversationNote class in src/services/note_saver.py with title, project, messages, created_at, metadata fields",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Goal**: Enable project-scoped meditation note retrieval and natural recall/referencing throughout conversations",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Independent Test**: Set project context to \"DAAS\", ask \"What did I write about morning routines?\", verify system recalls and references relevant content from \"daas\" directory notes",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "### Implementation for User Story 1",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "- [x] T007 [P] [US1] Add project_directory property to Note model in src/models/note.py (extract from file_path)",
+            "lineNumber": 55
+          },
+          {
+            "text": "- [x] T008 [P] [US1] Add get_by_project(project: str) method to NoteIndex in src/models/index.py",
+            "lineNumber": 56
+          },
+          {
+            "text": "- [x] T009 [P] [US1] Add search_by_project(project: str, query: str, limit: int) method to NoteIndex in src/models/index.py",
+            "lineNumber": 57
+          },
+          {
+            "text": "- [x] T010 [US1] Add list_resources_by_project(project: str) method to MCPApi in src/mcp/api.py (uses ProjectDirectoryMapper and NoteIndex.get_by_project)",
+            "lineNumber": 58
+          },
+          {
+            "text": "- [x] T011 [US1] Add get_project_notes(project: str, user_message: str, limit: int) method to MCPApi in src/mcp/api.py (uses NoteIndex.search_by_project)",
+            "lineNumber": 59
+          },
+          {
+            "text": "- [x] T012 [US1] Update ResourcesHandler.list_resources() in src/mcp/resources.py to support optional project filter parameter",
+            "lineNumber": 60
+          },
+          {
+            "text": "- [x] T013 [US1] Integrate project-scoped note retrieval into build_project_context() in brain_core/context_builder.py",
+            "lineNumber": 61
+          },
+          {
+            "text": "- [x] T014 [US1] Add MCP note context to conversation context when project-scoped notes are available",
+            "lineNumber": 62
+          },
+          {
+            "text": "- [x] T015 [US1] Update context messages to emphasize natural recall and referencing of note content",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "**Checkpoint**: At this point, User Story 1 should be fully functional - project-scoped notes are retrieved and included in conversation context, and system can recall/reference them naturally",
+            "lineNumber": 65
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "---",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Phase 4: User Story 2 - Save Conversation as Note (Priority: P1)",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "**Goal**: Enable saving conversations as markdown notes in the appropriate project directory with Git commit/push",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "**Independent Test**: Run &#96;/mcp save \"Test Title\"&#96; in a DAAS conversation, verify markdown file created in \"daas/\" directory and pushed to repository",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "### Implementation for User Story 2",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "- [x] T016 [P] [US2] Create ConversationNote class in src/services/note_saver.py with title, project, messages, created_at, metadata fields",
+            "lineNumber": 77
+          }
+        ]
+      },
+      "score": 0.38479098677635193
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/models/note.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 56,
+            "column": 9
+          }
+        },
+        "contents": "\"\"\"\nNote entity for meditation notes.\n\nRepresents a single meditation note parsed from Obsidian markdown.\n\"\"\"\nfrom dataclasses import dataclass\nfrom typing import Optional, Dict, Any\nfrom datetime import datetime\n\n\n@dataclass\nclass Note:\n    \"\"\"A meditation note parsed from Obsidian markdown.\"\"\"\n    \n    slug: str\n    title: str\n    content: str\n    frontmatter: Dict[str, Any]\n    file_path: str\n    last_modified: Optional[datetime] = None\n    \n    @property\n    def uri(self) -&gt; str:\n        \"\"\"Generate MCP resource URI for this note.\"\"\"\n        return f\"meditation://note/{self.slug}\"\n    \n    @property\n    def project_directory(self) -&gt; str:\n        \"\"\"\n        Extract project directory from file_path.\n        \n        Returns:\n            Project directory name (e.g., \"daas\" from \"daas/morning-meditation.md\")\n            Returns empty string if file_path doesn't contain a directory\n        \"\"\"\n        if not self.file_path:\n            return \"\"\n        \n        # Split path and get first component (directory)\n        parts = self.file_path.split(\"/\")\n        if len(parts) &gt; 1:\n            return parts[0]\n        \n        # If no directory separator, return empty string\n        return \"\"\n    \n    def to_dict(self) -&gt; Dict[str, Any]:\n        \"\"\"Convert note to dictionary for JSON serialization.\"\"\"\n        return {\n            \"slug\": self.slug,\n            \"title\": self.title,\n            \"content\": self.content,\n            \"frontmatter\": self.frontmatter,\n            \"file_path\": self.file_path,\n            \"uri\": self.uri,\n            \"last_modified\": self.last_modified.isoformat() if self.last_modified else None\n        }",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Note entity for meditation notes.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Represents a single meditation note parsed from Obsidian markdown.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "from dataclasses import dataclass",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Optional, Dict, Any",
+            "lineNumber": 7
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "@dataclass",
+            "lineNumber": 11
+          },
+          {
+            "text": "class Note:",
+            "lineNumber": 12,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"A meditation note parsed from Obsidian markdown.\"\"\"",
+            "lineNumber": 13
+          },
+          {
+            "text": "    ",
+            "lineNumber": 14
+          },
+          {
+            "text": "    slug: str",
+            "lineNumber": 15
+          },
+          {
+            "text": "    title: str",
+            "lineNumber": 16
+          },
+          {
+            "text": "    content: str",
+            "lineNumber": 17
+          },
+          {
+            "text": "    frontmatter: Dict[str, Any]",
+            "lineNumber": 18
+          },
+          {
+            "text": "    file_path: str",
+            "lineNumber": 19
+          },
+          {
+            "text": "    last_modified: Optional[datetime] = None",
+            "lineNumber": 20
+          },
+          {
+            "text": "    ",
+            "lineNumber": 21
+          },
+          {
+            "text": "    @property",
+            "lineNumber": 22
+          },
+          {
+            "text": "    def uri(self) -&gt; str:",
+            "lineNumber": 23
+          },
+          {
+            "text": "        \"\"\"Generate MCP resource URI for this note.\"\"\"",
+            "lineNumber": 24
+          },
+          {
+            "text": "        return f\"meditation://note/{self.slug}\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    ",
+            "lineNumber": 26
+          },
+          {
+            "text": "    @property",
+            "lineNumber": 27
+          },
+          {
+            "text": "    def project_directory(self) -&gt; str:",
+            "lineNumber": 28
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 29
+          },
+          {
+            "text": "        Extract project directory from file_path.",
+            "lineNumber": 30
+          },
+          {
+            "text": "        ",
+            "lineNumber": 31
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 32
+          },
+          {
+            "text": "            Project directory name (e.g., \"daas\" from \"daas/morning-meditation.md\")",
+            "lineNumber": 33
+          },
+          {
+            "text": "            Returns empty string if file_path doesn't contain a directory",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        if not self.file_path:",
+            "lineNumber": 36
+          },
+          {
+            "text": "            return \"\"",
+            "lineNumber": 37
+          },
+          {
+            "text": "        ",
+            "lineNumber": 38
+          },
+          {
+            "text": "        # Split path and get first component (directory)",
+            "lineNumber": 39
+          },
+          {
+            "text": "        parts = self.file_path.split(\"/\")",
+            "lineNumber": 40
+          },
+          {
+            "text": "        if len(parts) &gt; 1:",
+            "lineNumber": 41
+          },
+          {
+            "text": "            return parts[0]",
+            "lineNumber": 42
+          },
+          {
+            "text": "        ",
+            "lineNumber": 43
+          },
+          {
+            "text": "        # If no directory separator, return empty string",
+            "lineNumber": 44
+          },
+          {
+            "text": "        return \"\"",
+            "lineNumber": 45
+          },
+          {
+            "text": "    ",
+            "lineNumber": 46
+          },
+          {
+            "text": "    def to_dict(self) -&gt; Dict[str, Any]:",
+            "lineNumber": 47
+          },
+          {
+            "text": "        \"\"\"Convert note to dictionary for JSON serialization.\"\"\"",
+            "lineNumber": 48
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 49
+          },
+          {
+            "text": "            \"slug\": self.slug,",
+            "lineNumber": 50
+          },
+          {
+            "text": "            \"title\": self.title,",
+            "lineNumber": 51
+          },
+          {
+            "text": "            \"content\": self.content,",
+            "lineNumber": 52
+          },
+          {
+            "text": "            \"frontmatter\": self.frontmatter,",
+            "lineNumber": 53
+          },
+          {
+            "text": "            \"file_path\": self.file_path,",
+            "lineNumber": 54
+          },
+          {
+            "text": "            \"uri\": self.uri,",
+            "lineNumber": 55
+          },
+          {
+            "text": "            \"last_modified\": self.last_modified.isoformat() if self.last_modified else None",
+            "lineNumber": 56
+          },
+          {
+            "text": "        }",
+            "lineNumber": 57,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.38388776779174805
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/research.md",
+        "range": {
+          "startPosition": {
+            "line": 114
+          },
+          "endPosition": {
+            "line": 136
+          }
+        },
+        "contents": "**Alternatives considered**:\n\n- UUID-based filenames: Rejected - not human-readable in Obsidian\n- Always use timestamp: Rejected - less meaningful than title-based names\n\n## Integration with Context Builder\n\n### Decision: Extend MCP API with project filtering, integrate into context_builder\n\n**Rationale**: The existing &#96;context_builder.py&#96; builds project-aware context. We need to add MCP note retrieval that's filtered by project. The MCP API should support project filtering, and context_builder should call it with the current project.\n\n**Implementation approach**:\n\n- Add &#96;list_resources_by_project(project: str)&#96; method to MCPApi\n- Add &#96;get_project_notes(project: str, user_message: str)&#96; method that filters and searches\n- Integrate into &#96;build_project_context()&#96; to include relevant notes\n- Maintain existing behavior if MCP notes unavailable\n\n**Alternatives considered**:\n\n- Separate context builder for notes: Rejected - adds complexity, better to extend existing\n- Always include all notes: Rejected - defeats purpose of project organization",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 115
+          },
+          {
+            "lineNumber": 116
+          },
+          {
+            "text": "- UUID-based filenames: Rejected - not human-readable in Obsidian",
+            "lineNumber": 117
+          },
+          {
+            "text": "- Always use timestamp: Rejected - less meaningful than title-based names",
+            "lineNumber": 118
+          },
+          {
+            "lineNumber": 119
+          },
+          {
+            "text": "## Integration with Context Builder",
+            "lineNumber": 120
+          },
+          {
+            "lineNumber": 121
+          },
+          {
+            "text": "### Decision: Extend MCP API with project filtering, integrate into context_builder",
+            "lineNumber": 122
+          },
+          {
+            "lineNumber": 123
+          },
+          {
+            "text": "**Rationale**: The existing &#96;context_builder.py&#96; builds project-aware context. We need to add MCP note retrieval that's filtered by project. The MCP API should support project filtering, and context_builder should call it with the current project.",
+            "lineNumber": 124
+          },
+          {
+            "lineNumber": 125
+          },
+          {
+            "text": "**Implementation approach**:",
+            "lineNumber": 126
+          },
+          {
+            "lineNumber": 127
+          },
+          {
+            "text": "- Add &#96;list_resources_by_project(project: str)&#96; method to MCPApi",
+            "lineNumber": 128
+          },
+          {
+            "text": "- Add &#96;get_project_notes(project: str, user_message: str)&#96; method that filters and searches",
+            "lineNumber": 129
+          },
+          {
+            "text": "- Integrate into &#96;build_project_context()&#96; to include relevant notes",
+            "lineNumber": 130
+          },
+          {
+            "text": "- Maintain existing behavior if MCP notes unavailable",
+            "lineNumber": 131
+          },
+          {
+            "lineNumber": 132
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 133
+          },
+          {
+            "lineNumber": 134
+          },
+          {
+            "text": "- Separate context builder for notes: Rejected - adds complexity, better to extend existing",
+            "lineNumber": 135
+          },
+          {
+            "text": "- Always include all notes: Rejected - defeats purpose of project organization",
+            "lineNumber": 136
+          }
+        ]
+      },
+      "score": 0.3809809684753418
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {
+            "line": 23
+          },
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "class MCPApi:\n\n    \n    def read_resource(self, identifier: str, project: Optional[str] = None) -&gt; Optional[Dict[str, Any]]:\n        \"\"\"\n        Read a resource by URI, slug, or title.\n        \n        Args:\n            identifier: Resource URI (meditation://note/...), slug, or title\n            project: Optional project name to filter search\n            \n        Returns:\n            Dict with 'content' and 'note' info, or None if not found\n        \"\"\"\n        # Check if it's a URI\n        if identifier.startswith(\"meditation://\"):\n            try:\n                result = self.resources_handler.read_resource({\"uri\": identifier})\n                contents = result.get(\"contents\", [])\n                if contents:\n                    note = self.index.get_by_uri(identifier)\n                    return {\n                        \"content\": contents[0].get(\"text\"),\n                        \"note\": note.to_dict() if note else None\n                    }\n            except Exception as e:\n                logger.warning(f\"Failed to read resource {identifier}: {e}\")\n            return None\n        \n        # Search by slug or title\n        identifier_lower = identifier.lower()\n        matching_notes = []\n        \n        # Get notes to search (project-filtered or all)\n        if project:\n            directory = self.project_mapper.get_directory(project)\n            notes_to_search = self.index.get_by_project(directory)\n        else:\n            notes_to_search = self.index.all_notes()\n        \n        for note in notes_to_search:\n            # Check slug\n            if note.slug.lower() == identifier_lower:\n                matching_notes = [note]\n                break\n            # Check title (partial match)\n            if identifier_lower in note.title.lower():\n                matching_notes.append(note)\n        \n        if not matching_notes:\n            return None\n        \n        # If multiple matches, prefer exact slug match, then exact title match",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 24,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 25,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "    ",
+            "lineNumber": 81
+          },
+          {
+            "text": "    def read_resource(self, identifier: str, project: Optional[str] = None) -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 82
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 83
+          },
+          {
+            "text": "        Read a resource by URI, slug, or title.",
+            "lineNumber": 84
+          },
+          {
+            "text": "        ",
+            "lineNumber": 85
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 86
+          },
+          {
+            "text": "            identifier: Resource URI (meditation://note/...), slug, or title",
+            "lineNumber": 87
+          },
+          {
+            "text": "            project: Optional project name to filter search",
+            "lineNumber": 88
+          },
+          {
+            "text": "            ",
+            "lineNumber": 89
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 90
+          },
+          {
+            "text": "            Dict with 'content' and 'note' info, or None if not found",
+            "lineNumber": 91
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 92
+          },
+          {
+            "text": "        # Check if it's a URI",
+            "lineNumber": 93
+          },
+          {
+            "text": "        if identifier.startswith(\"meditation://\"):",
+            "lineNumber": 94
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 95
+          },
+          {
+            "text": "                result = self.resources_handler.read_resource({\"uri\": identifier})",
+            "lineNumber": 96
+          },
+          {
+            "text": "                contents = result.get(\"contents\", [])",
+            "lineNumber": 97
+          },
+          {
+            "text": "                if contents:",
+            "lineNumber": 98
+          },
+          {
+            "text": "                    note = self.index.get_by_uri(identifier)",
+            "lineNumber": 99
+          },
+          {
+            "text": "                    return {",
+            "lineNumber": 100
+          },
+          {
+            "text": "                        \"content\": contents[0].get(\"text\"),",
+            "lineNumber": 101
+          },
+          {
+            "text": "                        \"note\": note.to_dict() if note else None",
+            "lineNumber": 102
+          },
+          {
+            "text": "                    }",
+            "lineNumber": 103
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 104
+          },
+          {
+            "text": "                logger.warning(f\"Failed to read resource {identifier}: {e}\")",
+            "lineNumber": 105
+          },
+          {
+            "text": "            return None",
+            "lineNumber": 106
+          },
+          {
+            "text": "        ",
+            "lineNumber": 107
+          },
+          {
+            "text": "        # Search by slug or title",
+            "lineNumber": 108
+          },
+          {
+            "text": "        identifier_lower = identifier.lower()",
+            "lineNumber": 109
+          },
+          {
+            "text": "        matching_notes = []",
+            "lineNumber": 110
+          },
+          {
+            "text": "        ",
+            "lineNumber": 111
+          },
+          {
+            "text": "        # Get notes to search (project-filtered or all)",
+            "lineNumber": 112
+          },
+          {
+            "text": "        if project:",
+            "lineNumber": 113
+          },
+          {
+            "text": "            directory = self.project_mapper.get_directory(project)",
+            "lineNumber": 114
+          },
+          {
+            "text": "            notes_to_search = self.index.get_by_project(directory)",
+            "lineNumber": 115
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 116
+          },
+          {
+            "text": "            notes_to_search = self.index.all_notes()",
+            "lineNumber": 117
+          },
+          {
+            "text": "        ",
+            "lineNumber": 118
+          },
+          {
+            "text": "        for note in notes_to_search:",
+            "lineNumber": 119
+          },
+          {
+            "text": "            # Check slug",
+            "lineNumber": 120
+          },
+          {
+            "text": "            if note.slug.lower() == identifier_lower:",
+            "lineNumber": 121
+          },
+          {
+            "text": "                matching_notes = [note]",
+            "lineNumber": 122
+          },
+          {
+            "text": "                break",
+            "lineNumber": 123
+          },
+          {
+            "text": "            # Check title (partial match)",
+            "lineNumber": 124
+          },
+          {
+            "text": "            if identifier_lower in note.title.lower():",
+            "lineNumber": 125
+          },
+          {
+            "text": "                matching_notes.append(note)",
+            "lineNumber": 126
+          },
+          {
+            "text": "        ",
+            "lineNumber": 127
+          },
+          {
+            "text": "        if not matching_notes:",
+            "lineNumber": 128
+          },
+          {
+            "text": "            return None",
+            "lineNumber": 129
+          },
+          {
+            "text": "        ",
+            "lineNumber": 130
+          },
+          {
+            "text": "        # If multiple matches, prefer exact slug match, then exact title match",
+            "lineNumber": 131
+          }
+        ]
+      },
+      "score": 0.36153140664100647
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/project_filter.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 62,
+            "column": 75
+          }
+        },
+        "contents": "\"\"\"\nProject directory mapping service.\n\nMaps project names (DAAS, THN, FF, General, 700B) to directory names\n(daas, thn, ff, general, 700b) in the Obsidian notebook repository.\n\"\"\"\nfrom typing import Dict\n\n\nclass ProjectDirectoryMapper:\n    \"\"\"Maps project names to directory names.\"\"\"\n    \n    def __init__(self):\n        \"\"\"Initialize mapper with project to directory mapping.\"\"\"\n        self._mapping: Dict[str, str] = {\n            \"DAAS\": \"daas\",\n            \"THN\": \"thn\",\n            \"FF\": \"ff\",\n            \"General\": \"general\",\n            \"700B\": \"700b\"\n        }\n    \n    def get_directory(self, project: str) -&gt; str:\n        \"\"\"\n        Get directory name for a project.\n        \n        Args:\n            project: Project name (DAAS, THN, FF, General, 700B)\n            \n        Returns:\n            Directory name (daas, thn, ff, general, 700b)\n            Defaults to lowercase of project name if not in mapping\n        \"\"\"\n        # Normalize project name (handle case variations)\n        project_upper = project.upper() if project else \"\"\n        \n        # Check explicit mapping first\n        if project_upper in self._mapping:\n            return self._mapping[project_upper]\n        \n        # Handle \"GENERAL\" -&gt; \"general\" (common variation)\n        if project_upper == \"GENERAL\":\n            return \"general\"\n        \n        # Default to lowercase if no explicit mapping\n        # This handles edge cases gracefully\n        return project.lower() if project else \"general\"\n    \n    def is_valid_project(self, project: str) -&gt; bool:\n        \"\"\"\n        Check if project has a mapping.\n        \n        Args:\n            project: Project name to check\n            \n        Returns:\n            True if project has explicit mapping, False otherwise\n        \"\"\"\n        if not project:\n            return False\n        \n        project_upper = project.upper()\n        return project_upper in self._mapping or project_upper == \"GENERAL\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Project directory mapping service.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Maps project names (DAAS, THN, FF, General, 700B) to directory names",
+            "lineNumber": 4
+          },
+          {
+            "text": "(daas, thn, ff, general, 700b) in the Obsidian notebook repository.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "text": "from typing import Dict",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "class ProjectDirectoryMapper:",
+            "lineNumber": 10,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Maps project names to directory names.\"\"\"",
+            "lineNumber": 11
+          },
+          {
+            "text": "    ",
+            "lineNumber": 12
+          },
+          {
+            "text": "    def __init__(self):",
+            "lineNumber": 13
+          },
+          {
+            "text": "        \"\"\"Initialize mapper with project to directory mapping.\"\"\"",
+            "lineNumber": 14
+          },
+          {
+            "text": "        self._mapping: Dict[str, str] = {",
+            "lineNumber": 15
+          },
+          {
+            "text": "            \"DAAS\": \"daas\",",
+            "lineNumber": 16
+          },
+          {
+            "text": "            \"THN\": \"thn\",",
+            "lineNumber": 17
+          },
+          {
+            "text": "            \"FF\": \"ff\",",
+            "lineNumber": 18
+          },
+          {
+            "text": "            \"General\": \"general\",",
+            "lineNumber": 19
+          },
+          {
+            "text": "            \"700B\": \"700b\"",
+            "lineNumber": 20
+          },
+          {
+            "text": "        }",
+            "lineNumber": 21
+          },
+          {
+            "text": "    ",
+            "lineNumber": 22
+          },
+          {
+            "text": "    def get_directory(self, project: str) -&gt; str:",
+            "lineNumber": 23
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Get directory name for a project.",
+            "lineNumber": 25
+          },
+          {
+            "text": "        ",
+            "lineNumber": 26
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 27
+          },
+          {
+            "text": "            project: Project name (DAAS, THN, FF, General, 700B)",
+            "lineNumber": 28
+          },
+          {
+            "text": "            ",
+            "lineNumber": 29
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 30
+          },
+          {
+            "text": "            Directory name (daas, thn, ff, general, 700b)",
+            "lineNumber": 31
+          },
+          {
+            "text": "            Defaults to lowercase of project name if not in mapping",
+            "lineNumber": 32
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 33
+          },
+          {
+            "text": "        # Normalize project name (handle case variations)",
+            "lineNumber": 34
+          },
+          {
+            "text": "        project_upper = project.upper() if project else \"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        ",
+            "lineNumber": 36
+          },
+          {
+            "text": "        # Check explicit mapping first",
+            "lineNumber": 37
+          },
+          {
+            "text": "        if project_upper in self._mapping:",
+            "lineNumber": 38
+          },
+          {
+            "text": "            return self._mapping[project_upper]",
+            "lineNumber": 39
+          },
+          {
+            "text": "        ",
+            "lineNumber": 40
+          },
+          {
+            "text": "        # Handle \"GENERAL\" -&gt; \"general\" (common variation)",
+            "lineNumber": 41
+          },
+          {
+            "text": "        if project_upper == \"GENERAL\":",
+            "lineNumber": 42
+          },
+          {
+            "text": "            return \"general\"",
+            "lineNumber": 43
+          },
+          {
+            "text": "        ",
+            "lineNumber": 44
+          },
+          {
+            "text": "        # Default to lowercase if no explicit mapping",
+            "lineNumber": 45
+          },
+          {
+            "text": "        # This handles edge cases gracefully",
+            "lineNumber": 46
+          },
+          {
+            "text": "        return project.lower() if project else \"general\"",
+            "lineNumber": 47
+          },
+          {
+            "text": "    ",
+            "lineNumber": 48
+          },
+          {
+            "text": "    def is_valid_project(self, project: str) -&gt; bool:",
+            "lineNumber": 49
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 50
+          },
+          {
+            "text": "        Check if project has a mapping.",
+            "lineNumber": 51
+          },
+          {
+            "text": "        ",
+            "lineNumber": 52
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 53
+          },
+          {
+            "text": "            project: Project name to check",
+            "lineNumber": 54
+          },
+          {
+            "text": "            ",
+            "lineNumber": 55
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 56
+          },
+          {
+            "text": "            True if project has explicit mapping, False otherwise",
+            "lineNumber": 57
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 58
+          },
+          {
+            "text": "        if not project:",
+            "lineNumber": 59
+          },
+          {
+            "text": "            return False",
+            "lineNumber": 60
+          },
+          {
+            "text": "        ",
+            "lineNumber": 61
+          },
+          {
+            "text": "        project_upper = project.upper()",
+            "lineNumber": 62
+          },
+          {
+            "text": "        return project_upper in self._mapping or project_upper == \"GENERAL\"",
+            "lineNumber": 63,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.3614751994609833
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/models/index.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 146
+          }
+        },
+        "contents": "\"\"\"\nNoteIndex entity for fast O(1) note lookups.\n\nMaintains in-memory index of notes by slug and URI.\n\"\"\"\nfrom typing import Dict, Optional\nfrom .note import Note\nfrom ..services.project_filter import ProjectDirectoryMapper\n\n\nclass NoteIndex:\n    \"\"\"In-memory index for fast note lookups.\"\"\"\n    \n    def __init__(self):\n        \"\"\"Initialize empty index.\"\"\"\n        self._by_slug: Dict[str, Note] = {}\n        self._by_uri: Dict[str, Note] = {}\n        self._by_file_path: Dict[str, Note] = {}\n    \n    def add(self, note: Note):\n        \"\"\"Add note to index.\"\"\"\n        self._by_slug[note.slug] = note\n        self._by_uri[note.uri] = note\n        self._by_file_path[note.file_path] = note\n    \n    def get_by_slug(self, slug: str) -&gt; Optional[Note]:\n        \"\"\"Get note by slug.\"\"\"\n        return self._by_slug.get(slug)\n    \n    def get_by_uri(self, uri: str) -&gt; Optional[Note]:\n        \"\"\"Get note by URI.\"\"\"\n        return self._by_uri.get(uri)\n    \n    def get_by_file_path(self, file_path: str) -&gt; Optional[Note]:\n        \"\"\"Get note by file path.\"\"\"\n        return self._by_file_path.get(file_path)\n    \n    def remove(self, note: Note):\n        \"\"\"Remove note from index.\"\"\"\n        self._by_slug.pop(note.slug, None)\n        self._by_uri.pop(note.uri, None)\n        self._by_file_path.pop(note.file_path, None)\n    \n    def clear(self):\n        \"\"\"Clear all notes from index.\"\"\"\n        self._by_slug.clear()\n        self._by_uri.clear()\n        self._by_file_path.clear()\n    \n    def all_notes(self) -&gt; list[Note]:\n        \"\"\"Get all notes in index.\"\"\"\n        return list(self._by_slug.values())\n    \n    def count(self) -&gt; int:\n        \"\"\"Get count of notes in index.\"\"\"\n        return len(self._by_slug)\n    \n    def search(self, query: str, limit: int = 10) -&gt; list[Note]:\n        \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "NoteIndex entity for fast O(1) note lookups.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Maintains in-memory index of notes by slug and URI.",
+            "lineNumber": 4
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 5
+          },
+          {
+            "text": "from typing import Dict, Optional",
+            "lineNumber": 6
+          },
+          {
+            "text": "from .note import Note",
+            "lineNumber": 7
+          },
+          {
+            "text": "from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "class NoteIndex:",
+            "lineNumber": 11,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"In-memory index for fast note lookups.\"\"\"",
+            "lineNumber": 12
+          },
+          {
+            "text": "    ",
+            "lineNumber": 13
+          },
+          {
+            "text": "    def __init__(self):",
+            "lineNumber": 14
+          },
+          {
+            "text": "        \"\"\"Initialize empty index.\"\"\"",
+            "lineNumber": 15
+          },
+          {
+            "text": "        self._by_slug: Dict[str, Note] = {}",
+            "lineNumber": 16
+          },
+          {
+            "text": "        self._by_uri: Dict[str, Note] = {}",
+            "lineNumber": 17
+          },
+          {
+            "text": "        self._by_file_path: Dict[str, Note] = {}",
+            "lineNumber": 18
+          },
+          {
+            "text": "    ",
+            "lineNumber": 19
+          },
+          {
+            "text": "    def add(self, note: Note):",
+            "lineNumber": 20
+          },
+          {
+            "text": "        \"\"\"Add note to index.\"\"\"",
+            "lineNumber": 21
+          },
+          {
+            "text": "        self._by_slug[note.slug] = note",
+            "lineNumber": 22
+          },
+          {
+            "text": "        self._by_uri[note.uri] = note",
+            "lineNumber": 23
+          },
+          {
+            "text": "        self._by_file_path[note.file_path] = note",
+            "lineNumber": 24
+          },
+          {
+            "text": "    ",
+            "lineNumber": 25
+          },
+          {
+            "text": "    def get_by_slug(self, slug: str) -&gt; Optional[Note]:",
+            "lineNumber": 26
+          },
+          {
+            "text": "        \"\"\"Get note by slug.\"\"\"",
+            "lineNumber": 27
+          },
+          {
+            "text": "        return self._by_slug.get(slug)",
+            "lineNumber": 28
+          },
+          {
+            "text": "    ",
+            "lineNumber": 29
+          },
+          {
+            "text": "    def get_by_uri(self, uri: str) -&gt; Optional[Note]:",
+            "lineNumber": 30
+          },
+          {
+            "text": "        \"\"\"Get note by URI.\"\"\"",
+            "lineNumber": 31
+          },
+          {
+            "text": "        return self._by_uri.get(uri)",
+            "lineNumber": 32
+          },
+          {
+            "text": "    ",
+            "lineNumber": 33
+          },
+          {
+            "text": "    def get_by_file_path(self, file_path: str) -&gt; Optional[Note]:",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"Get note by file path.\"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        return self._by_file_path.get(file_path)",
+            "lineNumber": 36
+          },
+          {
+            "text": "    ",
+            "lineNumber": 37
+          },
+          {
+            "text": "    def remove(self, note: Note):",
+            "lineNumber": 38
+          },
+          {
+            "text": "        \"\"\"Remove note from index.\"\"\"",
+            "lineNumber": 39
+          },
+          {
+            "text": "        self._by_slug.pop(note.slug, None)",
+            "lineNumber": 40
+          },
+          {
+            "text": "        self._by_uri.pop(note.uri, None)",
+            "lineNumber": 41
+          },
+          {
+            "text": "        self._by_file_path.pop(note.file_path, None)",
+            "lineNumber": 42
+          },
+          {
+            "text": "    ",
+            "lineNumber": 43
+          },
+          {
+            "text": "    def clear(self):",
+            "lineNumber": 44
+          },
+          {
+            "text": "        \"\"\"Clear all notes from index.\"\"\"",
+            "lineNumber": 45
+          },
+          {
+            "text": "        self._by_slug.clear()",
+            "lineNumber": 46
+          },
+          {
+            "text": "        self._by_uri.clear()",
+            "lineNumber": 47
+          },
+          {
+            "text": "        self._by_file_path.clear()",
+            "lineNumber": 48
+          },
+          {
+            "text": "    ",
+            "lineNumber": 49
+          },
+          {
+            "text": "    def all_notes(self) -&gt; list[Note]:",
+            "lineNumber": 50
+          },
+          {
+            "text": "        \"\"\"Get all notes in index.\"\"\"",
+            "lineNumber": 51
+          },
+          {
+            "text": "        return list(self._by_slug.values())",
+            "lineNumber": 52
+          },
+          {
+            "text": "    ",
+            "lineNumber": 53
+          },
+          {
+            "text": "    def count(self) -&gt; int:",
+            "lineNumber": 54
+          },
+          {
+            "text": "        \"\"\"Get count of notes in index.\"\"\"",
+            "lineNumber": 55
+          },
+          {
+            "text": "        return len(self._by_slug)",
+            "lineNumber": 56
+          },
+          {
+            "text": "    ",
+            "lineNumber": 57
+          },
+          {
+            "text": "    def search(self, query: str, limit: int = 10) -&gt; list[Note]:",
+            "lineNumber": 58
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 59
+          }
+        ]
+      },
+      "score": 0.3530023992061615
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 861
+          },
+          "endPosition": {
+            "line": 1048
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None\n    try:\n        from src.mcp.api import get_mcp_api\n        api = get_mcp_api()\n        # Get relevant notes for this project\n        project_notes = api.get_project_notes(project, user_message, limit=5)\n        if project_notes:\n            # Format notes for context\n            notes_parts = []\n            for note in project_notes:\n                notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n            if notes_parts:\n                mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n    except Exception as e:\n        logger.debug(f\"MCP notes not available for project {project}: {e}\")\n    \n    # Default behavior for non-DAAS/THN projects or fallback\n    # Fetch project_knowledge summaries (stable overview) - FIRST\n    knowledge_summaries = fetch_project_knowledge(project)\n    \n    # Query conversation_index for this project\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(\n                \"\"\"\n                SELECT session_id, title, tags, summary_short, summary_detailed,\n                       key_topics, memory_snippet, indexed_at\n                FROM conversation_index\n                WHERE project = %s\n                ORDER BY indexed_at DESC\n                LIMIT %s\n                \"\"\",\n                (project, limit_memories),\n            )\n            rows = cur.fetchall()\n    \n    top_memories = []\n    if rows:\n        # Simple relevance scoring: count word matches in tags, key_topics, summary_detailed",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 862,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 868,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 862,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 863,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 864,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 865,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 866,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 867,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 905
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 906
+          },
+          {
+            "text": "    ",
+            "lineNumber": 907
+          },
+          {
+            "text": "    # Get project-scoped meditation notes (if MCP available)",
+            "lineNumber": 908
+          },
+          {
+            "text": "    mcp_notes_context = None",
+            "lineNumber": 909
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 910
+          },
+          {
+            "text": "        from src.mcp.api import get_mcp_api",
+            "lineNumber": 911
+          },
+          {
+            "text": "        api = get_mcp_api()",
+            "lineNumber": 912
+          },
+          {
+            "text": "        # Get relevant notes for this project",
+            "lineNumber": 913
+          },
+          {
+            "text": "        project_notes = api.get_project_notes(project, user_message, limit=5)",
+            "lineNumber": 914
+          },
+          {
+            "text": "        if project_notes:",
+            "lineNumber": 915
+          },
+          {
+            "text": "            # Format notes for context",
+            "lineNumber": 916
+          },
+          {
+            "text": "            notes_parts = []",
+            "lineNumber": 917
+          },
+          {
+            "text": "            for note in project_notes:",
+            "lineNumber": 918
+          },
+          {
+            "text": "                notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")",
+            "lineNumber": 919
+          },
+          {
+            "text": "            if notes_parts:",
+            "lineNumber": 920
+          },
+          {
+            "text": "                mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)",
+            "lineNumber": 921
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 922
+          },
+          {
+            "text": "        logger.debug(f\"MCP notes not available for project {project}: {e}\")",
+            "lineNumber": 923
+          },
+          {
+            "text": "    ",
+            "lineNumber": 924
+          },
+          {
+            "text": "    # Default behavior for non-DAAS/THN projects or fallback",
+            "lineNumber": 925
+          },
+          {
+            "text": "    # Fetch project_knowledge summaries (stable overview) - FIRST",
+            "lineNumber": 926
+          },
+          {
+            "text": "    knowledge_summaries = fetch_project_knowledge(project)",
+            "lineNumber": 927
+          },
+          {
+            "text": "    ",
+            "lineNumber": 928
+          },
+          {
+            "text": "    # Query conversation_index for this project",
+            "lineNumber": 929
+          },
+          {
+            "text": "    with get_conn() as conn:",
+            "lineNumber": 930
+          },
+          {
+            "text": "        with conn.cursor() as cur:",
+            "lineNumber": 931
+          },
+          {
+            "text": "            cur.execute(",
+            "lineNumber": 932
+          },
+          {
+            "text": "                \"\"\"",
+            "lineNumber": 933
+          },
+          {
+            "text": "                SELECT session_id, title, tags, summary_short, summary_detailed,",
+            "lineNumber": 934
+          },
+          {
+            "text": "                       key_topics, memory_snippet, indexed_at",
+            "lineNumber": 935
+          },
+          {
+            "text": "                FROM conversation_index",
+            "lineNumber": 936
+          },
+          {
+            "text": "                WHERE project = %s",
+            "lineNumber": 937
+          },
+          {
+            "text": "                ORDER BY indexed_at DESC",
+            "lineNumber": 938
+          },
+          {
+            "text": "                LIMIT %s",
+            "lineNumber": 939
+          },
+          {
+            "text": "                \"\"\",",
+            "lineNumber": 940
+          },
+          {
+            "text": "                (project, limit_memories),",
+            "lineNumber": 941
+          },
+          {
+            "text": "            )",
+            "lineNumber": 942
+          },
+          {
+            "text": "            rows = cur.fetchall()",
+            "lineNumber": 943
+          },
+          {
+            "text": "    ",
+            "lineNumber": 944
+          },
+          {
+            "text": "    top_memories = []",
+            "lineNumber": 945
+          },
+          {
+            "text": "    if rows:",
+            "lineNumber": 946
+          },
+          {
+            "text": "        # Simple relevance scoring: count word matches in tags, key_topics, summary_detailed",
+            "lineNumber": 947
+          }
+        ]
+      },
+      "score": 0.3456366956233978
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/note_parser.py",
+        "range": {
+          "startPosition": {
+            "line": 19
+          },
+          "endPosition": {
+            "line": 149,
+            "column": 20
+          }
+        },
+        "contents": "class NoteParser:\n@staticmethod\ndef parse_note(file_path: Path, repo_path: Path) -&gt; Optional[Note]:\n\n            \n        except Exception as e:\n            logger.warning(f\"Failed to parse note {file_path}: {e}\")\n            return None\n    \n    @staticmethod\n    def find_notes(repo_path: Path, notes_dir: Path) -&gt; list[Note]:\n        \"\"\"\n        Find and parse all markdown notes in repository.\n        \n        Args:\n            repo_path: Repository root path\n            notes_dir: Directory containing notes (may be repo root)\n            \n        Returns:\n            List of Note entities\n        \"\"\"\n        notes = []\n        \n        if not notes_dir.exists():\n            logger.warning(f\"Notes directory does not exist: {notes_dir}\")\n            return notes\n        \n        logger.info(f\"Searching for markdown files in: {notes_dir}\")\n        \n        # Find all .md files, but exclude common non-note files\n        exclude_dirs = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}\n        exclude_files = {'README.md', 'readme.md', 'CHANGELOG.md', 'LICENSE.md'}\n        \n        md_files_found = 0\n        for md_file in notes_dir.rglob(\"*.md\"):\n            md_files_found += 1\n            # Skip if in excluded directory\n            if any(excluded in md_file.parts for excluded in exclude_dirs):\n                logger.debug(f\"Skipping {md_file} (in excluded directory)\")\n                continue\n            \n            # Skip common non-note files\n            if md_file.name in exclude_files:\n                logger.debug(f\"Skipping {md_file} (excluded file)\")\n                continue\n            \n            logger.debug(f\"Parsing note: {md_file}\")\n            note = NoteParser.parse_note(md_file, repo_path)\n            if note:\n                notes.append(note)\n                logger.debug(f\"Successfully parsed note: {note.slug} - {note.title}\")\n            else:\n                logger.warning(f\"Failed to parse note: {md_file}\")\n        \n        logger.info(f\"Found {md_files_found} markdown files, parsed {len(notes)} notes from {notes_dir}\")\n        return notes",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 20,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 21,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 44,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 45,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 45,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 46,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteParser:",
+            "lineNumber": 20,
+            "isSignature": true
+          },
+          {
+            "text": "@staticmethod",
+            "lineNumber": 44
+          },
+          {
+            "text": "def parse_note(file_path: Path, repo_path: Path) -&gt; Optional[Note]:",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 98
+          },
+          {
+            "text": "            ",
+            "lineNumber": 99
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 100
+          },
+          {
+            "text": "            logger.warning(f\"Failed to parse note {file_path}: {e}\")",
+            "lineNumber": 101
+          },
+          {
+            "text": "            return None",
+            "lineNumber": 102
+          },
+          {
+            "text": "    ",
+            "lineNumber": 103
+          },
+          {
+            "text": "    @staticmethod",
+            "lineNumber": 104
+          },
+          {
+            "text": "    def find_notes(repo_path: Path, notes_dir: Path) -&gt; list[Note]:",
+            "lineNumber": 105
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 106
+          },
+          {
+            "text": "        Find and parse all markdown notes in repository.",
+            "lineNumber": 107
+          },
+          {
+            "text": "        ",
+            "lineNumber": 108
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 109
+          },
+          {
+            "text": "            repo_path: Repository root path",
+            "lineNumber": 110
+          },
+          {
+            "text": "            notes_dir: Directory containing notes (may be repo root)",
+            "lineNumber": 111
+          },
+          {
+            "text": "            ",
+            "lineNumber": 112
+          },
+          {
+            "text": "        Returns:",
+            "lineNumber": 113
+          },
+          {
+            "text": "            List of Note entities",
+            "lineNumber": 114
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 115
+          },
+          {
+            "text": "        notes = []",
+            "lineNumber": 116
+          },
+          {
+            "text": "        ",
+            "lineNumber": 117
+          },
+          {
+            "text": "        if not notes_dir.exists():",
+            "lineNumber": 118
+          },
+          {
+            "text": "            logger.warning(f\"Notes directory does not exist: {notes_dir}\")",
+            "lineNumber": 119
+          },
+          {
+            "text": "            return notes",
+            "lineNumber": 120
+          },
+          {
+            "text": "        ",
+            "lineNumber": 121
+          },
+          {
+            "text": "        logger.info(f\"Searching for markdown files in: {notes_dir}\")",
+            "lineNumber": 122
+          },
+          {
+            "text": "        ",
+            "lineNumber": 123
+          },
+          {
+            "text": "        # Find all .md files, but exclude common non-note files",
+            "lineNumber": 124
+          },
+          {
+            "text": "        exclude_dirs = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}",
+            "lineNumber": 125
+          },
+          {
+            "text": "        exclude_files = {'README.md', 'readme.md', 'CHANGELOG.md', 'LICENSE.md'}",
+            "lineNumber": 126
+          },
+          {
+            "text": "        ",
+            "lineNumber": 127
+          },
+          {
+            "text": "        md_files_found = 0",
+            "lineNumber": 128
+          },
+          {
+            "text": "        for md_file in notes_dir.rglob(\"*.md\"):",
+            "lineNumber": 129
+          },
+          {
+            "text": "            md_files_found += 1",
+            "lineNumber": 130
+          },
+          {
+            "text": "            # Skip if in excluded directory",
+            "lineNumber": 131
+          },
+          {
+            "text": "            if any(excluded in md_file.parts for excluded in exclude_dirs):",
+            "lineNumber": 132
+          },
+          {
+            "text": "                logger.debug(f\"Skipping {md_file} (in excluded directory)\")",
+            "lineNumber": 133
+          },
+          {
+            "text": "                continue",
+            "lineNumber": 134
+          },
+          {
+            "text": "            ",
+            "lineNumber": 135
+          },
+          {
+            "text": "            # Skip common non-note files",
+            "lineNumber": 136
+          },
+          {
+            "text": "            if md_file.name in exclude_files:",
+            "lineNumber": 137
+          },
+          {
+            "text": "                logger.debug(f\"Skipping {md_file} (excluded file)\")",
+            "lineNumber": 138
+          },
+          {
+            "text": "                continue",
+            "lineNumber": 139
+          },
+          {
+            "text": "            ",
+            "lineNumber": 140
+          },
+          {
+            "text": "            logger.debug(f\"Parsing note: {md_file}\")",
+            "lineNumber": 141
+          },
+          {
+            "text": "            note = NoteParser.parse_note(md_file, repo_path)",
+            "lineNumber": 142
+          },
+          {
+            "text": "            if note:",
+            "lineNumber": 143
+          },
+          {
+            "text": "                notes.append(note)",
+            "lineNumber": 144
+          },
+          {
+            "text": "                logger.debug(f\"Successfully parsed note: {note.slug} - {note.title}\")",
+            "lineNumber": 145
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 146
+          },
+          {
+            "text": "                logger.warning(f\"Failed to parse note: {md_file}\")",
+            "lineNumber": 147
+          },
+          {
+            "text": "        ",
+            "lineNumber": 148
+          },
+          {
+            "text": "        logger.info(f\"Found {md_files_found} markdown files, parsed {len(notes)} notes from {notes_dir}\")",
+            "lineNumber": 149
+          },
+          {
+            "text": "        return notes",
+            "lineNumber": 150,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.3428618013858795
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 79
+          }
+        },
+        "contents": "# Quickstart: Project-Organized Meditation Notes\n\n## Overview\n\nThis feature enables project-scoped meditation note retrieval and conversation saving. Notes are organized by project directories in the Obsidian notebook (daas, thn, ff, general, 700b), and the system automatically filters notes based on the current project context.\n\n## Prerequisites\n\n1. MCP server integration working (from previous feature)\n2. Obsidian notebook repository organized by project directories\n3. GitLab repository accessible\n\n## Project Directory Structure\n\nYour Obsidian notebook should have this structure:\n\n&#96;&#96;&#96;\nmeditation-repo/\n├── daas/\n│   ├── morning-meditation-2024-12-01.md\n│   └── evening-reflection.md\n├── thn/\n│   ├── learning-notes.md\n│   └── project-ideas.md\n├── ff/\n│   └── ...\n├── general/\n│   └── ...\n└── 700b/\n    └── ...\n&#96;&#96;&#96;\n\n## Usage\n\n### Automatic Note Retrieval\n\nWhen you're working in a project conversation, relevant notes from that project's directory are automatically included. The system will recall and reference information from these notes naturally throughout the conversation:\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: What did I write about morning routines?\n&#96;&#96;&#96;\n\nThe system will:\n\n1. Detect you're in DAAS project\n2. Filter notes from &#96;daas/&#96; directory\n3. Search for \"morning routines\" in those notes\n4. Include relevant notes in the AI's context\n\n### Saving Conversations\n\nSave the current conversation as a note:\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: /mcp save \"Morning Planning Session\"\n✓ Conversation saved as note: daas/morning-planning-session.md\nNote synced to repository.\n&#96;&#96;&#96;\n\nOr without a title (system generates one):\n\n&#96;&#96;&#96;\nYou (THN) 🟣: /mcp save\n✓ Conversation saved as note: thn/conversation-2025-12-07-103045.md\nNote synced to repository.\n&#96;&#96;&#96;\n\n## Project Mapping\n\nThe system maps project names to directory names:\n\n- **DAAS** → &#96;daas/&#96;\n- **THN** → &#96;thn/&#96;\n- **FF** → &#96;ff/&#96;\n- **General** → &#96;general/&#96;\n- **700B** → &#96;700b/&#96;\n\n## Saved Note Format",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: Project-Organized Meditation Notes",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature enables project-scoped meditation note retrieval and conversation saving. Notes are organized by project directories in the Obsidian notebook (daas, thn, ff, general, 700b), and the system automatically filters notes based on the current project context.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "1. MCP server integration working (from previous feature)",
+            "lineNumber": 9
+          },
+          {
+            "text": "2. Obsidian notebook repository organized by project directories",
+            "lineNumber": 10
+          },
+          {
+            "text": "3. GitLab repository accessible",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "## Project Directory Structure",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "Your Obsidian notebook should have this structure:",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 17
+          },
+          {
+            "text": "meditation-repo/",
+            "lineNumber": 18
+          },
+          {
+            "text": "├── daas/",
+            "lineNumber": 19
+          },
+          {
+            "text": "│   ├── morning-meditation-2024-12-01.md",
+            "lineNumber": 20
+          },
+          {
+            "text": "│   └── evening-reflection.md",
+            "lineNumber": 21
+          },
+          {
+            "text": "├── thn/",
+            "lineNumber": 22
+          },
+          {
+            "text": "│   ├── learning-notes.md",
+            "lineNumber": 23
+          },
+          {
+            "text": "│   └── project-ideas.md",
+            "lineNumber": 24
+          },
+          {
+            "text": "├── ff/",
+            "lineNumber": 25
+          },
+          {
+            "text": "│   └── ...",
+            "lineNumber": 26
+          },
+          {
+            "text": "├── general/",
+            "lineNumber": 27
+          },
+          {
+            "text": "│   └── ...",
+            "lineNumber": 28
+          },
+          {
+            "text": "└── 700b/",
+            "lineNumber": 29
+          },
+          {
+            "text": "    └── ...",
+            "lineNumber": 30
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "## Usage",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "### Automatic Note Retrieval",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "When you're working in a project conversation, relevant notes from that project's directory are automatically included. The system will recall and reference information from these notes naturally throughout the conversation:",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 39
+          },
+          {
+            "text": "You (DAAS) 🟣: What did I write about morning routines?",
+            "lineNumber": 40
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "The system will:",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "1. Detect you're in DAAS project",
+            "lineNumber": 45
+          },
+          {
+            "text": "2. Filter notes from &#96;daas/&#96; directory",
+            "lineNumber": 46
+          },
+          {
+            "text": "3. Search for \"morning routines\" in those notes",
+            "lineNumber": 47
+          },
+          {
+            "text": "4. Include relevant notes in the AI's context",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "### Saving Conversations",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "Save the current conversation as a note:",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 54
+          },
+          {
+            "text": "You (DAAS) 🟣: /mcp save \"Morning Planning Session\"",
+            "lineNumber": 55
+          },
+          {
+            "text": "✓ Conversation saved as note: daas/morning-planning-session.md",
+            "lineNumber": 56
+          },
+          {
+            "text": "Note synced to repository.",
+            "lineNumber": 57
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "Or without a title (system generates one):",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 62
+          },
+          {
+            "text": "You (THN) 🟣: /mcp save",
+            "lineNumber": 63
+          },
+          {
+            "text": "✓ Conversation saved as note: thn/conversation-2025-12-07-103045.md",
+            "lineNumber": 64
+          },
+          {
+            "text": "Note synced to repository.",
+            "lineNumber": 65
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "## Project Mapping",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "The system maps project names to directory names:",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "- **DAAS** → &#96;daas/&#96;",
+            "lineNumber": 72
+          },
+          {
+            "text": "- **THN** → &#96;thn/&#96;",
+            "lineNumber": 73
+          },
+          {
+            "text": "- **FF** → &#96;ff/&#96;",
+            "lineNumber": 74
+          },
+          {
+            "text": "- **General** → &#96;general/&#96;",
+            "lineNumber": 75
+          },
+          {
+            "text": "- **700B** → &#96;700b/&#96;",
+            "lineNumber": 76
+          },
+          {
+            "lineNumber": 77
+          },
+          {
+            "text": "## Saved Note Format",
+            "lineNumber": 78
+          }
+        ]
+      },
+      "score": 0.33688265085220337
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/mcp/api.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 324
+          }
+        },
+        "contents": "\"\"\"\nPython API for MCP server.\n\nProvides direct Python interface to MCP server functionality\nwithout requiring stdio communication.\n\"\"\"\nimport os\nimport logging\nfrom pathlib import Path\nfrom typing import Dict, Any, List, Optional\nfrom datetime import datetime\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.index_builder import IndexBuilder\nfrom ..services.project_filter import ProjectDirectoryMapper\nfrom ..services.note_saver import ConversationNote, NoteSaver\nfrom .resources import ResourcesHandler\nfrom .tools import ToolsHandler\n\nlogger = logging.getLogger(__name__)\n\n\nclass MCPApi:\n    \"\"\"Python API for accessing MCP server functionality.\"\"\"\n    \n    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):\n        \"\"\"\n        Initialize MCP API.\n        \n        Args:\n            gitlab_url: GitLab repository URL (defaults to env var or default)\n            repo_path: Local repository path (defaults to env var or default)\n            branch: Git branch (defaults to env var or 'main')\n        \"\"\"\n        # Get configuration from parameters or environment\n        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")\n        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")\n        self.repo_path = Path(repo_path_str)\n        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")\n        \n        # Create repository model\n        self.repository = Repository(\n            url=self.gitlab_url,\n            local_path=self.repo_path,\n            branch=self.branch\n        )\n        \n        # Create note index\n        self.index = NoteIndex()\n        \n        # Create project directory mapper\n        self.project_mapper = ProjectDirectoryMapper()\n        \n        # Create handlers\n        self.resources_handler = ResourcesHandler(self.index)\n        self.tools_handler = ToolsHandler(self.index, self.repository)\n        \n        # Create note saver\n        self.note_saver = NoteSaver(self.repository, self.index)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Python API for MCP server.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides direct Python interface to MCP server functionality",
+            "lineNumber": 4
+          },
+          {
+            "text": "without requiring stdio communication.",
+            "lineNumber": 5
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 6
+          },
+          {
+            "text": "import os",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 9
+          },
+          {
+            "text": "from typing import Dict, Any, List, Optional",
+            "lineNumber": 10
+          },
+          {
+            "text": "from datetime import datetime",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "from ..models.repository import Repository",
+            "lineNumber": 13
+          },
+          {
+            "text": "from ..models.index import NoteIndex",
+            "lineNumber": 14
+          },
+          {
+            "text": "from ..services.index_builder import IndexBuilder",
+            "lineNumber": 15
+          },
+          {
+            "text": "from ..services.project_filter import ProjectDirectoryMapper",
+            "lineNumber": 16
+          },
+          {
+            "text": "from ..services.note_saver import ConversationNote, NoteSaver",
+            "lineNumber": 17
+          },
+          {
+            "text": "from .resources import ResourcesHandler",
+            "lineNumber": 18
+          },
+          {
+            "text": "from .tools import ToolsHandler",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "class MCPApi:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"Python API for accessing MCP server functionality.\"\"\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    ",
+            "lineNumber": 26
+          },
+          {
+            "text": "    def __init__(self, gitlab_url: Optional[str] = None, repo_path: Optional[str] = None, branch: Optional[str] = None):",
+            "lineNumber": 27
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 28
+          },
+          {
+            "text": "        Initialize MCP API.",
+            "lineNumber": 29
+          },
+          {
+            "text": "        ",
+            "lineNumber": 30
+          },
+          {
+            "text": "        Args:",
+            "lineNumber": 31
+          },
+          {
+            "text": "            gitlab_url: GitLab repository URL (defaults to env var or default)",
+            "lineNumber": 32
+          },
+          {
+            "text": "            repo_path: Local repository path (defaults to env var or default)",
+            "lineNumber": 33
+          },
+          {
+            "text": "            branch: Git branch (defaults to env var or 'main')",
+            "lineNumber": 34
+          },
+          {
+            "text": "        \"\"\"",
+            "lineNumber": 35
+          },
+          {
+            "text": "        # Get configuration from parameters or environment",
+            "lineNumber": 36
+          },
+          {
+            "text": "        self.gitlab_url = gitlab_url or os.environ.get(\"GITLAB_URL\", \"http://192.168.119.200:8201/tumultymedia/meditations\")",
+            "lineNumber": 37
+          },
+          {
+            "text": "        repo_path_str = repo_path or os.environ.get(\"REPO_PATH\", \"/tmp/meditation-mcp-repo\")",
+            "lineNumber": 38
+          },
+          {
+            "text": "        self.repo_path = Path(repo_path_str)",
+            "lineNumber": 39
+          },
+          {
+            "text": "        self.branch = branch or os.environ.get(\"BRANCH\", \"main\")",
+            "lineNumber": 40
+          },
+          {
+            "text": "        ",
+            "lineNumber": 41
+          },
+          {
+            "text": "        # Create repository model",
+            "lineNumber": 42
+          },
+          {
+            "text": "        self.repository = Repository(",
+            "lineNumber": 43
+          },
+          {
+            "text": "            url=self.gitlab_url,",
+            "lineNumber": 44
+          },
+          {
+            "text": "            local_path=self.repo_path,",
+            "lineNumber": 45
+          },
+          {
+            "text": "            branch=self.branch",
+            "lineNumber": 46
+          },
+          {
+            "text": "        )",
+            "lineNumber": 47
+          },
+          {
+            "text": "        ",
+            "lineNumber": 48
+          },
+          {
+            "text": "        # Create note index",
+            "lineNumber": 49
+          },
+          {
+            "text": "        self.index = NoteIndex()",
+            "lineNumber": 50
+          },
+          {
+            "text": "        ",
+            "lineNumber": 51
+          },
+          {
+            "text": "        # Create project directory mapper",
+            "lineNumber": 52
+          },
+          {
+            "text": "        self.project_mapper = ProjectDirectoryMapper()",
+            "lineNumber": 53
+          },
+          {
+            "text": "        ",
+            "lineNumber": 54
+          },
+          {
+            "text": "        # Create handlers",
+            "lineNumber": 55
+          },
+          {
+            "text": "        self.resources_handler = ResourcesHandler(self.index)",
+            "lineNumber": 56
+          },
+          {
+            "text": "        self.tools_handler = ToolsHandler(self.index, self.repository)",
+            "lineNumber": 57
+          },
+          {
+            "text": "        ",
+            "lineNumber": 58
+          },
+          {
+            "text": "        # Create note saver",
+            "lineNumber": 59
+          },
+          {
+            "text": "        self.note_saver = NoteSaver(self.repository, self.index)",
+            "lineNumber": 60
+          }
+        ]
+      },
+      "score": 0.32630300521850586
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/data-model.md",
+        "range": {
+          "startPosition": {
+            "line": 71
+          },
+          "endPosition": {
+            "line": 133
+          }
+        },
+        "contents": "**Methods**:\n\n- &#96;get_directory(project: str) -&gt; str&#96;: Get directory name for project\n- &#96;is_valid_project(project: str) -&gt; bool&#96;: Check if project has a mapping\n\n**Mapping**:\n\n&#96;&#96;&#96;python\n{\n    \"DAAS\": \"daas\",\n    \"THN\": \"thn\",\n    \"FF\": \"ff\",\n    \"General\": \"general\",\n    \"700B\": \"700b\"\n}\n&#96;&#96;&#96;\n\n### ConversationNote\n\n**Location**: &#96;src/services/note_saver.py&#96;\n\n**Purpose**: Represents a conversation to be saved as a note\n\n**Fields**:\n\n- &#96;title&#96;: String - note title\n- &#96;project&#96;: String - project name (DAAS, THN, etc.)\n- &#96;messages&#96;: List[Dict] - conversation messages with role, content, timestamp\n- &#96;created_at&#96;: Datetime - conversation creation time\n- &#96;metadata&#96;: Dict - additional metadata (tags, etc.)\n\n**Methods**:\n\n- &#96;to_markdown() -&gt; str&#96;: Convert conversation to Obsidian markdown format\n- &#96;generate_filename() -&gt; str&#96;: Generate filename from title or content\n\n## Data Flow\n\n### Note Retrieval Flow\n\n1. User sends message in project context (e.g., \"DAAS\")\n2. &#96;build_project_context()&#96; calls MCP API with project filter\n3. MCP API uses &#96;ProjectDirectoryMapper&#96; to get directory name (\"daas\")\n4. &#96;NoteIndex.get_by_project(\"daas\")&#96; filters notes by file_path prefix\n5. Relevant notes are included in conversation context\n\n### Conversation Saving Flow\n\n1. User runs &#96;/mcp save \"Title\"&#96; command\n2. System collects current conversation messages\n3. &#96;ConversationNote&#96; entity created with messages and metadata\n4. &#96;ConversationNote.to_markdown()&#96; generates markdown content\n5. File created in project directory (e.g., &#96;daas/conversation-title.md&#96;)\n6. Git operations: add, commit, push to repository\n7. Note added to index for future retrieval\n\n## No Database Changes\n\n- No new tables required\n- All data managed in-memory (NoteIndex) or filesystem (repository)\n- Conversation saving writes directly to Git repository\n- No schema modifications needed",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Methods**:",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "- &#96;get_directory(project: str) -&gt; str&#96;: Get directory name for project",
+            "lineNumber": 74
+          },
+          {
+            "text": "- &#96;is_valid_project(project: str) -&gt; bool&#96;: Check if project has a mapping",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "**Mapping**:",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 79
+          },
+          {
+            "text": "{",
+            "lineNumber": 80
+          },
+          {
+            "text": "    \"DAAS\": \"daas\",",
+            "lineNumber": 81
+          },
+          {
+            "text": "    \"THN\": \"thn\",",
+            "lineNumber": 82
+          },
+          {
+            "text": "    \"FF\": \"ff\",",
+            "lineNumber": 83
+          },
+          {
+            "text": "    \"General\": \"general\",",
+            "lineNumber": 84
+          },
+          {
+            "text": "    \"700B\": \"700b\"",
+            "lineNumber": 85
+          },
+          {
+            "text": "}",
+            "lineNumber": 86
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "### ConversationNote",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "**Location**: &#96;src/services/note_saver.py&#96;",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "**Purpose**: Represents a conversation to be saved as a note",
+            "lineNumber": 93
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "**Fields**:",
+            "lineNumber": 95
+          },
+          {
+            "lineNumber": 96
+          },
+          {
+            "text": "- &#96;title&#96;: String - note title",
+            "lineNumber": 97
+          },
+          {
+            "text": "- &#96;project&#96;: String - project name (DAAS, THN, etc.)",
+            "lineNumber": 98
+          },
+          {
+            "text": "- &#96;messages&#96;: List[Dict] - conversation messages with role, content, timestamp",
+            "lineNumber": 99
+          },
+          {
+            "text": "- &#96;created_at&#96;: Datetime - conversation creation time",
+            "lineNumber": 100
+          },
+          {
+            "text": "- &#96;metadata&#96;: Dict - additional metadata (tags, etc.)",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "**Methods**:",
+            "lineNumber": 103
+          },
+          {
+            "lineNumber": 104
+          },
+          {
+            "text": "- &#96;to_markdown() -&gt; str&#96;: Convert conversation to Obsidian markdown format",
+            "lineNumber": 105
+          },
+          {
+            "text": "- &#96;generate_filename() -&gt; str&#96;: Generate filename from title or content",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 108
+          },
+          {
+            "lineNumber": 109
+          },
+          {
+            "text": "### Note Retrieval Flow",
+            "lineNumber": 110
+          },
+          {
+            "lineNumber": 111
+          },
+          {
+            "text": "1. User sends message in project context (e.g., \"DAAS\")",
+            "lineNumber": 112
+          },
+          {
+            "text": "2. &#96;build_project_context()&#96; calls MCP API with project filter",
+            "lineNumber": 113
+          },
+          {
+            "text": "3. MCP API uses &#96;ProjectDirectoryMapper&#96; to get directory name (\"daas\")",
+            "lineNumber": 114
+          },
+          {
+            "text": "4. &#96;NoteIndex.get_by_project(\"daas\")&#96; filters notes by file_path prefix",
+            "lineNumber": 115
+          },
+          {
+            "text": "5. Relevant notes are included in conversation context",
+            "lineNumber": 116
+          },
+          {
+            "lineNumber": 117
+          },
+          {
+            "text": "### Conversation Saving Flow",
+            "lineNumber": 118
+          },
+          {
+            "lineNumber": 119
+          },
+          {
+            "text": "1. User runs &#96;/mcp save \"Title\"&#96; command",
+            "lineNumber": 120
+          },
+          {
+            "text": "2. System collects current conversation messages",
+            "lineNumber": 121
+          },
+          {
+            "text": "3. &#96;ConversationNote&#96; entity created with messages and metadata",
+            "lineNumber": 122
+          },
+          {
+            "text": "4. &#96;ConversationNote.to_markdown()&#96; generates markdown content",
+            "lineNumber": 123
+          },
+          {
+            "text": "5. File created in project directory (e.g., &#96;daas/conversation-title.md&#96;)",
+            "lineNumber": 124
+          },
+          {
+            "text": "6. Git operations: add, commit, push to repository",
+            "lineNumber": 125
+          },
+          {
+            "text": "7. Note added to index for future retrieval",
+            "lineNumber": 126
+          },
+          {
+            "lineNumber": 127
+          },
+          {
+            "text": "## No Database Changes",
+            "lineNumber": 128
+          },
+          {
+            "lineNumber": 129
+          },
+          {
+            "text": "- No new tables required",
+            "lineNumber": 130
+          },
+          {
+            "text": "- All data managed in-memory (NoteIndex) or filesystem (repository)",
+            "lineNumber": 131
+          },
+          {
+            "text": "- Conversation saving writes directly to Git repository",
+            "lineNumber": 132
+          },
+          {
+            "text": "- No schema modifications needed",
+            "lineNumber": 133
+          }
+        ]
+      },
+      "score": 0.3191932439804077
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./src/services/note_saver.py",
+        "range": {
+          "startPosition": {
+            "line": 149
+          },
+          "endPosition": {
+            "line": 348
+          }
+        },
+        "contents": "class NoteSaver:\ndef save_conversation(\n        self, \n        conversation_note: ConversationNote,\n        gitlab_username: Optional[str] = None,\n        gitlab_password: Optional[str] = None\n    ) -&gt; tuple[bool, Optional[str], Optional[str]]:\n\"\"\"\n        try:\n            # Get project directory using ProjectDirectoryMapper\n            # Handle case where project might not have explicit mapping\n            directory = self.project_mapper.get_directory(conversation_note.project)\n            \n            # Validate directory (fallback to \"general\" if invalid)\n            if not directory or not self.project_mapper.is_valid_project(conversation_note.project):\n                logger.warning(f\"Project '{conversation_note.project}' not in mapping, defaulting to 'general'\")\n                directory = \"general\"\n            \n            project_dir = self.repository.local_path / directory\n            \n            # Create project directory if it doesn't exist\n            project_dir.mkdir(parents=True, exist_ok=True)\n            \n            # Generate filename\n            filename = conversation_note.generate_filename()\n            \n            # Handle duplicate filenames\n            file_path = project_dir / filename\n            counter = 1\n            while file_path.exists():\n                # Append number before extension\n                name_parts = filename.rsplit(\".\", 1)\n                if len(name_parts) == 2:\n                    new_filename = f\"{name_parts[0]}-{counter}.{name_parts[1]}\"\n                else:\n                    new_filename = f\"{filename}-{counter}\"\n                file_path = project_dir / new_filename\n                counter += 1\n            \n            # Generate markdown content\n            markdown_content = conversation_note.to_markdown()\n            \n            # Write file\n            file_path.write_text(markdown_content, encoding='utf-8')\n            logger.info(f\"Created note file: {file_path}\")\n            \n            # Get relative path for repository\n            try:\n                relative_path = str(file_path.relative_to(self.repository.local_path))\n            except ValueError:\n                relative_path = str(file_path)\n            \n            # Git operations\n            if",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 150,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 151,
+                "column": 5
+              }
+            },
+            {
+              "startPosition": {
+                "line": 165,
+                "column": 5
+              },
+              "endPosition": {
+                "line": 171,
+                "column": 9
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "class NoteSaver:",
+            "lineNumber": 150,
+            "isSignature": true
+          },
+          {
+            "text": "def save_conversation(",
+            "lineNumber": 165
+          },
+          {
+            "text": "        self, ",
+            "lineNumber": 166
+          },
+          {
+            "text": "        conversation_note: ConversationNote,",
+            "lineNumber": 167
+          },
+          {
+            "text": "        gitlab_username: Optional[str] = None,",
+            "lineNumber": 168
+          },
+          {
+            "text": "        gitlab_password: Optional[str] = None",
+            "lineNumber": 169
+          },
+          {
+            "text": "    ) -&gt; tuple[bool, Optional[str], Optional[str]]:",
+            "lineNumber": 170
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 181
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 182
+          },
+          {
+            "text": "            # Get project directory using ProjectDirectoryMapper",
+            "lineNumber": 183
+          },
+          {
+            "text": "            # Handle case where project might not have explicit mapping",
+            "lineNumber": 184
+          },
+          {
+            "text": "            directory = self.project_mapper.get_directory(conversation_note.project)",
+            "lineNumber": 185
+          },
+          {
+            "text": "            ",
+            "lineNumber": 186
+          },
+          {
+            "text": "            # Validate directory (fallback to \"general\" if invalid)",
+            "lineNumber": 187
+          },
+          {
+            "text": "            if not directory or not self.project_mapper.is_valid_project(conversation_note.project):",
+            "lineNumber": 188
+          },
+          {
+            "text": "                logger.warning(f\"Project '{conversation_note.project}' not in mapping, defaulting to 'general'\")",
+            "lineNumber": 189
+          },
+          {
+            "text": "                directory = \"general\"",
+            "lineNumber": 190
+          },
+          {
+            "text": "            ",
+            "lineNumber": 191
+          },
+          {
+            "text": "            project_dir = self.repository.local_path / directory",
+            "lineNumber": 192
+          },
+          {
+            "text": "            ",
+            "lineNumber": 193
+          },
+          {
+            "text": "            # Create project directory if it doesn't exist",
+            "lineNumber": 194
+          },
+          {
+            "text": "            project_dir.mkdir(parents=True, exist_ok=True)",
+            "lineNumber": 195
+          },
+          {
+            "text": "            ",
+            "lineNumber": 196
+          },
+          {
+            "text": "            # Generate filename",
+            "lineNumber": 197
+          },
+          {
+            "text": "            filename = conversation_note.generate_filename()",
+            "lineNumber": 198
+          },
+          {
+            "text": "            ",
+            "lineNumber": 199
+          },
+          {
+            "text": "            # Handle duplicate filenames",
+            "lineNumber": 200
+          },
+          {
+            "text": "            file_path = project_dir / filename",
+            "lineNumber": 201
+          },
+          {
+            "text": "            counter = 1",
+            "lineNumber": 202
+          },
+          {
+            "text": "            while file_path.exists():",
+            "lineNumber": 203
+          },
+          {
+            "text": "                # Append number before extension",
+            "lineNumber": 204
+          },
+          {
+            "text": "                name_parts = filename.rsplit(\".\", 1)",
+            "lineNumber": 205
+          },
+          {
+            "text": "                if len(name_parts) == 2:",
+            "lineNumber": 206
+          },
+          {
+            "text": "                    new_filename = f\"{name_parts[0]}-{counter}.{name_parts[1]}\"",
+            "lineNumber": 207
+          },
+          {
+            "text": "                else:",
+            "lineNumber": 208
+          },
+          {
+            "text": "                    new_filename = f\"{filename}-{counter}\"",
+            "lineNumber": 209
+          },
+          {
+            "text": "                file_path = project_dir / new_filename",
+            "lineNumber": 210
+          },
+          {
+            "text": "                counter += 1",
+            "lineNumber": 211
+          },
+          {
+            "text": "            ",
+            "lineNumber": 212
+          },
+          {
+            "text": "            # Generate markdown content",
+            "lineNumber": 213
+          },
+          {
+            "text": "            markdown_content = conversation_note.to_markdown()",
+            "lineNumber": 214
+          },
+          {
+            "text": "            ",
+            "lineNumber": 215
+          },
+          {
+            "text": "            # Write file",
+            "lineNumber": 216
+          },
+          {
+            "text": "            file_path.write_text(markdown_content, encoding='utf-8')",
+            "lineNumber": 217
+          },
+          {
+            "text": "            logger.info(f\"Created note file: {file_path}\")",
+            "lineNumber": 218
+          },
+          {
+            "text": "            ",
+            "lineNumber": 219
+          },
+          {
+            "text": "            # Get relative path for repository",
+            "lineNumber": 220
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 221
+          },
+          {
+            "text": "                relative_path = str(file_path.relative_to(self.repository.local_path))",
+            "lineNumber": 222
+          },
+          {
+            "text": "            except ValueError:",
+            "lineNumber": 223
+          },
+          {
+            "text": "                relative_path = str(file_path)",
+            "lineNumber": 224
+          },
+          {
+            "text": "            ",
+            "lineNumber": 225
+          },
+          {
+            "text": "            # Git operations",
+            "lineNumber": 226
+          },
+          {
+            "text": "            if",
+            "lineNumber": 227
+          }
+        ]
+      },
+      "score": 0.31460654735565186
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/plan.md",
+        "range": {
+          "startPosition": {
+            "line": 28
+          },
+          "endPosition": {
+            "line": 76
+          }
+        },
+        "contents": "## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/001-project-organized-notes/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n\n&#96;&#96;&#96;text\nsrc/\n├── models/\n│   ├── note.py           # Note entity (existing - may need project_path field)\n│   ├── repository.py     # Repository entity (existing)\n│   └── index.py          # NoteIndex entity (existing - may need project filtering)\n├── services/\n│   ├── git_sync.py       # Git sync service (existing)\n│   ├── note_parser.py    # Note parser (existing)\n│   ├── index_builder.py  # Index builder (existing)\n│   ├── project_filter.py # NEW: Project-based note filtering\n│   └── note_saver.py     # NEW: Save conversations as notes\n├── mcp/\n│   ├── api.py            # MCP API (existing - needs project filtering)\n│   ├── resources.py      # Resource handlers (existing - needs project filtering)\n│   └── tools.py          # Tool handlers (existing - needs save tool)\n└── cli/\n    └── main.py           # CLI entry point (optional)\n\nbrain_core/\n├── context_builder.py    # Existing - needs MCP integration with project filtering\n└── chat.py              # Existing - may need conversation saving integration\n\nchat_cli.py               # Existing - needs /mcp save command\n&#96;&#96;&#96;\n\n**Structure Decision**: Single project structure chosen as this extends the existing project_chat codebase. New services (project_filter.py, note_saver.py) added to src/services/, existing MCP components extended with project-aware functionality. Integration points in brain_core/context_builder.py and chat_cli.py.\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "## Project Structure",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "### Documentation (this feature)",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;text",
+            "lineNumber": 34
+          },
+          {
+            "text": "specs/001-project-organized-notes/",
+            "lineNumber": 35
+          },
+          {
+            "text": "├── plan.md              # This file (/speckit.plan command output)",
+            "lineNumber": 36
+          },
+          {
+            "text": "├── research.md          # Phase 0 output (/speckit.plan command)",
+            "lineNumber": 37
+          },
+          {
+            "text": "├── data-model.md        # Phase 1 output (/speckit.plan command)",
+            "lineNumber": 38
+          },
+          {
+            "text": "├── quickstart.md        # Phase 1 output (/speckit.plan command)",
+            "lineNumber": 39
+          },
+          {
+            "text": "├── contracts/           # Phase 1 output (/speckit.plan command)",
+            "lineNumber": 40
+          },
+          {
+            "text": "└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)",
+            "lineNumber": 41
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "### Source Code (repository root)",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "&#96;&#96;&#96;text",
+            "lineNumber": 46
+          },
+          {
+            "text": "src/",
+            "lineNumber": 47
+          },
+          {
+            "text": "├── models/",
+            "lineNumber": 48
+          },
+          {
+            "text": "│   ├── note.py           # Note entity (existing - may need project_path field)",
+            "lineNumber": 49
+          },
+          {
+            "text": "│   ├── repository.py     # Repository entity (existing)",
+            "lineNumber": 50
+          },
+          {
+            "text": "│   └── index.py          # NoteIndex entity (existing - may need project filtering)",
+            "lineNumber": 51
+          },
+          {
+            "text": "├── services/",
+            "lineNumber": 52
+          },
+          {
+            "text": "│   ├── git_sync.py       # Git sync service (existing)",
+            "lineNumber": 53
+          },
+          {
+            "text": "│   ├── note_parser.py    # Note parser (existing)",
+            "lineNumber": 54
+          },
+          {
+            "text": "│   ├── index_builder.py  # Index builder (existing)",
+            "lineNumber": 55
+          },
+          {
+            "text": "│   ├── project_filter.py # NEW: Project-based note filtering",
+            "lineNumber": 56
+          },
+          {
+            "text": "│   └── note_saver.py     # NEW: Save conversations as notes",
+            "lineNumber": 57
+          },
+          {
+            "text": "├── mcp/",
+            "lineNumber": 58
+          },
+          {
+            "text": "│   ├── api.py            # MCP API (existing - needs project filtering)",
+            "lineNumber": 59
+          },
+          {
+            "text": "│   ├── resources.py      # Resource handlers (existing - needs project filtering)",
+            "lineNumber": 60
+          },
+          {
+            "text": "│   └── tools.py          # Tool handlers (existing - needs save tool)",
+            "lineNumber": 61
+          },
+          {
+            "text": "└── cli/",
+            "lineNumber": 62
+          },
+          {
+            "text": "    └── main.py           # CLI entry point (optional)",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "brain_core/",
+            "lineNumber": 65
+          },
+          {
+            "text": "├── context_builder.py    # Existing - needs MCP integration with project filtering",
+            "lineNumber": 66
+          },
+          {
+            "text": "└── chat.py              # Existing - may need conversation saving integration",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "chat_cli.py               # Existing - needs /mcp save command",
+            "lineNumber": 69
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "**Structure Decision**: Single project structure chosen as this extends the existing project_chat codebase. New services (project_filter.py, note_saver.py) added to src/services/, existing MCP components extended with project-aware functionality. Integration points in brain_core/context_builder.py and chat_cli.py.",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "## Complexity Tracking",
+            "lineNumber": 74
+          },
+          {
+            "lineNumber": 75
+          },
+          {
+            "text": "&gt; **Fill ONLY if Constitution Check has violations that must be justified**",
+            "lineNumber": 76
+          }
+        ]
+      },
+      "score": 0.3144417107105255
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 677
+          },
+          "endPosition": {
+            "line": 909
+          }
+        },
+        "contents": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):\n\n        \n        elif subcmd == \"list\":\n            # List resources, optionally filtered by project\n            project_filter = parts[1] if len(parts) &gt; 1 else None\n            \n            if project_filter:\n                # List resources for specific project\n                resources = api.list_resources_by_project(project_filter)\n                if not resources:\n                    print(color_text(f\"No resources found for project '{project_filter}'. Try running /mcp sync first.\", \"grey\"))\n                    return\n                print(color_text(f\"MCP Resources for {project_filter} ({len(resources)} total):\", \"cyan\", bold=True))\n            else:\n                # List all resources\n                resources = api.list_resources()\n                if not resources:\n                    print(color_text(\"No resources found. Try running /mcp sync first.\", \"grey\"))\n                    return\n                print(color_text(f\"MCP Resources ({len(resources)} total):\", \"cyan\", bold=True))\n            \n            for resource in resources:\n                uri = resource.get(\"uri\", \"\")\n                name = resource.get(\"name\", uri)\n                print(f\"  {uri} - {name}\")\n        \n        elif subcmd == \"read\":\n            if len(parts) &lt; 2:",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 678,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 679,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def _handle_mcp_command(args: str, current_project: str, conversation_id: uuid.UUID = None):",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 716
+          },
+          {
+            "text": "        ",
+            "lineNumber": 717
+          },
+          {
+            "text": "        elif subcmd == \"list\":",
+            "lineNumber": 718
+          },
+          {
+            "text": "            # List resources, optionally filtered by project",
+            "lineNumber": 719
+          },
+          {
+            "text": "            project_filter = parts[1] if len(parts) &gt; 1 else None",
+            "lineNumber": 720
+          },
+          {
+            "text": "            ",
+            "lineNumber": 721
+          },
+          {
+            "text": "            if project_filter:",
+            "lineNumber": 722
+          },
+          {
+            "text": "                # List resources for specific project",
+            "lineNumber": 723
+          },
+          {
+            "text": "                resources = api.list_resources_by_project(project_filter)",
+            "lineNumber": 724
+          },
+          {
+            "text": "                if not resources:",
+            "lineNumber": 725
+          },
+          {
+            "text": "                    print(color_text(f\"No resources found for project '{project_filter}'. Try running /mcp sync first.\", \"grey\"))",
+            "lineNumber": 726
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 727
+          },
+          {
+            "text": "                print(color_text(f\"MCP Resources for {project_filter} ({len(resources)} total):\", \"cyan\", bold=True))",
+            "lineNumber": 728
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 729
+          },
+          {
+            "text": "                # List all resources",
+            "lineNumber": 730
+          },
+          {
+            "text": "                resources = api.list_resources()",
+            "lineNumber": 731
+          },
+          {
+            "text": "                if not resources:",
+            "lineNumber": 732
+          },
+          {
+            "text": "                    print(color_text(\"No resources found. Try running /mcp sync first.\", \"grey\"))",
+            "lineNumber": 733
+          },
+          {
+            "text": "                    return",
+            "lineNumber": 734
+          },
+          {
+            "text": "                print(color_text(f\"MCP Resources ({len(resources)} total):\", \"cyan\", bold=True))",
+            "lineNumber": 735
+          },
+          {
+            "text": "            ",
+            "lineNumber": 736
+          },
+          {
+            "text": "            for resource in resources:",
+            "lineNumber": 737
+          },
+          {
+            "text": "                uri = resource.get(\"uri\", \"\")",
+            "lineNumber": 738
+          },
+          {
+            "text": "                name = resource.get(\"name\", uri)",
+            "lineNumber": 739
+          },
+          {
+            "text": "                print(f\"  {uri} - {name}\")",
+            "lineNumber": 740
+          },
+          {
+            "text": "        ",
+            "lineNumber": 741
+          },
+          {
+            "text": "        elif subcmd == \"read\":",
+            "lineNumber": 742
+          },
+          {
+            "text": "            if len(parts) &lt; 2:",
+            "lineNumber": 743
+          }
+        ]
+      },
+      "score": 0.31286484003067017
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 43
+          },
+          "endPosition": {
+            "line": 82
+          }
+        },
+        "contents": "---\n\n### User Story 3 - Project Directory Mapping (Priority: P2)\n\nSystem correctly maps project names (DAAS, THN, FF, General, 700B) to their corresponding directory names in the Obsidian notebook (daas, thn, ff, general, 700b).\n\n**Why this priority**: Ensures correct directory mapping between project tags and Obsidian directory structure. Lower priority because it's a configuration/mapping concern.\n\n**Independent Test**: Can be fully tested by verifying the mapping logic correctly translates \"DAAS\" → \"daas\", \"THN\" → \"thn\", etc.\n\n**Acceptance Scenarios**:\n\n1. **Given** project name is \"DAAS\", **When** system looks up directory, **Then** it uses \"daas\" directory\n2. **Given** project name is \"General\", **When** system looks up directory, **Then** it uses \"general\" directory\n3. **Given** project name doesn't have a mapping, **When** system looks up directory, **Then** it uses a default directory or handles gracefully\n\n---\n\n### Edge Cases\n\n- What happens when a project directory doesn't exist in the repository?\n- How does system handle notes in subdirectories within project directories?\n- What happens if saving a note fails (permissions, disk space, etc.)?\n- How are duplicate note titles handled when saving?\n- What happens if the repository is out of sync when saving?\n\n## Requirements\n\n### Functional Requirements\n\n- **FR-001**: System MUST filter meditation notes by project directory when building conversation context\n- **FR-002**: System MUST map project names (DAAS, THN, FF, General, 700B) to lowercase directory names (daas, thn, ff, general, 700b)\n- **FR-003**: System MUST support saving conversations as markdown notes in the appropriate project directory\n- **FR-004**: System MUST generate note filenames from conversation title or content\n- **FR-005**: System MUST format conversations as valid Obsidian markdown with proper frontmatter\n- **FR-006**: System MUST commit and push saved notes to the GitLab repository\n- **FR-007**: System MUST handle cases where project directory doesn't exist (create it if needed)\n- **FR-008**: System MUST preserve conversation structure (user messages, AI responses, timestamps) in saved notes",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "---",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "### User Story 3 - Project Directory Mapping (Priority: P2)",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "System correctly maps project names (DAAS, THN, FF, General, 700B) to their corresponding directory names in the Obsidian notebook (daas, thn, ff, general, 700b).",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Why this priority**: Ensures correct directory mapping between project tags and Obsidian directory structure. Lower priority because it's a configuration/mapping concern.",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**Independent Test**: Can be fully tested by verifying the mapping logic correctly translates \"DAAS\" → \"daas\", \"THN\" → \"thn\", etc.",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "**Acceptance Scenarios**:",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "1. **Given** project name is \"DAAS\", **When** system looks up directory, **Then** it uses \"daas\" directory",
+            "lineNumber": 57
+          },
+          {
+            "text": "2. **Given** project name is \"General\", **When** system looks up directory, **Then** it uses \"general\" directory",
+            "lineNumber": 58
+          },
+          {
+            "text": "3. **Given** project name doesn't have a mapping, **When** system looks up directory, **Then** it uses a default directory or handles gracefully",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "---",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "### Edge Cases",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "- What happens when a project directory doesn't exist in the repository?",
+            "lineNumber": 65
+          },
+          {
+            "text": "- How does system handle notes in subdirectories within project directories?",
+            "lineNumber": 66
+          },
+          {
+            "text": "- What happens if saving a note fails (permissions, disk space, etc.)?",
+            "lineNumber": 67
+          },
+          {
+            "text": "- How are duplicate note titles handled when saving?",
+            "lineNumber": 68
+          },
+          {
+            "text": "- What happens if the repository is out of sync when saving?",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "- **FR-001**: System MUST filter meditation notes by project directory when building conversation context",
+            "lineNumber": 75
+          },
+          {
+            "text": "- **FR-002**: System MUST map project names (DAAS, THN, FF, General, 700B) to lowercase directory names (daas, thn, ff, general, 700b)",
+            "lineNumber": 76
+          },
+          {
+            "text": "- **FR-003**: System MUST support saving conversations as markdown notes in the appropriate project directory",
+            "lineNumber": 77
+          },
+          {
+            "text": "- **FR-004**: System MUST generate note filenames from conversation title or content",
+            "lineNumber": 78
+          },
+          {
+            "text": "- **FR-005**: System MUST format conversations as valid Obsidian markdown with proper frontmatter",
+            "lineNumber": 79
+          },
+          {
+            "text": "- **FR-006**: System MUST commit and push saved notes to the GitLab repository",
+            "lineNumber": 80
+          },
+          {
+            "text": "- **FR-007**: System MUST handle cases where project directory doesn't exist (create it if needed)",
+            "lineNumber": 81
+          },
+          {
+            "text": "- **FR-008**: System MUST preserve conversation structure (user messages, AI responses, timestamps) in saved notes",
+            "lineNumber": 82
+          }
+        ]
+      },
+      "score": 0.30700039863586426
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/tasks.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 51
+          }
+        },
+        "contents": "# Tasks: Project-Organized Meditation Notes Integration\n\n**Input**: Design documents from &#96;/specs/001-project-organized-notes/&#96;\n**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/\n\n**Tests**: Tests are OPTIONAL - not explicitly requested in the feature specification, so test tasks are not included.\n\n**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.\n\n## Format: &#96;[ID] [P?] [Story] Description&#96;\n\n- **[P]**: Can run in parallel (different files, no dependencies)\n- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)\n- Include exact file paths in descriptions\n\n## Path Conventions\n\n- **Single project**: &#96;src/&#96;, &#96;tests/&#96; at repository root\n- Paths shown below assume single project structure per plan.md\n\n---\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Project initialization and basic structure\n\n- [x] T001 Verify existing MCP server structure in src/models/, src/services/, src/mcp/\n- [x] T002 Verify existing dependencies (GitPython, python-frontmatter) in requirements.txt\n- [x] T003 [P] Review existing Note, Repository, and NoteIndex models for extension points\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented\n\n**⚠️ CRITICAL**: No user story work can begin until this phase is complete\n\n- [x] T004 [US3] Create ProjectDirectoryMapper class in src/services/project_filter.py with mapping dictionary\n- [x] T005 [US3] Implement get_directory(project: str) method in src/services/project_filter.py\n- [x] T006 [US3] Implement is_valid_project(project: str) method in src/services/project_filter.py\n\n**Checkpoint**: Foundation ready - project directory mapping available for all user stories\n\n---\n\n## Phase 3: User Story 1 - Project-Scoped Note Retrieval and Recall (Priority: P1) 🎯 MVP\n\n**Goal**: Enable project-scoped meditation note retrieval and natural recall/referencing throughout conversations\n\n**Independent Test**: Set project context to \"DAAS\", ask \"What did I write about morning routines?\", verify system recalls and references relevant content from \"daas\" directory notes",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Tasks: Project-Organized Meditation Notes Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Input**: Design documents from &#96;/specs/001-project-organized-notes/&#96;",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "**Tests**: Tests are OPTIONAL - not explicitly requested in the feature specification, so test tasks are not included.",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "## Format: &#96;[ID] [P?] [Story] Description&#96;",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "- **[P]**: Can run in parallel (different files, no dependencies)",
+            "lineNumber": 12
+          },
+          {
+            "text": "- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Include exact file paths in descriptions",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "## Path Conventions",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "- **Single project**: &#96;src/&#96;, &#96;tests/&#96; at repository root",
+            "lineNumber": 18
+          },
+          {
+            "text": "- Paths shown below assume single project structure per plan.md",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "---",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "## Phase 1: Setup (Shared Infrastructure)",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "**Purpose**: Project initialization and basic structure",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "- [x] T001 Verify existing MCP server structure in src/models/, src/services/, src/mcp/",
+            "lineNumber": 27
+          },
+          {
+            "text": "- [x] T002 Verify existing dependencies (GitPython, python-frontmatter) in requirements.txt",
+            "lineNumber": 28
+          },
+          {
+            "text": "- [x] T003 [P] Review existing Note, Repository, and NoteIndex models for extension points",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "---",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "## Phase 2: Foundational (Blocking Prerequisites)",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**⚠️ CRITICAL**: No user story work can begin until this phase is complete",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "- [x] T004 [US3] Create ProjectDirectoryMapper class in src/services/project_filter.py with mapping dictionary",
+            "lineNumber": 39
+          },
+          {
+            "text": "- [x] T005 [US3] Implement get_directory(project: str) method in src/services/project_filter.py",
+            "lineNumber": 40
+          },
+          {
+            "text": "- [x] T006 [US3] Implement is_valid_project(project: str) method in src/services/project_filter.py",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "**Checkpoint**: Foundation ready - project directory mapping available for all user stories",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "---",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "## Phase 3: User Story 1 - Project-Scoped Note Retrieval and Recall (Priority: P1) 🎯 MVP",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "**Goal**: Enable project-scoped meditation note retrieval and natural recall/referencing throughout conversations",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "**Independent Test**: Set project context to \"DAAS\", ask \"What did I write about morning routines?\", verify system recalls and references relevant content from \"daas\" directory notes",
+            "lineNumber": 51
+          }
+        ]
+      },
+      "score": 0.3056670129299164
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/001-project-organized-notes/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 23
+          }
+        },
+        "contents": "# Feature Specification: Project-Organized Meditation Notes Integration\n\n**Feature Branch**: &#96;001-project-organized-notes&#96;  \n**Created**: 2025-12-07  \n**Status**: Draft  \n**Input**: User description: \"Okay now that the MCP works. There needs to be some organization because the directories within the obsidian notebook have meaning. I've just reorganized the directory structure of the obsidian notebook. There is now a directory that aligns with each of the projects daas, thn, ff, general, 700b. So now I want to ensure that I can pull notes into a conversation when i am working with in a specific project. Also I'd like to be able to run a command that will save the conversation as a note with in the project directory of the obsidian notebook\"\n\n## User Scenarios &amp; Testing\n\n### User Story 1 - Project-Scoped Note Retrieval and Recall (Priority: P1)\n\nWhen working within a specific project (DAAS, THN, FF, General, 700B), the system should automatically retrieve and include relevant meditation notes from the corresponding project directory in the Obsidian notebook. The system must be able to recall information from these notes when requested and reference them naturally as the conversation progresses.\n\n**Why this priority**: This is the core functionality - enabling project-specific context from meditation notes. The system should not just include notes, but actively use them to answer questions and maintain context throughout the conversation.\n\n**Independent Test**: Can be fully tested by setting project context to \"DAAS\", asking about information from a note, and verifying the system recalls and references the note content accurately.\n\n**Acceptance Scenarios**:\n\n1. **Given** user is in a DAAS project conversation, **When** system builds context, **Then** only meditation notes from the \"daas\" directory are included\n2. **Given** user is in a THN project conversation, **When** system builds context, **Then** only meditation notes from the \"thn\" directory are included\n3. **Given** user switches from DAAS to THN project, **When** system builds context, **Then** notes switch from \"daas\" to \"thn\" directory\n4. **Given** no notes exist in a project directory, **When** system builds context, **Then** no meditation notes are included (graceful degradation)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: Project-Organized Meditation Notes Integration",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature Branch**: &#96;001-project-organized-notes&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Created**: 2025-12-07  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Draft  ",
+            "lineNumber": 5
+          },
+          {
+            "text": "**Input**: User description: \"Okay now that the MCP works. There needs to be some organization because the directories within the obsidian notebook have meaning. I've just reorganized the directory structure of the obsidian notebook. There is now a directory that aligns with each of the projects daas, thn, ff, general, 700b. So now I want to ensure that I can pull notes into a conversation when i am working with in a specific project. Also I'd like to be able to run a command that will save the conversation as a note with in the project directory of the obsidian notebook\"",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "## User Scenarios &amp; Testing",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "### User Story 1 - Project-Scoped Note Retrieval and Recall (Priority: P1)",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "When working within a specific project (DAAS, THN, FF, General, 700B), the system should automatically retrieve and include relevant meditation notes from the corresponding project directory in the Obsidian notebook. The system must be able to recall information from these notes when requested and reference them naturally as the conversation progresses.",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Why this priority**: This is the core functionality - enabling project-specific context from meditation notes. The system should not just include notes, but actively use them to answer questions and maintain context throughout the conversation.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Independent Test**: Can be fully tested by setting project context to \"DAAS\", asking about information from a note, and verifying the system recalls and references the note content accurately.",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "**Acceptance Scenarios**:",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "1. **Given** user is in a DAAS project conversation, **When** system builds context, **Then** only meditation notes from the \"daas\" directory are included",
+            "lineNumber": 20
+          },
+          {
+            "text": "2. **Given** user is in a THN project conversation, **When** system builds context, **Then** only meditation notes from the \"thn\" directory are included",
+            "lineNumber": 21
+          },
+          {
+            "text": "3. **Given** user switches from DAAS to THN project, **When** system builds context, **Then** notes switch from \"daas\" to \"thn\" directory",
+            "lineNumber": 22
+          },
+          {
+            "text": "4. **Given** no notes exist in a project directory, **When** system builds context, **Then** no meditation notes are included (graceful degradation)",
+            "lineNumber": 23
+          }
+        ]
+      },
+      "score": 0.3015914857387543
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking how sync works:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py",
+  "offset": 1,
+  "limit": 100,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/index_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nIndex building service.\n\nBuilds and maintains the note index from repository files.\n\"\"\"\nimport logging\nfrom pathlib import Path\nfrom typing import Optional\n\nfrom ..models.repository import Repository\nfrom ..models.index import NoteIndex\nfrom ..services.note_parser import NoteParser\n\nlogger = logging.getLogger(__name__)\n\n\nclass IndexBuilder:\n    \"\"\"Service for building note index.\"\"\"\n    \n    def __init__(self, repository: Repository, index: NoteIndex):\n        \"\"\"\n        Initialize index builder.\n        \n        Args:\n            repository: Repository configuration\n            index: NoteIndex instance to populate\n        \"\"\"\n        self.repository = repository\n        self.index = index\n    \n    def rebuild_index(self) -&gt; int:\n        \"\"\"\n        Rebuild the note index from repository files.\n        \n        Returns:\n            Number of notes indexed\n        \"\"\"\n        logger.info(\"Rebuilding note index...\")\n        \n        # Clear existing index\n        self.index.clear()\n        \n        # Find and parse all notes\n        notes = NoteParser.find_notes(\n            self.repository.local_path,\n            self.repository.notes_dir\n        )\n        \n        # Add notes to index\n        for note in notes:\n            self.index.add(note)\n        \n        logger.info(f\"Index rebuilt with {self.index.count()} notes\")\n        return self.index.count()\n    \n    def sync_and_rebuild(self) -&gt; tuple[bool, int, Optional[str]]:\n        \"\"\"\n        Sync repository and rebuild index.\n        \n        Returns:\n            Tuple of (success: bool, note_count: int, error_message: Optional[str])\n        \"\"\"\n        from ..services.git_sync import GitSyncService\n        \n        # Sync repository\n        sync_service = GitSyncService(self.repository)\n        success, error = sync_service.sync()\n        \n        if not success:\n            return False, 0, error\n        \n        # Rebuild index\n        try:\n            note_count = self.rebuild_index()\n            return True, note_count, None\n        except Exception as e:\n            error_msg = f\"Failed to rebuild index: {str(e)}\"\n            logger.error(error_msg, exc_info=True)\n            return False, 0, error_msg",
+  "totalLinesInFile": 79
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/project_filter.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/project_filter.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nProject directory mapping service.\n\nMaps project names (DAAS, THN, FF, General, 700B) to directory names\n(daas, thn, ff, general, 700b) in the Obsidian notebook repository.\n\"\"\"\nfrom typing import Dict\n\n\nclass ProjectDirectoryMapper:\n    \"\"\"Maps project names to directory names.\"\"\"\n    \n    def __init__(self):\n        \"\"\"Initialize mapper with project to directory mapping.\"\"\"\n        self._mapping: Dict[str, str] = {\n            \"DAAS\": \"daas\",\n            \"THN\": \"thn\",\n            \"FF\": \"ff\",\n            \"General\": \"general\",\n            \"700B\": \"700b\"\n        }\n    \n    def get_directory(self, project: str) -&gt; str:\n        \"\"\"\n        Get directory name for a project.\n        \n        Args:\n            project: Project name (DAAS, THN, FF, General, 700B)\n            \n        Returns:\n            Directory name (daas, thn, ff, general, 700b)\n            Defaults to lowercase of project name if not in mapping\n        \"\"\"\n        # Normalize project name (handle case variations)\n        project_upper = project.upper() if project else \"\"\n        \n        # Check explicit mapping first\n        if project_upper in self._mapping:\n            return self._mapping[project_upper]\n        \n        # Handle \"GENERAL\" -&gt; \"general\" (common variation)\n        if project_upper == \"GENERAL\":\n            return \"general\"\n        \n        # Default to lowercase if no explicit mapping\n        # This handles edge cases gracefully\n        return project.lower() if project else \"general\"\n    \n    def is_valid_project(self, project: str) -&gt; bool:\n        \"\"\"\n        Check if project has a mapping.\n        \n        Args:\n            project: Project name to check\n            \n        Returns:\n            True if project has explicit mapping, False otherwise\n        \"\"\"\n        if not project:\n            return False\n        \n        project_upper = project.upper()\n        return project_upper in self._mapping or project_upper == \"GENERAL\"\n",
+  "totalLinesInFile": 64
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/spec.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "26e9506b-8dbf-402f-bff2-294743c8a140"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking how notes are discovered:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py",
+  "offset": 1,
+  "limit": 80,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nObsidian markdown note parser.\n\nParses Obsidian markdown files with YAML frontmatter into Note entities.\n\"\"\"\nimport logging\nimport re\nfrom pathlib import Path\nfrom typing import Optional, Dict, Any\nfrom datetime import datetime\n\nimport frontmatter\nimport markdown\n\nfrom ..models.note import Note\n\nlogger = logging.getLogger(__name__)\n\n\nclass NoteParser:\n    \"\"\"Service for parsing Obsidian markdown notes.\"\"\"\n    \n    @staticmethod\n    def slug_from_filename(filename: str) -&gt; str:\n        \"\"\"\n        Generate slug from filename.\n        \n        Args:\n            filename: File name (with or without extension)\n            \n        Returns:\n            Slug string\n        \"\"\"\n        # Remove extension\n        name = Path(filename).stem\n        \n        # Convert to lowercase and replace spaces/hyphens with hyphens\n        slug = re.sub(r'[^\\w\\s-]', '', name.lower())\n        slug = re.sub(r'[-\\s]+', '-', slug)\n        slug = slug.strip('-')\n        \n        return slug\n    \n    @staticmethod\n    def parse_note(file_path: Path, repo_path: Path) -&gt; Optional[Note]:\n        \"\"\"\n        Parse a markdown file into a Note entity.\n        \n        Args:\n            file_path: Path to markdown file\n            repo_path: Repository root path (for relative paths)\n            \n        Returns:\n            Note entity or None if parsing fails\n        \"\"\"\n        try:\n            # Read file\n            with open(file_path, 'r', encoding='utf-8') as f:\n                content = f.read()\n            \n            # Parse frontmatter\n            post = frontmatter.loads(content)\n            frontmatter_data = post.metadata if post.metadata else {}\n            body = post.content\n            \n            # Generate slug from filename\n            slug = NoteParser.slug_from_filename(file_path.name)\n            \n            # Extract title from frontmatter or first heading or filename\n            title = frontmatter_data.get('title')\n            if not title:\n                # Try to extract from first heading\n                heading_match = re.search(r'^#\\s+(.+)$', body, re.MULTILINE)\n                if heading_match:\n                    title = heading_match.group(1).strip()\n                else:\n                    title = file_path.stem\n            \n            # Get relative file path\n            try:",
+  "totalLinesInFile": 150
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/models/repository.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nRepository entity for GitLab meditation notes repository.\n\nManages the local clone/pull state of the repository.\n\"\"\"\nfrom dataclasses import dataclass\nfrom typing import Optional\nfrom datetime import datetime\nfrom pathlib import Path\n\n\n@dataclass\nclass Repository:\n    \"\"\"Repository state and configuration.\"\"\"\n    \n    url: str\n    local_path: Path\n    branch: str = \"main\"\n    last_sync: Optional[datetime] = None\n    sync_error: Optional[str] = None\n    \n    @property\n    def notes_dir(self) -&gt; Path:\n        \"\"\"\n        Path to notes directory within repository.\n        \n        Tries multiple common locations:\n        1. notes/ subdirectory\n        2. Root of repository (if notes/ doesn't exist)\n        \"\"\"\n        notes_subdir = self.local_path / \"notes\"\n        if notes_subdir.exists() and notes_subdir.is_dir():\n            return notes_subdir\n        # If notes/ doesn't exist, use repository root\n        return self.local_path\n    \n    def to_dict(self) -&gt; dict:\n        \"\"\"Convert repository to dictionary.\"\"\"\n        return {\n            \"url\": self.url,\n            \"local_path\": str(self.local_path),\n            \"branch\": self.branch,\n            \"last_sync\": self.last_sync.isoformat() if self.last_sync else None,\n            \"sync_error\": self.sync_error\n        }",
+  "totalLinesInFile": 45
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "bddcaafa-d548-4c1d-baee-ac56d2ae91cd"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking how `find_notes` discovers notes:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py",
+  "offset": 100,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/src/services/note_parser.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        except Exception as e:\n            logger.warning(f\"Failed to parse note {file_path}: {e}\")\n            return None\n    \n    @staticmethod\n    def find_notes(repo_path: Path, notes_dir: Path) -&gt; list[Note]:\n        \"\"\"\n        Find and parse all markdown notes in repository.\n        \n        Args:\n            repo_path: Repository root path\n            notes_dir: Directory containing notes (may be repo root)\n            \n        Returns:\n            List of Note entities\n        \"\"\"\n        notes = []\n        \n        if not notes_dir.exists():\n            logger.warning(f\"Notes directory does not exist: {notes_dir}\")\n            return notes\n        \n        logger.info(f\"Searching for markdown files in: {notes_dir}\")\n        \n        # Find all .md files, but exclude common non-note files\n        exclude_dirs = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}\n        exclude_files = {'README.md', 'readme.md', 'CHANGELOG.md', 'LICENSE.md'}\n        \n        md_files_found = 0\n        for md_file in notes_dir.rglob(\"*.md\"):\n            md_files_found += 1\n            # Skip if in excluded directory\n            if any(excluded in md_file.parts for excluded in exclude_dirs):\n                logger.debug(f\"Skipping {md_file} (in excluded directory)\")\n                continue\n            \n            # Skip common non-note files\n            if md_file.name in exclude_files:\n                logger.debug(f\"Skipping {md_file} (excluded file)\")\n                continue\n            \n            logger.debug(f\"Parsing note: {md_file}\")\n            note = NoteParser.parse_note(md_file, repo_path)\n            if note:\n                notes.append(note)\n                logger.debug(f\"Successfully parsed note: {note.slug} - {note.title}\")\n            else:\n                logger.warning(f\"Failed to parse note: {md_file}\")\n        \n        logger.info(f\"Found {md_files_found} markdown files, parsed {len(notes)} notes from {notes_dir}\")",
+  "totalLinesInFile": 150
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/research.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "b503bb9e-9328-4f49-9406-c26d8716b6e7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the remaining design documents:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/data-model.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "81b7fba2-c55e-4ccf-8dfa-b439122718b0"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; mkdir -p specs/015-rag-and-notes-improvements/contracts",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "mkdir",
+        "args": [
+          {
+            "type": "word",
+            "value": "-p"
+          },
+          {
+            "type": "word",
+            "value": "specs/015-rag-and-notes-improvements/contracts"
+          }
+        ],
+        "fullText": "mkdir -p specs/015-rag-and-notes-improvements/contracts"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/contracts/api.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "c3ffb25e-a852-4afa-b602-87dd04ca6d8a"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/quickstart.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "1b1c4b9d-5370-4db3-92b9-dc2078666079"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the plan to mark phases complete and provide a summary:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "bd013d2b-7d09-4bc0-9650-f9f3071e5b42"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "d2ffb3fc-dd71-494d-97a2-88edc8e27557"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; git branch --show-current 2&gt;/dev/null || echo \"015-rag-and-notes-improvements\"",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "git",
+        "args": [
+          {
+            "type": "word",
+            "value": "branch"
+          },
+          {
+            "type": "word",
+            "value": "--show-current"
+          }
+        ],
+        "fullText": "git branch --show-current"
+      },
+      {
+        "name": "echo",
+        "args": [
+          {
+            "type": "string",
+            "value": "\"015-rag-and-notes-improvements\""
+          }
+        ],
+        "fullText": "echo \"015-rag-and-notes-improvements\""
+      }
+    ],
+    "hasRedirects": true
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "013-enhance-thn-rag\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Planning complete
+
+**Branch**: `015-rag-and-notes-improvements`  
+**Spec Location**: `/specs/015-rag-and-notes-improvements/spec.md`  
+**Plan Location**: `/specs/015-rag-and-notes-improvements/plan.md`
+
+### Generated artifacts
+
+1. **spec.md** — Feature specification with three requirements:
+   - Remove automatic RAG inclusion
+   - Fix MCP sync for all project directories
+   - Rename `/mcp` to `/notes`
+
+2. **plan.md** — Implementation plan with technical context and structure
+
+3. **research.md** — Research decisions:
+   - RAG removal scope and rationale
+   - MCP sync directory scanning verification
+   - Command rename impact analysis
+   - Project directory mapping verification
+
+4. **data-model.md** — Data model documentation (no schema changes)
+
+5. **contracts/api.md** — API contracts for modified functions:
+   - `build_project_system_prompt()` changes
+   - `chat_turn()` changes
+   - Removed `should_include_daas_rag()` function
+   - `/notes` command API
+
+6. **quickstart.md** — Step-by-step implementation guide with code examples
+
+### Findings
+
+- RAG removal: Remove automatic inclusion from `build_project_system_prompt()` and `chat_turn()`. Keep RAG functions for `/rag` command.
+- MCP sync: `find_notes()` already uses `rglob()` to recursively scan all directories. Verify sync indexes all project directories.
+- Command rename: Rename handler and update command parsing. Keep MCP API/server code unchanged.
+
+### Next steps
+
+Run `/speckit.tasks` to generate the task breakdown, then `/speckit.implement` to start implementation.
+
+All planning documents are in `/specs/015-rag-and-notes-improvements/`.
+
+---
+
+_**User (2025-12-10 07:19Z)**_
+
+/speckit.tasks 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Generating tasks.md. Checking prerequisites and loading design documents:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/check-prerequisites.sh --json",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/check-prerequisites.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/check-prerequisites.sh --json"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "{\"FEATURE_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\"]}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/spec.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/spec.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# RAG and Notes Improvements\n\n## Overview\n\nThree improvements to the project chat system:\n\n1. Remove automatic RAG inclusion in system prompts - make RAG manual-only via &#96;/rag&#96; command\n2. Fix &#96;/mcp&#96; sync to include all project directories (FF, 700B, etc.)\n3. Rename &#96;/mcp&#96; command to &#96;/notes&#96; for clarity\n\n## Requirements\n\n### 1. Manual RAG Only\n\n**Current Behavior:**\n\n- THN RAG automatically included in system prompt on first message\n- DAAS RAG automatically included when analysis intent detected\n\n**New Behavior:**\n\n- RAG is NEVER automatically included in system prompts\n- RAG only available via manual &#96;/rag&#96; command\n- &#96;/rag&#96; command works for both THN and DAAS projects\n\n**Changes Required:**\n\n- Remove automatic RAG inclusion logic from &#96;build_project_system_prompt()&#96;\n- Remove automatic RAG inclusion logic from &#96;chat_turn()&#96; in &#96;chat.py&#96;\n- Keep &#96;/rag&#96; command functionality intact\n- Remove &#96;should_include_daas_rag()&#96; function (no longer needed)\n\n### 2. Fix MCP Sync for All Project Directories\n\n**Current Behavior:**\n\n- &#96;/mcp sync&#96; may not be syncing notes from all project directories\n- &#96;/mcp list FF&#96; should show notes from FF directory\n- &#96;/mcp list 700B&#96; should show notes from 700B directory\n\n**New Behavior:**\n\n- &#96;/mcp sync&#96; (or &#96;/notes sync&#96; after rename) syncs ALL project directories\n- &#96;/mcp list FF&#96; returns notes from &#96;ff/&#96; directory\n- &#96;/mcp list 700B&#96; returns notes from &#96;700b/&#96; directory\n- All project directories are indexed during sync\n\n**Changes Required:**\n\n- Verify &#96;IndexBuilder.sync_and_rebuild()&#96; scans all directories\n- Ensure &#96;ProjectDirectoryMapper&#96; supports all project names (FF, 700B, etc.)\n- Test that sync includes notes from all project directories\n\n### 3. Rename /mcp to /notes\n\n**Current Behavior:**\n\n- Command is &#96;/mcp&#96; with subcommands: &#96;status&#96;, &#96;list&#96;, &#96;read&#96;, &#96;search&#96;, &#96;sync&#96;, &#96;save&#96;\n\n**New Behavior:**\n\n- Command is &#96;/notes&#96; with same subcommands\n- All functionality remains identical\n- Only command name changes\n\n**Changes Required:**\n\n- Rename command handler from &#96;_handle_mcp_command&#96; to &#96;_handle_notes_command&#96;\n- Update command parsing in &#96;handle_command()&#96; function\n- Update all user-facing help text and error messages\n- Update any internal references to \"mcp\" in command context (keep MCP API/server code as-is)\n\n## Technical Details\n\n### RAG Removal\n\n**Files to Modify:**\n\n- &#96;brain_core/context_builder.py&#96;: Remove RAG inclusion in &#96;build_project_system_prompt()&#96;\n- &#96;brain_core/chat.py&#96;: Remove RAG inclusion logic from &#96;chat_turn()&#96;\n- &#96;brain_core/context_builder.py&#96;: Remove &#96;should_include_daas_rag()&#96; function\n\n**Logic to Remove:**\n\n- THN RAG inclusion check (first message)\n- DAAS RAG inclusion check (analysis intent)\n- &#96;user_message_for_rag&#96; parameter passing\n- RAG-related logging in system prompt builder\n\n**Logic to Keep:**\n\n- &#96;/rag&#96; command in &#96;chat_cli.py&#96;\n- &#96;build_thn_rag_context()&#96; and &#96;build_daas_rag_context()&#96; functions\n- RAG generation functions remain available for manual use\n\n### MCP Sync Fix\n\n**Files to Review:**\n\n- &#96;src/services/index_builder.py&#96;: Verify directory scanning logic\n- &#96;src/services/project_filter.py&#96;: Verify project mapping\n- &#96;src/models/index.py&#96;: Verify &#96;get_by_project()&#96; filtering\n\n**Verification:**\n\n- Ensure sync scans all subdirectories in repository\n- Verify project name to directory mapping works for all projects\n- Test that &#96;list_resources_by_project()&#96; returns correct notes\n\n### Command Rename\n\n**Files to Modify:**\n\n- &#96;chat_cli.py&#96;: Rename command handler and update command parsing\n- Update help text and error messages\n\n**Naming:**\n\n- Function: &#96;_handle_mcp_command()&#96; → &#96;_handle_notes_command()&#96;\n- Command: &#96;/mcp&#96; → &#96;/notes&#96;\n- Keep MCP API/server code unchanged (internal implementation)\n\n## Success Criteria\n\n1. ✅ RAG never automatically included in system prompts\n2. ✅ &#96;/rag&#96; command works for THN and DAAS\n3. ✅ &#96;/notes sync&#96; indexes all project directories\n4. ✅ &#96;/notes list FF&#96; shows FF directory notes\n5. ✅ &#96;/notes list 700B&#96; shows 700B directory notes\n6. ✅ &#96;/notes&#96; command works identically to previous &#96;/mcp&#96; command\n7. ✅ All functionality preserved after rename\n",
+  "totalLinesInFile": 132
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/plan.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: RAG and Notes Improvements\n\n**Branch**: &#96;015-rag-and-notes-improvements&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)\n**Input**: Feature specification from &#96;/specs/015-rag-and-notes-improvements/spec.md&#96;\n\n## Summary\n\nThree improvements to the project chat system:\n\n1. Remove automatic RAG inclusion in system prompts - make RAG manual-only via &#96;/rag&#96; command\n2. Fix &#96;/mcp&#96; sync to include all project directories (FF, 700B, etc.)\n3. Rename &#96;/mcp&#96; command to &#96;/notes&#96; for clarity\n\n## Technical Context\n\n**Language/Version**: Python 3.10+ (existing project standard)  \n**Primary Dependencies**: Existing dependencies (psycopg2, OpenAI, pgvector)  \n**Storage**: PostgreSQL with &#96;conversation_index&#96; table (existing schema)  \n**Testing**: Manual testing (consistent with project standards)  \n**Target Platform**: Linux/macOS CLI application  \n**Project Type**: Single project (Python CLI)  \n**Performance Goals**: No performance impact (removing code, renaming commands)  \n**Constraints**:\n\n- Must preserve &#96;/rag&#96; command functionality\n- Must preserve all MCP/notes functionality (only rename command)\n- No breaking changes to existing API or database schema\n- Backward compatibility: old &#96;/mcp&#96; command should not break (will be removed)\n\n**Scale/Scope**:\n\n- Three independent changes (can be implemented separately)\n- Affects: &#96;brain_core/context_builder.py&#96;, &#96;brain_core/chat.py&#96;, &#96;chat_cli.py&#96;, &#96;src/services/index_builder.py&#96;\n- No database migrations required\n- No new dependencies required\n\n## Constitution Check\n\n_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._\n\nNo constitution violations identified. This feature:\n\n- Removes code (simplification)\n- Renames command (clarity improvement)\n- Fixes existing functionality (bug fix)\n- No breaking changes to core functionality\n- Maintains separation of concerns\n\n## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/015-rag-and-notes-improvements/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n\n&#96;&#96;&#96;text\nbrain_core/\n├── context_builder.py    # Modify: Remove automatic RAG inclusion, remove should_include_daas_rag()\n└── chat.py              # Modify: Remove automatic RAG inclusion logic\n\nchat_cli.py              # Modify: Rename /mcp to /notes, update handler name\n\nsrc/services/\n└── index_builder.py     # Review: Verify sync scans all directories\n&#96;&#96;&#96;\n\n**Structure Decision**: Single project structure. All changes are modifications to existing files. No new modules required.\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**\n\nNo violations identified.\n\n## Phase 0: Research &amp; Design Decisions ✅\n\n**Status**: Complete - See &#96;research.md&#96; for all decisions.\n\n### Research Tasks\n\n1. **RAG Removal Scope**\n\n   - Research: What code paths automatically include RAG in system prompts?\n   - Decision: Remove RAG inclusion from &#96;build_project_system_prompt()&#96; and &#96;chat_turn()&#96;\n   - Rationale: Keep RAG generation functions available for &#96;/rag&#96; command, just remove automatic inclusion\n\n2. **MCP Sync Directory Scanning**\n\n   - Research: How does &#96;NoteParser.find_notes()&#96; discover notes? Does it scan all subdirectories?\n   - Decision: Verify &#96;find_notes()&#96; recursively scans all directories\n   - Rationale: Need to ensure all project directories (ff/, 700b/, etc.) are indexed\n\n3. **Command Rename Impact**\n\n   - Research: Where is &#96;/mcp&#96; command referenced?\n   - Decision: Rename command handler and update command parsing\n   - Rationale: Keep MCP API/server code unchanged (internal implementation)\n\n4. **Project Directory Mapping**\n   - Research: Does &#96;ProjectDirectoryMapper&#96; support all project names (FF, 700B)?\n   - Decision: Verify mapping includes all projects\n   - Rationale: Need to ensure &#96;/notes list FF&#96; and &#96;/notes list 700B&#96; work correctly\n\n## Phase 1: Design &amp; Contracts ✅\n\n**Status**: Complete - See &#96;data-model.md&#96;, &#96;contracts/api.md&#96;, and &#96;quickstart.md&#96;.\n\n### Data Model\n\n**No Schema Changes Required**\n\n- Existing &#96;conversation_index&#96; table unchanged\n- Existing note index structure unchanged\n- No new entities required\n\n### API Contracts\n\n**Function: &#96;build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str&#96;**\n\n- **Location**: &#96;brain_core/context_builder.py&#96;\n- **Purpose**: Build system prompt WITHOUT automatic RAG inclusion\n- **Input**: Project name, optional user message (ignored for RAG purposes)\n- **Output**: System prompt string (base + project extension, NO RAG)\n- **Behavior**:\n  - Load base system prompt\n  - Add project overview and rules\n  - DO NOT include RAG context automatically\n  - RAG only available via &#96;/rag&#96; command\n\n**Function: &#96;chat_turn(conversation_id, user_text: str, project: str, stream: bool = False)&#96;**\n\n- **Location**: &#96;brain_core/chat.py&#96;\n- **Purpose**: Handle chat turn WITHOUT automatic RAG inclusion\n- **Input**: Conversation ID, user text, project, stream flag\n- **Output**: Chat response\n- **Behavior**:\n  - Build system prompt WITHOUT RAG\n  - DO NOT check for first message or analysis intent\n  - RAG only available via &#96;/rag&#96; command\n\n**Command: &#96;/notes [subcommand]&#96;**\n\n- **Location**: &#96;chat_cli.py&#96;\n- **Purpose**: Access notes from Obsidian notebook (renamed from &#96;/mcp&#96;)\n- **Subcommands**: &#96;status&#96;, &#96;list [project]&#96;, &#96;read &lt;uri&gt;&#96;, &#96;search &lt;query&gt;&#96;, &#96;sync&#96;, &#96;save [title]&#96;\n- **Behavior**: Identical to previous &#96;/mcp&#96; command, only name changed\n\n### Quickstart Guide\n\n**For Developers:**\n\n1. **Remove Automatic RAG:**\n\n   - Remove RAG inclusion from &#96;build_project_system_prompt()&#96; in &#96;context_builder.py&#96;\n   - Remove RAG inclusion logic from &#96;chat_turn()&#96; in &#96;chat.py&#96;\n   - Remove &#96;should_include_daas_rag()&#96; function\n   - Keep &#96;build_thn_rag_context()&#96; and &#96;build_daas_rag_context()&#96; for &#96;/rag&#96; command\n\n2. **Fix MCP Sync:**\n\n   - Verify &#96;NoteParser.find_notes()&#96; scans all subdirectories\n   - Test that sync indexes notes from all project directories\n   - Verify &#96;ProjectDirectoryMapper&#96; supports all projects\n\n3. **Rename Command:**\n   - Rename &#96;_handle_mcp_command()&#96; to &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96;\n   - Update command parsing: &#96;cmd == \"mcp\"&#96; → &#96;cmd == \"notes\"&#96;\n   - Update help text and error messages\n   - Keep MCP API/server code unchanged\n\n**For Users:**\n\n- Use &#96;/rag&#96; command to manually include RAG context when needed\n- Use &#96;/notes sync&#96; to sync all project directories\n- Use &#96;/notes list FF&#96; to see notes from FF directory\n- Use &#96;/notes list 700B&#96; to see notes from 700B directory\n",
+  "totalLinesInFile": 186
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/quickstart.md",
+  "offset": 1,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/quickstart.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Quickstart: RAG and Notes Improvements\n\n## Overview\n\nThree improvements to the project chat system:\n\n1. Remove automatic RAG inclusion - make RAG manual-only via &#96;/rag&#96;\n2. Fix notes sync to include all project directories\n3. Rename &#96;/mcp&#96; command to &#96;/notes&#96;\n\n## Implementation Steps\n\n### 1. Remove Automatic RAG Inclusion\n\n**File**: &#96;brain_core/context_builder.py&#96;\n\n**Step 1.1**: Remove THN RAG inclusion from &#96;build_project_system_prompt()&#96;\n\n&#96;&#96;&#96;python\n# REMOVE this block (lines ~137-152):\nif project.upper() == \"THN\" and user_message:\n    try:\n        rag_result = build_thn_rag_context(user_message)\n        # ... RAG inclusion code ...\n&#96;&#96;&#96;\n\n**Step 1.2**: Remove DAAS RAG inclusion from &#96;build_project_system_prompt()&#96;\n\n&#96;&#96;&#96;python\n# REMOVE this block (lines ~154-172):\nif project.upper() == \"DAAS\" and user_message:\n    if should_include_daas_rag(user_message):\n        try:\n            rag_result = build_daas_rag_context(user_message, top_k=3)\n            # ... RAG inclusion code ...\n&#96;&#96;&#96;\n\n**Step 1.3**: Remove &#96;should_include_daas_rag()&#96; function\n\n&#96;&#96;&#96;python\n# DELETE entire function (lines ~692-750):\ndef should_include_daas_rag(user_message: str) -&gt; bool:\n    # ... entire function ...\n&#96;&#96;&#96;\n\n**Step 1.4**: Update docstring for &#96;build_project_system_prompt()&#96;\n\n&#96;&#96;&#96;python\ndef build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n    \"\"\"",
+  "totalLinesInFile": 266
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reading the remaining design documents:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/contracts/api.md",
+  "offset": 1,
+  "limit": 80,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/contracts/api.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# API Contracts: RAG and Notes Improvements\n\n## Modified Functions\n\n### &#96;build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str&#96;\n\n**Location**: &#96;brain_core/context_builder.py&#96;\n\n**Changes**: Remove automatic RAG inclusion\n\n**Before**:\n\n- Included THN RAG when &#96;user_message&#96; provided (first message)\n- Included DAAS RAG when analysis intent detected\n- RAG context appended to system prompt\n\n**After**:\n\n- Does NOT include RAG automatically\n- &#96;user_message&#96; parameter ignored for RAG purposes (kept for backward compatibility)\n- System prompt contains only: base prompt + project overview + project rules\n\n**Signature**: Unchanged\n\n&#96;&#96;&#96;python\ndef build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n    \"\"\"\n    Build the complete system prompt for a given project.\n\n    Loads the base system prompt and appends project-specific extension.\n    Does NOT include RAG context automatically - use /rag command for RAG.\n\n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, or \"general\")\n        user_message: Ignored (kept for backward compatibility)\n\n    Returns:\n        Composed system prompt string (base + project extension, NO RAG)\n    \"\"\"\n&#96;&#96;&#96;\n\n**Behavior**:\n\n- Load base system prompt\n- Add project overview from &#96;project_knowledge&#96; table\n- Add project rules from &#96;project_knowledge&#96; table\n- Return combined prompt (NO RAG)\n\n### &#96;chat_turn(conversation_id, user_text: str, project: str, stream: bool = False)&#96;\n\n**Location**: &#96;brain_core/chat.py&#96;\n\n**Changes**: Remove automatic RAG inclusion logic\n\n**Before**:\n\n- Checked if first message for THN RAG\n- Checked analysis intent for DAAS RAG\n- Passed &#96;user_text&#96; to &#96;build_project_system_prompt()&#96; conditionally\n\n**After**:\n\n- Always calls &#96;build_project_system_prompt(project, \"\")&#96; (empty user_message)\n- No RAG inclusion checks\n- RAG only available via &#96;/rag&#96; command\n\n**Signature**: Unchanged\n\n&#96;&#96;&#96;python\ndef chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    \"\"\"\n    Handle a chat turn.\n\n    System prompt does NOT include RAG automatically.\n    Use /rag command to manually include RAG context.\n\n    Args:\n        conversation_id: Conversation UUID\n        user_text: User message text\n        project: Project tag",
+  "totalLinesInFile": 172
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/data-model.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/data-model.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Data Model: RAG and Notes Improvements\n\n## Overview\n\nNo new data models required. This feature modifies behavior of existing systems without changing data structures.\n\n## Existing Entities (Unchanged)\n\n### System Prompt Building\n\n**Location**: &#96;brain_core/context_builder.py&#96;\n\n**Current Behavior**:\n\n- &#96;build_project_system_prompt()&#96; includes RAG automatically for THN/DAAS\n- RAG context appended to system prompt string\n\n**New Behavior**:\n\n- &#96;build_project_system_prompt()&#96; does NOT include RAG automatically\n- System prompt contains only: base prompt + project overview + project rules\n- RAG only available via manual &#96;/rag&#96; command\n\n**Data Flow**:\n\n&#96;&#96;&#96;\nUser Message → chat_turn() → build_project_system_prompt() → System Prompt (NO RAG)\nUser Command → /rag → build_thn_rag_context() / build_daas_rag_context() → RAG Context\n&#96;&#96;&#96;\n\n### Note Index\n\n**Location**: &#96;src/models/index.py&#96;\n\n**Current Behavior**:\n\n- &#96;NoteIndex&#96; stores all notes from repository\n- &#96;get_by_project()&#96; filters notes by project directory\n- Notes indexed from all subdirectories via &#96;rglob()&#96;\n\n**New Behavior**:\n\n- No changes to data model\n- Verification that sync indexes all project directories\n- Verification that &#96;get_by_project()&#96; works for all projects\n\n**Data Flow**:\n\n&#96;&#96;&#96;\nRepository → IndexBuilder.sync_and_rebuild() → NoteParser.find_notes() → NoteIndex\nNoteIndex.get_by_project(\"FF\") → Notes from ff/ directory\nNoteIndex.get_by_project(\"700B\") → Notes from 700b/ directory\n&#96;&#96;&#96;\n\n### Project Directory Mapper\n\n**Location**: &#96;src/services/project_filter.py&#96;\n\n**Current Behavior**:\n\n- Maps project names to directory names\n- Supports: DAAS → daas, THN → thn, FF → ff, General → general, 700B → 700b\n\n**New Behavior**:\n\n- No changes to data model\n- Verification that all projects are mapped correctly\n\n**Mapping Table**:\n| Project Name | Directory Name |\n|-------------|----------------|\n| DAAS | daas |\n| THN | thn |\n| FF | ff |\n| General | general |\n| 700B | 700b |\n\n## Command Handler\n\n**Location**: &#96;chat_cli.py&#96;\n\n**Current Behavior**:\n\n- Command: &#96;/mcp [subcommand]&#96;\n- Handler: &#96;_handle_mcp_command()&#96;\n\n**New Behavior**:\n\n- Command: &#96;/notes [subcommand]&#96;\n- Handler: &#96;_handle_notes_command()&#96;\n- Functionality unchanged\n\n**Command Structure**:\n\n&#96;&#96;&#96;\n/notes status          → Show server status\n/notes list [project]  → List notes (optionally filtered by project)\n/notes read &lt;uri&gt;      → Read specific note\n/notes search &lt;query&gt;  → Search notes\n/notes sync            → Sync repository and rebuild index\n/notes save [title]    → Save conversation as note\n&#96;&#96;&#96;\n\n## No Schema Changes\n\n- No database migrations required\n- No new tables or columns\n- No changes to existing data structures\n- All changes are behavioral/functional only\n",
+  "totalLinesInFile": 110
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **1** result in **1** directory</summary>
+
+Directory: **undefined** (1 file)
+
+| File |
+|------|
+| `./.specify/templates/tasks-template.md` |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reading the tasks template and generating tasks.md:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/templates/tasks-template.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/templates/tasks-template.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "---\n\ndescription: \"Task list template for feature implementation\"\n---\n\n# Tasks: [FEATURE NAME]\n\n**Input**: Design documents from &#96;/specs/[###-feature-name]/&#96;\n**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/\n\n**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.\n\n**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.\n\n## Format: &#96;[ID] [P?] [Story] Description&#96;\n\n- **[P]**: Can run in parallel (different files, no dependencies)\n- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)\n- Include exact file paths in descriptions\n\n## Path Conventions\n\n- **Single project**: &#96;src/&#96;, &#96;tests/&#96; at repository root\n- **Web app**: &#96;backend/src/&#96;, &#96;frontend/src/&#96;\n- **Mobile**: &#96;api/src/&#96;, &#96;ios/src/&#96; or &#96;android/src/&#96;\n- Paths shown below assume single project - adjust based on plan.md structure\n\n&lt;!-- \n  ============================================================================\n  IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.\n  \n  The /speckit.tasks command MUST replace these with actual tasks based on:\n  - User stories from spec.md (with their priorities P1, P2, P3...)\n  - Feature requirements from plan.md\n  - Entities from data-model.md\n  - Endpoints from contracts/\n  \n  Tasks MUST be organized by user story so each story can be:\n  - Implemented independently\n  - Tested independently\n  - Delivered as an MVP increment\n  \n  DO NOT keep these sample tasks in the generated tasks.md file.\n  ============================================================================\n--&gt;\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Project initialization and basic structure\n\n- [ ] T001 Create project structure per implementation plan\n- [ ] T002 Initialize [language] project with [framework] dependencies\n- [ ] T003 [P] Configure linting and formatting tools\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented\n\n**⚠️ CRITICAL**: No user story work can begin until this phase is complete\n\nExamples of foundational tasks (adjust based on your project):\n\n- [ ] T004 Setup database schema and migrations framework\n- [ ] T005 [P] Implement authentication/authorization framework\n- [ ] T006 [P] Setup API routing and middleware structure\n- [ ] T007 Create base models/entities that all stories depend on\n- [ ] T008 Configure error handling and logging infrastructure\n- [ ] T009 Setup environment configuration management\n\n**Checkpoint**: Foundation ready - user story implementation can now begin in parallel\n\n---\n\n## Phase 3: User Story 1 - [Title] (Priority: P1) 🎯 MVP\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️\n\n&gt; **NOTE: Write these tests FIRST, ensure they FAIL before implementation**\n\n- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 1\n\n- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py\n- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py\n- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)\n- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py\n- [ ] T016 [US1] Add validation and error handling\n- [ ] T017 [US1] Add logging for user story 1 operations\n\n**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently\n\n---\n\n## Phase 4: User Story 2 - [Title] (Priority: P2)\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️\n\n- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 2\n\n- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py\n- [ ] T021 [US2] Implement [Service] in src/services/[service].py\n- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py\n- [ ] T023 [US2] Integrate with User Story 1 components (if needed)\n\n**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently\n\n---\n\n## Phase 5: User Story 3 - [Title] (Priority: P3)\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️\n\n- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 3\n\n- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py\n- [ ] T027 [US3] Implement [Service] in src/services/[service].py\n- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py\n\n**Checkpoint**: All user stories should now be independently functional\n\n---\n\n[Add more user story phases as needed, following the same pattern]\n\n---\n\n## Phase N: Polish &amp; Cross-Cutting Concerns\n\n**Purpose**: Improvements that affect multiple user stories\n\n- [ ] TXXX [P] Documentation updates in docs/\n- [ ] TXXX Code cleanup and refactoring\n- [ ] TXXX Performance optimization across all stories\n- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/\n- [ ] TXXX Security hardening\n- [ ] TXXX Run quickstart.md validation\n\n---\n\n## Dependencies &amp; Execution Order\n\n### Phase Dependencies\n\n- **Setup (Phase 1)**: No dependencies - can start immediately\n- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories\n- **User Stories (Phase 3+)**: All depend on Foundational phase completion\n  - User stories can then proceed in parallel (if staffed)\n  - Or sequentially in priority order (P1 → P2 → P3)\n- **Polish (Final Phase)**: Depends on all desired user stories being complete\n\n### User Story Dependencies\n\n- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories\n- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but should be independently testable\n- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with US1/US2 but should be independently testable\n\n### Within Each User Story\n\n- Tests (if included) MUST be written and FAIL before implementation\n- Models before services\n- Services before endpoints\n- Core implementation before integration\n- Story complete before moving to next priority\n\n### Parallel Opportunities\n\n- All Setup tasks marked [P] can run in parallel\n- All Foundational tasks marked [P] can run in parallel (within Phase 2)\n- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)\n- All tests for a user story marked [P] can run in parallel\n- Models within a story marked [P] can run in parallel\n- Different user stories can be worked on in parallel by different team members\n\n---\n\n## Parallel Example: User Story 1\n\n&#96;&#96;&#96;bash\n# Launch all tests for User Story 1 together (if tests requested):\nTask: \"Contract test for [endpoint] in tests/contract/test_[name].py\"\nTask: \"Integration test for [user journey] in tests/integration/test_[name].py\"\n\n# Launch all models for User Story 1 together:\nTask: \"Create [Entity1] model in src/models/[entity1].py\"\nTask: \"Create [Entity2] model in src/models/[entity2].py\"\n&#96;&#96;&#96;\n\n---\n\n## Implementation Strategy\n\n### MVP First (User Story 1 Only)\n\n1. Complete Phase 1: Setup\n2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)\n3. Complete Phase 3: User Story 1\n4. **STOP and VALIDATE**: Test User Story 1 independently\n5. Deploy/demo if ready\n\n### Incremental Delivery\n\n1. Complete Setup + Foundational → Foundation ready\n2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)\n3. Add User Story 2 → Test independently → Deploy/Demo\n4. Add User Story 3 → Test independently → Deploy/Demo\n5. Each story adds value without breaking previous stories\n\n### Parallel Team Strategy\n\nWith multiple developers:\n\n1. Team completes Setup + Foundational together\n2. Once Foundational is done:\n   - Developer A: User Story 1\n   - Developer B: User Story 2\n   - Developer C: User Story 3\n3. Stories complete and integrate independently\n\n---\n\n## Notes\n\n- [P] tasks = different files, no dependencies\n- [Story] label maps task to specific user story for traceability\n- Each user story should be independently completable and testable\n- Verify tests fail before implementing\n- Commit after each task or logical group\n- Stop at any checkpoint to validate story independently\n- Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence\n",
+  "totalLinesInFile": 252
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "771915d9-1402-41e2-ac79-b9f06256d421"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Generated `tasks.md` for the RAG and Notes Improvements feature.
+
+## Summary
+
+**Total Tasks**: 35  
+**Tasks by Phase**:
+- Phase 1 (Setup): 6 tasks
+- Phase 2 (Foundational): 0 tasks (no blocking prerequisites)
+- Phase 3 (US1 - Manual RAG Only): 9 tasks
+- Phase 4 (US2 - Fix MCP Sync): 5 tasks
+- Phase 5 (US3 - Rename Command): 8 tasks
+- Phase 6 (Polish): 7 tasks
+
+## Task Organization
+
+**User Stories** (from spec.md):
+1. **US1: Manual RAG Only** (P1 - MVP) - 9 tasks
+   - Remove automatic RAG inclusion from `context_builder.py` and `chat.py`
+   - Delete `should_include_daas_rag()` function
+   - Update docstrings and logging
+
+2. **US2: Fix MCP Sync** (P2) - 5 tasks
+   - Verify recursive directory scanning
+   - Verify project mapping
+   - Test sync functionality
+
+3. **US3: Rename Command** (P3) - 8 tasks
+   - Rename handler function
+   - Update command parsing
+   - Update help text and error messages
+
+## Format Validation
+
+All tasks follow the checklist format:
+- Checkbox: `- [ ]`
+- Task ID: T001-T035
+- Story labels: [US1], [US2], [US3], [P] where applicable
+- File paths included in descriptions
+
+## Parallel Execution
+
+- US1 and US2 can run in parallel (different files)
+- US3 should follow US2 (both modify `chat_cli.py`)
+- Within US1: `context_builder.py` and `chat.py` tasks can be parallelized
+
+## MVP Scope
+
+User Story 1 (Manual RAG Only) is the MVP — removes automatic RAG and gives explicit control.
+
+**File**: `/specs/015-rag-and-notes-improvements/tasks.md`
+
+Ready for implementation. Run `/speckit.implement` to start.
+
+---
+
+_**User (2025-12-10 07:19Z)**_
+
+/speckit.implement 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking prerequisites and loading the task list:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/check-prerequisites.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          },
+          {
+            "type": "word",
+            "value": "--require-tasks"
+          },
+          {
+            "type": "word",
+            "value": "--include-tasks"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "{\"FEATURE_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/tasks.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/tasks.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Tasks: RAG and Notes Improvements\n\n**Feature**: RAG and Notes Improvements  \n**Branch**: &#96;015-rag-and-notes-improvements&#96;  \n**Generated**: 2025-01-27\n\n## Summary\n\nThree improvements to the project chat system:\n\n1. Remove automatic RAG inclusion in system prompts - make RAG manual-only via &#96;/rag&#96; command\n2. Fix &#96;/mcp&#96; sync to include all project directories (FF, 700B, etc.)\n3. Rename &#96;/mcp&#96; command to &#96;/notes&#96; for clarity\n\n**Total Tasks**: 25  \n**Tasks by User Story**: US1 (9 tasks), US2 (5 tasks), US3 (8 tasks), Polish (3 tasks)\n\n## Dependencies\n\n**User Story Completion Order**:\n\n- US1 (Manual RAG Only) → Can be done independently\n- US2 (Fix MCP Sync) → Can be done independently\n- US3 (Rename Command) → Should be done after US2 (uses same code paths)\n\n**Parallel Execution Opportunities**:\n\n- US1 and US2 can be done in parallel (different files)\n- US3 should wait for US2 completion (both modify &#96;chat_cli.py&#96;)\n\n## Implementation Strategy\n\n**MVP Scope**: User Story 1 (Manual RAG Only) - Simplifies system prompt building and gives explicit control.\n\n**Incremental Delivery**:\n\n1. Phase 1: Remove automatic RAG (US1) - Simplest, highest impact\n2. Phase 2: Fix MCP sync (US2) - Verification and testing\n3. Phase 3: Rename command (US3) - User-facing change\n4. Phase 4: Polish - Final validation\n\n---\n\n## Phase 1: Setup\n\n**Purpose**: Project preparation and code review\n\n- [ ] T001 Review existing RAG inclusion logic in &#96;brain_core/context_builder.py&#96; (lines ~137-172) to understand removal scope\n- [ ] T002 Review RAG inclusion logic in &#96;brain_core/chat.py&#96; (lines ~70-95) to identify removal scope\n- [ ] T003 Review &#96;should_include_daas_rag()&#96; function in &#96;brain_core/context_builder.py&#96; (lines ~692-750) to understand deletion scope\n- [ ] T004 Review &#96;/mcp&#96; command implementation in &#96;chat_cli.py&#96; (lines ~678-909) to understand rename scope\n- [ ] T005 Review &#96;NoteParser.find_notes()&#96; in &#96;src/services/note_parser.py&#96; to verify recursive directory scanning\n- [ ] T006 Review &#96;ProjectDirectoryMapper&#96; in &#96;src/services/project_filter.py&#96; to verify all project mappings\n\n---\n\n## Phase 2: Foundational\n\n**Purpose**: No blocking prerequisites - all user stories can proceed independently\n\nNo foundational tasks required. All changes are modifications to existing code.\n\n---\n\n## Phase 3: User Story 1 - Manual RAG Only\n\n**Goal**: Remove automatic RAG inclusion from system prompts. RAG only available via manual &#96;/rag&#96; command.\n\n**Independent Test Criteria**:\n\n- Start new THN conversation, send first message, verify logs show NO \"THN RAG included\" message\n- Start new DAAS conversation, send analysis request, verify logs show NO \"DAAS RAG included\" message\n- Use &#96;/rag&#96; command in THN conversation, verify RAG context is displayed\n- Use &#96;/rag&#96; command in DAAS conversation, verify RAG context is displayed\n\n### Implementation for User Story 1\n\n- [ ] T007 [US1] Remove THN RAG inclusion block from &#96;build_project_system_prompt()&#96; in &#96;brain_core/context_builder.py&#96; (lines ~137-152)\n- [ ] T008 [US1] Remove DAAS RAG inclusion block from &#96;build_project_system_prompt()&#96; in &#96;brain_core/context_builder.py&#96; (lines ~154-172)\n- [ ] T009 [US1] Delete &#96;should_include_daas_rag()&#96; function from &#96;brain_core/context_builder.py&#96; (entire function, lines ~692-750)\n- [ ] T010 [US1] Update docstring for &#96;build_project_system_prompt()&#96; in &#96;brain_core/context_builder.py&#96; to reflect no automatic RAG inclusion\n- [ ] T011 [US1] Remove &#96;include_thn_rag&#96; and &#96;include_daas_rag&#96; logic from &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96; (lines ~73-79)\n- [ ] T012 [US1] Replace RAG inclusion logic with simple call &#96;build_project_system_prompt(project, \"\")&#96; in &#96;brain_core/chat.py&#96;\n- [ ] T013 [US1] Remove RAG-related logging from &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96; (lines ~84-95, keep only basic debug log)\n- [ ] T014 [US1] Remove &#96;should_include_daas_rag&#96; import from &#96;brain_core/chat.py&#96; if present\n- [ ] T015 [US1] Simplify &#96;indexed_context&#96; logic in &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96; (remove THN/DAAS skip logic, lines ~45-60)\n\n---\n\n## Phase 4: User Story 2 - Fix MCP Sync for All Project Directories\n\n**Goal**: Ensure &#96;/mcp sync&#96; (or &#96;/notes sync&#96; after rename) indexes notes from all project directories (FF, 700B, etc.)\n\n**Independent Test Criteria**:\n\n- Run &#96;/mcp sync&#96; (or &#96;/notes sync&#96;), verify all project directories are scanned\n- Run &#96;/mcp list FF&#96; (or &#96;/notes list FF&#96;), verify notes from &#96;ff/&#96; directory are shown\n- Run &#96;/mcp list 700B&#96; (or &#96;/notes list 700B&#96;), verify notes from &#96;700b/&#96; directory are shown\n- Verify &#96;ProjectDirectoryMapper&#96; correctly maps all project names to directory names\n\n### Implementation for User Story 2\n\n- [ ] T016 [US2] Verify &#96;NoteParser.find_notes()&#96; in &#96;src/services/note_parser.py&#96; uses &#96;rglob(\"*.md\")&#96; to recursively scan all subdirectories\n- [ ] T017 [US2] Verify &#96;IndexBuilder.sync_and_rebuild()&#96; in &#96;src/services/index_builder.py&#96; calls &#96;find_notes()&#96; correctly\n- [ ] T018 [US2] Verify &#96;ProjectDirectoryMapper.get_directory()&#96; in &#96;src/services/project_filter.py&#96; supports all projects (DAAS, THN, FF, General, 700B)\n- [ ] T019 [US2] Test that &#96;NoteIndex.get_by_project()&#96; in &#96;src/models/index.py&#96; correctly filters notes by project directory\n- [ ] T020 [US2] Test sync and verify notes from all project directories are indexed (FF, 700B, etc.)\n\n---\n\n## Phase 5: User Story 3 - Rename /mcp to /notes\n\n**Goal**: Rename &#96;/mcp&#96; command to &#96;/notes&#96; for clarity. All functionality remains identical.\n\n**Independent Test Criteria**:\n\n- Type &#96;/notes status&#96;, verify it works (replaces &#96;/mcp status&#96;)\n- Type &#96;/notes list FF&#96;, verify it shows FF directory notes\n- Type &#96;/notes list 700B&#96;, verify it shows 700B directory notes\n- Type &#96;/notes sync&#96;, verify it syncs repository\n- Type &#96;/mcp status&#96;, verify it shows error or \"unknown command\"\n- Verify all subcommands work: &#96;status&#96;, &#96;list&#96;, &#96;read&#96;, &#96;search&#96;, &#96;sync&#96;, &#96;save&#96;\n\n### Implementation for User Story 3\n\n- [ ] T021 [US3] Rename &#96;_handle_mcp_command()&#96; to &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; (function definition, line ~678)\n- [ ] T022 [US3] Update command parsing in &#96;handle_command()&#96; in &#96;chat_cli.py&#96; to check &#96;cmd == \"notes\"&#96; instead of &#96;cmd == \"mcp\"&#96; (line ~570)\n- [ ] T023 [US3] Update handler call in &#96;handle_command()&#96; in &#96;chat_cli.py&#96; to call &#96;_handle_notes_command()&#96; instead of &#96;_handle_mcp_command()&#96; (line ~1448)\n- [ ] T024 [US3] Update function docstring for &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; to reference &#96;/notes&#96; command instead of &#96;/mcp&#96;\n- [ ] T025 [US3] Update help text in &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; to show &#96;/notes&#96; usage instead of &#96;/mcp&#96; (line ~691)\n- [ ] T026 [US3] Update user-facing error messages in &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; to reference \"notes\" instead of \"MCP\" (user-facing only, keep internal MCP references)\n- [ ] T027 [US3] Update status output in &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; to show \"Notes Server Status:\" instead of \"MCP Server Status:\" (line ~706)\n- [ ] T028 [US3] Update resource listing output in &#96;_handle_notes_command()&#96; in &#96;chat_cli.py&#96; to show \"Notes\" instead of \"MCP Resources\" (lines ~728, 735)\n\n---\n\n## Phase 6: Polish &amp; Cross-Cutting Concerns\n\n**Purpose**: Final validation and cleanup\n\n- [ ] T029 [P] Verify RAG is never automatically included in system prompts (test THN and DAAS first messages)\n- [ ] T030 [P] Verify &#96;/rag&#96; command works for both THN and DAAS projects\n- [ ] T031 [P] Verify all &#96;/notes&#96; subcommands work correctly (&#96;status&#96;, &#96;list&#96;, &#96;read&#96;, &#96;search&#96;, &#96;sync&#96;, &#96;save&#96;)\n- [ ] T032 [P] Verify project filtering works for all projects (FF, 700B, DAAS, THN, General)\n- [ ] T033 [P] Run quickstart.md validation steps to ensure all requirements met\n- [ ] T034 [P] Verify no references to automatic RAG inclusion remain in code comments or docstrings\n- [ ] T035 [P] Verify no references to &#96;/mcp&#96; command remain in user-facing help text or error messages\n\n---\n\n## Parallel Execution Examples\n\n### User Story 1 (Manual RAG Only)\n\nCan be done independently. All tasks modify &#96;brain_core/&#96; files:\n\n- T007-T010: Modify &#96;context_builder.py&#96; (can be done together)\n- T011-T015: Modify &#96;chat.py&#96; (can be done together)\n\n### User Story 2 (Fix MCP Sync)\n\nCan be done independently. All tasks are verification/testing:\n\n- T016-T020: Verification tasks (can be done in parallel)\n\n### User Story 3 (Rename Command)\n\nShould be done after US2. All tasks modify &#96;chat_cli.py&#96;:\n\n- T021-T028: Sequential modifications to same file (should be done in order)\n\n### Cross-Story Parallelism\n\n- US1 and US2 can be done in parallel (different files)\n- US3 should wait for US2 (both touch &#96;chat_cli.py&#96;)\n\n---\n\n## Notes\n\n- All changes are modifications to existing files - no new modules required\n- No database migrations required\n- No new dependencies required\n- Keep MCP API/server code unchanged (internal implementation)\n- RAG generation functions (&#96;build_thn_rag_context()&#96;, &#96;build_daas_rag_context()&#96;) remain available for &#96;/rag&#96; command\n",
+  "totalLinesInFile": 186
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements/contracts",
+        "childrenFiles": [
+          {
+            "name": "api.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenFiles": [
+      {
+        "name": "data-model.md"
+      },
+      {
+        "name": "plan.md"
+      },
+      {
+        "name": "quickstart.md"
+      },
+      {
+        "name": "research.md"
+      },
+      {
+        "name": "spec.md"
+      },
+      {
+        "name": "tasks.md"
+      }
+    ],
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking for checklists, then starting implementation:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements",
+  "ignoreGlobs": [
+    "*.md"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/015-rag-and-notes-improvements",
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 130,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    project_extension_parts.append(f\"\\n\\n### Project {project.upper()} rules:\\n\")\n                    for i, rule in enumerate(parsed_rules, start=1):\n                        project_extension_parts.append(f\"{i}. {rule}\\n\")\n                    logger.debug(f\"Added {len(parsed_rules)} rules for {project.upper()}\")\n            \n            project_extension = \"\".join(project_extension_parts)\n            \n            # For THN project, append RAG context to system prompt\n            if project.upper() == \"THN\" and user_message:\n                try:\n                    rag_result = build_thn_rag_context(user_message)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"THN RAG context generation returned empty context\")\n                except Exception as e:\n                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)\n            \n            # For DAAS project, append RAG context to system prompt only when analysis is requested\n            if project.upper() == \"DAAS\" and user_message:\n                if should_include_daas_rag(user_message):\n                    try:\n                        rag_result = build_daas_rag_context(user_message, top_k=3)\n                        if rag_result.get(\"context\"):\n                            project_extension += \"\\n\\n---\\n\\n\"\n                            project_extension += rag_result[\"context\"]\n                            if rag_result.get(\"notes\"):\n                                project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                    f\"- {note}\" for note in rag_result[\"notes\"]\n                                )\n                            logger.info(f\"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                        else:\n                            logger.warning(\"DAAS RAG context generation returned empty context\")\n                    except Exception as e:\n                        logger.warning(f\"Failed to add DAAS RAG context to system prompt: {e}\", exc_info=True)\n                else:\n                    logger.debug(f\"DAAS RAG skipped - message does not indicate analysis request: {user_message[:100]}\")\n            \n            logger.debug(f\"Added project extension for {project.upper()}\")\n            return base_prompt + project_extension\n        else:\n            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")\n    \n    # Return base prompt only for general or if overview not found",
+  "totalLinesInFile": 1051
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py",
+  "offset": 70,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # 1. System prompt (base + project extension + RAG for THN/DAAS) - FIRST\n    # For THN: RAG included on first message only\n    # For DAAS: RAG included when analysis is requested (any message)\n    include_thn_rag = project.upper() == \"THN\" and is_first_message\n    include_daas_rag = project.upper() == \"DAAS\" and should_include_daas_rag(user_text)\n    \n    # Pass user_message to system prompt builder if RAG should be included\n    user_message_for_rag = \"\"\n    if include_thn_rag or include_daas_rag:\n        user_message_for_rag = user_text\n    \n    system_prompt = build_project_system_prompt(project, user_message_for_rag)\n    \n    # Log RAG inclusion status for verification\n    if project.upper() == \"THN\":\n        if include_thn_rag:\n            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")\n    elif project.upper() == \"DAAS\":\n        if include_daas_rag:\n            logger.info(f\"DAAS RAG included in system prompt (analysis requested, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"DAAS RAG skipped (no analysis intent detected)\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})",
+  "totalLinesInFile": 302
+}
+```
+Status: **completed**
 
 
 </details>
