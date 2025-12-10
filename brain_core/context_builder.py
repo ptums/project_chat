@@ -8,6 +8,7 @@ For DAAS project, uses custom retrieval rules:
 """
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -87,8 +88,8 @@ def build_project_system_prompt(project: str) -> str:
     Build the complete system prompt for a given project.
     
     Loads the base system prompt and appends project-specific extension if
-    the project is not "general". The extension uses the overview from
-    project_knowledge table.
+    the project is not "general". The extension includes overview and rules
+    from project_knowledge table.
     
     Args:
         project: Project tag (THN, DAAS, FF, 700B, or "general")
@@ -104,11 +105,25 @@ def build_project_system_prompt(project: str) -> str:
         project_overview = _get_project_overview(project)
         
         if project_overview:
-            # Append project-specific extension
-            project_extension = (
-                f"\n\nIn this current conversation is tagged as project {project.upper()}. "
-                f"Here's a general overview of the project {project.upper()}: {project_overview}"
-            )
+            # Start building project extension
+            project_extension_parts = [
+                f"\n\nIn this current conversation is tagged as project {project.upper()}.",
+                f"\n\nHere's a general overview of the project {project.upper()}: {project_overview}"
+            ]
+            
+            # Get and parse project rules
+            rules_text = _get_project_rules(project)
+            if rules_text:
+                parsed_rules = _parse_rules_text(rules_text)
+                if parsed_rules:
+                    # Format rules as numbered markdown list
+                    project_extension_parts.append("\n\n---")
+                    project_extension_parts.append(f"\n\n### Project {project.upper()} rules:\n")
+                    for i, rule in enumerate(parsed_rules, start=1):
+                        project_extension_parts.append(f"{i}. {rule}\n")
+                    logger.debug(f"Added {len(parsed_rules)} rules for {project.upper()}")
+            
+            project_extension = "".join(project_extension_parts)
             logger.debug(f"Added project extension for {project.upper()}")
             return base_prompt + project_extension
         else:
@@ -122,6 +137,8 @@ def _get_project_overview(project: str) -> Optional[str]:
     """
     Get the overview summary for a project from project_knowledge table.
     
+    Updated to query overview column directly (new table structure).
+    
     Args:
         project: Project tag (THN, DAAS, FF, 700B)
         
@@ -131,11 +148,12 @@ def _get_project_overview(project: str) -> Optional[str]:
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
+                # Query overview column directly (new structure after migration)
                 cur.execute(
                     """
-                    SELECT summary
+                    SELECT overview
                     FROM project_knowledge
-                    WHERE project = %s AND key = 'overview'
+                    WHERE project = %s
                     LIMIT 1
                     """,
                     (project.upper(),),
@@ -147,6 +165,92 @@ def _get_project_overview(project: str) -> Optional[str]:
         logger.debug(f"Could not fetch project overview for {project}: {e}")
     
     return None
+
+
+def _get_project_rules(project: str) -> Optional[str]:
+    """
+    Get the rules text for a project from project_knowledge table.
+    
+    Args:
+        project: Project tag (THN, DAAS, FF, 700B)
+        
+    Returns:
+        Rules text as string, or None if not found or empty
+    """
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT rules
+                    FROM project_knowledge
+                    WHERE project = %s
+                    LIMIT 1
+                    """,
+                    (project.upper(),),
+                )
+                row = cur.fetchone()
+                if row and row[0]:
+                    rules_text = row[0].strip()
+                    if rules_text:
+                        logger.debug(f"Retrieved rules for {project.upper()}")
+                        return rules_text
+    except Exception as e:
+        logger.debug(f"Could not fetch project rules for {project}: {e}")
+    
+    return None
+
+
+def _parse_rules_text(rules_text: str) -> List[str]:
+    """
+    Parse rules text into list of individual rules.
+    
+    Handles various formats:
+    - Numbered list: "1. Rule one\n2. Rule two\n3. Rule three"
+    - Newline-separated: "Rule one\nRule two\nRule three"
+    
+    Args:
+        rules_text: Raw rules text from database
+        
+    Returns:
+        List of rule strings (cleaned and filtered)
+    """
+    if not rules_text or not rules_text.strip():
+        return []
+    
+    rules = []
+    
+    # Try splitting by numbered patterns first (1., 2., etc.)
+    # Pattern matches: number followed by period/dot, optional space
+    numbered_pattern = r'^\s*\d+\.\s*(.+)$'
+    
+    lines = rules_text.split('\n')
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        # Try to match numbered pattern
+        match = re.match(numbered_pattern, line)
+        if match:
+            # Extract rule text after number
+            rule_text = match.group(1).strip()
+            if rule_text:
+                rules.append(rule_text)
+        else:
+            # If no numbered pattern, treat entire line as rule (if not empty)
+            if line:
+                rules.append(line)
+    
+    # Filter out empty rules
+    rules = [r for r in rules if r.strip()]
+    
+    if rules:
+        logger.debug(f"Parsed {len(rules)} rules from rules text")
+    else:
+        logger.debug("No rules found after parsing")
+    
+    return rules
 
 
 def extract_json_from_text(text: str) -> str:
