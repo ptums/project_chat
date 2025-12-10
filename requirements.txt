@@ -5,4 +5,7 @@ requests
 gitpython
 python-frontmatter
 markdown
+langchain>=1.0.0
+langchain-openai>=1.0.0
+langchain-community>=1.0.0
 
