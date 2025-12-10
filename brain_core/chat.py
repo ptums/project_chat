@@ -26,18 +26,7 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
     # Save user message
     save_message(conversation_id, "user", user_text)
 
-    # Build project-aware context from conversation_index (if available)
-    indexed_context = {}
-    try:
-        indexed_context = build_project_context(project, user_text)
-    except Exception as e:
-        # Log but don't fail - fallback to existing behavior
-        logger.warning(f"Failed to build indexed context for project {project}: {e}")
-
-    # Only static + snippet context included now
-    project_context = get_project_context(project, conversation_id, limit_messages=80)
-
-    # Load conversation history
+    # Load conversation history first to check if this is the first message
     history = load_conversation_messages(conversation_id, limit=50)
     
     # Extract note reads from history (system messages with note_read meta)
@@ -50,27 +39,50 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
         else:
             other_messages.append(msg)
     
+    # Check if this is the first user message (no user/assistant messages in history)
+    is_first_message = len(other_messages) == 0
+
+    # Build project-aware context from conversation_index (if available)
+    # Skip RAG generation for THN if not first message to save tokens
+    indexed_context = {}
+    if not (project.upper() == "THN" and not is_first_message):
+        try:
+            indexed_context = build_project_context(project, user_text)
+        except Exception as e:
+            # Log but don't fail - fallback to existing behavior
+            logger.warning(f"Failed to build indexed context for project {project}: {e}")
+
+    # Only static + snippet context included now
+    project_context = get_project_context(project, conversation_id, limit_messages=80)
+    
     # Build messages for OpenAI
     messages = []
 
     # Message order: system prompt → RAG context → note reads → history
     
-    # 1. System prompt (base + project extension) - FIRST
-    system_prompt = build_project_system_prompt(project)
-    logger.debug(f"System prompt for project {project} (length: {len(system_prompt)} chars)")
+    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST
+    # For THN, RAG context is included directly in the system prompt only on first message
+    include_rag = project.upper() == "THN" and is_first_message
+    system_prompt = build_project_system_prompt(project, user_text if include_rag else "")
+    
+    # Log RAG inclusion status for verification
+    if project.upper() == "THN":
+        if include_rag:
+            logger.info(f"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)")
+        else:
+            logger.debug(f"THN RAG skipped (not first message, is_first_message={is_first_message})")
+    else:
+        logger.debug(f"System prompt for project {project} (length: {len(system_prompt)} chars)")
+    
     # Uncomment the line below to see the full system prompt in logs:
     # logger.info(f"System prompt content:\n{system_prompt}")
     messages.append({"role": "system", "content": system_prompt})
 
-    # 2. Project context from RAG (if available) - SECOND
-    if indexed_context and indexed_context.get("context"):
-        context_msg = (
-            f"We're working on project {project} together. "
-            f"Here's relevant context from prior conversations and notes:\n\n"
-            f"{indexed_context['context']}\n\n"
-            f"Recall and reference this information naturally as our conversation progresses. "
-            f"Use it to answer questions, make connections, and maintain context throughout our dialogue."
-        )
+    # 2. Project context from RAG (if available and not THN) - SECOND
+    # THN RAG is now included in system prompt above, so skip here
+    if project.upper() != "THN" and indexed_context and indexed_context.get("context"):
+        # RAG content is self-explanatory, no verbose wrapper needed
+        context_msg = indexed_context['context']
         if indexed_context.get("notes"):
             context_msg += "\n\nKey sources:\n" + "\n".join(
                 f"- {note}" for note in indexed_context["notes"]

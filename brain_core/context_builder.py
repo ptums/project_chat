@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Any
 
 from .db import get_conn
 from .memory import fetch_project_knowledge
+from .embedding_service import generate_embedding
 
 logger = logging.getLogger(__name__)
 
@@ -83,19 +84,23 @@ def _get_fallback_prompt() -> str:
     )
 
 
-def build_project_system_prompt(project: str) -> str:
+def build_project_system_prompt(project: str, user_message: str = "") -> str:
     """
     Build the complete system prompt for a given project.
     
     Loads the base system prompt and appends project-specific extension if
     the project is not "general". The extension includes overview and rules
-    from project_knowledge table.
+    from project_knowledge table. For THN project, also includes RAG context
+    (History & Context and Relevant Code Snippets) only when user_message
+    is provided (typically on first message only to save tokens).
     
     Args:
         project: Project tag (THN, DAAS, FF, 700B, or "general")
+        user_message: Optional user message for THN RAG context generation.
+                     If empty, RAG context is not included (saves tokens).
         
     Returns:
-        Composed system prompt string (base + project extension if applicable)
+        Composed system prompt string (base + project extension + RAG if applicable)
     """
     base_prompt = load_base_system_prompt()
     
@@ -124,6 +129,24 @@ def build_project_system_prompt(project: str) -> str:
                     logger.debug(f"Added {len(parsed_rules)} rules for {project.upper()}")
             
             project_extension = "".join(project_extension_parts)
+            
+            # For THN project, append RAG context to system prompt
+            if project.upper() == "THN" and user_message:
+                try:
+                    rag_result = build_thn_rag_context(user_message)
+                    if rag_result.get("context"):
+                        project_extension += "\n\n---\n\n"
+                        project_extension += rag_result["context"]
+                        if rag_result.get("notes"):
+                            project_extension += "\n\nKey sources:\n" + "\n".join(
+                                f"- {note}" for note in rag_result["notes"]
+                            )
+                        logger.info(f"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)")
+                    else:
+                        logger.warning("THN RAG context generation returned empty context")
+                except Exception as e:
+                    logger.warning(f"Failed to add THN RAG context to system prompt: {e}", exc_info=True)
+            
             logger.debug(f"Added project extension for {project.upper()}")
             return base_prompt + project_extension
         else:
@@ -371,6 +394,282 @@ def extract_json_from_text(text: str) -> str:
     return json_text.strip()
 
 
+def _retrieve_thn_conversations(limit: int = 5) -> List[tuple]:
+    """
+    Query conversation_index for last N THN conversations.
+    
+    Args:
+        limit: Number of conversations to retrieve (default: 5)
+    
+    Returns:
+        List of database rows (tuples) with columns: title, tags, key_entities, summary_detailed, memory_snippet
+    """
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT title, tags, key_entities, summary_detailed, memory_snippet
+                    FROM conversation_index
+                    WHERE project = 'THN'
+                    ORDER BY indexed_at DESC
+                    LIMIT %s
+                    """,
+                    (limit,),
+                )
+                rows = cur.fetchall()
+        logger.debug(f"Retrieved {len(rows)} THN conversations")
+        return rows
+    except Exception as e:
+        logger.error(f"Error retrieving THN conversations: {e}")
+        return []
+
+
+def _format_conversation_entry(row: tuple) -> str:
+    """
+    Format a single conversation_index row into RAG format.
+    
+    Args:
+        row: Database row tuple (title, tags, key_entities, summary_detailed, memory_snippet)
+    
+    Returns:
+        Formatted conversation entry string
+    """
+    title, tags, key_entities, summary_detailed, memory_snippet = row
+    
+    parts = []
+    
+    # Format title
+    if title:
+        parts.append(f"- **Title:** {title}")
+    
+    # Format tags (JSONB array)
+    if tags:
+        if isinstance(tags, list):
+            tags_str = ", ".join(str(t) for t in tags if t)
+        elif isinstance(tags, dict):
+            tags_str = ", ".join(str(v) for v in tags.values() if v)
+        else:
+            tags_str = str(tags)
+        if tags_str:
+            parts.append(f"- **Tags:** {tags_str}")
+    
+    # Format key_entities (JSONB array)
+    if key_entities:
+        if isinstance(key_entities, list):
+            entities_str = ", ".join(str(e) for e in key_entities if e)
+        elif isinstance(key_entities, dict):
+            entities_str = ", ".join(str(v) for v in key_entities.values() if v)
+        else:
+            entities_str = str(key_entities)
+        if entities_str:
+            parts.append(f"- **Key Entities:** {entities_str}")
+    
+    # Format summary_detailed (truncate to 500 chars)
+    if summary_detailed:
+        summary = summary_detailed
+        if len(summary) > 500:
+            summary = summary[:500] + "..."
+        parts.append(f"- **Summary:** {summary}")
+    
+    # Format memory_snippet (truncate to 300 chars)
+    if memory_snippet:
+        memory = memory_snippet
+        if len(memory) > 300:
+            memory = memory[:300] + "..."
+        parts.append(f"- **Memory Snippet:** {memory}")
+    
+    # Only return formatted entry if we have at least title or summary
+    if title or summary_detailed:
+        return "\n".join(parts)
+    return ""
+
+
+def _retrieve_thn_code(user_message: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    """
+    Query code_index for top K relevant code chunks using vector similarity.
+    
+    Args:
+        user_message: User query for similarity search
+        top_k: Number of code chunks to retrieve (default: 5)
+    
+    Returns:
+        List of code chunk dicts with keys: file_path, language, chunk_text, chunk_metadata
+    """
+    if not user_message or not user_message.strip():
+        return []
+    
+    try:
+        # Generate embedding for user_message
+        query_embedding = generate_embedding(user_message)
+        
+        # Convert embedding list to string format for PostgreSQL
+        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'
+        
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                # Vector similarity search using cosine distance operator (<=>)
+                sql = """
+                    SELECT file_path, language, chunk_text, chunk_metadata
+                    FROM code_index
+                    WHERE embedding IS NOT NULL
+                    ORDER BY embedding <=> %s::vector
+                    LIMIT %s
+                """
+                cur.execute(sql, (embedding_str, top_k))
+                rows = cur.fetchall()
+        
+        if not rows:
+            logger.debug("No code chunks found via vector similarity search")
+            return []
+        
+        results = []
+        for row in rows:
+            results.append({
+                'file_path': row[0],
+                'language': row[1],
+                'chunk_text': row[2],
+                'chunk_metadata': row[3] if row[3] else {}
+            })
+        
+        logger.debug(f"Retrieved {len(results)} code chunks via vector similarity search")
+        return results
+        
+    except Exception as e:
+        logger.error(f"Error retrieving THN code: {e}")
+        return []
+
+
+def _format_code_snippet(chunk: Dict[str, Any]) -> str:
+    """
+    Format a single code_index chunk into RAG format.
+    
+    Args:
+        chunk: Code chunk dict with keys: file_path, language, chunk_text, chunk_metadata
+    
+    Returns:
+        Formatted code snippet string
+    """
+    file_path = chunk.get('file_path', '')
+    language = chunk.get('language', '')
+    chunk_text = chunk.get('chunk_text', '')
+    chunk_metadata = chunk.get('chunk_metadata', {})
+    
+    parts = []
+    
+    # Add file path
+    if file_path:
+        parts.append(f"**File:** {file_path}")
+    
+    # Add language
+    if language:
+        parts.append(f"**Language:** {language}")
+    
+    # Generate brief description from metadata or file path
+    description = None
+    if isinstance(chunk_metadata, dict):
+        if 'function_name' in chunk_metadata:
+            description = chunk_metadata['function_name']
+        elif 'class_name' in chunk_metadata:
+            description = chunk_metadata['class_name']
+    
+    # Fallback to file path if no metadata description
+    if not description and file_path:
+        # Extract meaningful part from file path (filename or last directory)
+        import os
+        description = os.path.basename(file_path)
+        if description.endswith('.py'):
+            description = description[:-3]  # Remove .py extension
+    
+    if description:
+        parts.append(f"**Description:** {description}")
+    
+    # Add code chunk (truncate to 1000 chars)
+    if chunk_text:
+        code_text = chunk_text
+        if len(code_text) > 1000:
+            code_text = code_text[:1000] + "..."
+        parts.append(f"```{language}\n{code_text}\n```")
+    
+    return "\n".join(parts)
+
+
+def build_thn_rag_context(user_message: str) -> Dict[str, Any]:
+    """
+    Build new RAG context for THN project with History & Context and Relevant Code Snippets sections.
+    
+    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks
+    from code_index using vector similarity search. Formats them into a structured RAG context
+    that appears after the project_knowledge section (overview + rules) in system messages.
+    
+    Args:
+        user_message: Current user message for code similarity search
+    
+    Returns:
+        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)
+        
+    Performance:
+        Target: <500ms total generation time
+        - Conversation retrieval: <50ms (uses indexed_at DESC index)
+        - Code similarity search: <200ms (uses vector index)
+        - Formatting: <50ms
+    """
+    import time
+    start_time = time.time()
+    
+    notes = []
+    context_parts = []
+    
+    # Retrieve and format conversations
+    conv_start = time.time()
+    conversations = _retrieve_thn_conversations(limit=5)
+    conv_time = (time.time() - conv_start) * 1000  # Convert to ms
+    
+    if conversations:
+        history_parts = ["### History & Context: Last 5 Conversations\n"]
+        for row in conversations:
+            formatted = _format_conversation_entry(row)
+            if formatted:
+                history_parts.append(formatted)
+                history_parts.append("")  # Empty line between entries
+        
+        if len(history_parts) > 1:  # More than just the header
+            context_parts.append("\n".join(history_parts))
+            notes.append("Retrieved 5 conversations from conversation_index")
+    
+    # Retrieve and format code snippets
+    code_start = time.time()
+    code_chunks = _retrieve_thn_code(user_message, top_k=5)
+    code_time = (time.time() - code_start) * 1000  # Convert to ms
+    
+    if code_chunks:
+        code_parts = ["### Relevant Code Snippets\n"]
+        for chunk in code_chunks:
+            formatted = _format_code_snippet(chunk)
+            if formatted:
+                code_parts.append(formatted)
+                code_parts.append("")  # Empty line between snippets
+        
+        if len(code_parts) > 1:  # More than just the header
+            context_parts.append("\n".join(code_parts))
+            notes.append("Retrieved 5 code chunks via vector similarity search")
+    
+    # Combine sections
+    context = "\n\n".join(context_parts)
+    
+    total_time = (time.time() - start_time) * 1000  # Convert to ms
+    logger.debug(
+        f"Built THN RAG context with {len(conversations)} conversations and {len(code_chunks)} code chunks "
+        f"(conv: {conv_time:.1f}ms, code: {code_time:.1f}ms, total: {total_time:.1f}ms)"
+    )
+    
+    if total_time > 500:
+        logger.warning(f"THN RAG generation exceeded 500ms target: {total_time:.1f}ms")
+    
+    return {
+        "context": context,
+        "notes": notes
+    }
 
 
 def build_project_context(
@@ -486,79 +785,12 @@ def build_project_context(
             logger.error(f"DAAS retrieval failed, falling back to default keyword search: {e}")
             # Fall through to default behavior (keyword-based search)
     
-    # THN-specific retrieval: code RAG pipeline
+    # THN-specific retrieval: new RAG format
     if project == 'THN':
         try:
-            from .thn_code_retrieval import get_thn_code_context
-            
-            # Retrieve relevant code chunks
-            code_context = get_thn_code_context(user_message, top_k=5)
-            
-            # Get project-scoped meditation notes for THN
-            mcp_notes_context = None
-            try:
-                from src.mcp.api import get_mcp_api
-                api = get_mcp_api()
-                project_notes = api.get_project_notes(project, user_message, limit=5)
-                if project_notes:
-                    notes_parts = []
-                    for note in project_notes:
-                        notes_parts.append(f"From {note['title']} ({note['uri']}):\n{note['content_snippet']}")
-                    if notes_parts:
-                        mcp_notes_context = "\n\n---\n\n".join(notes_parts)
-            except Exception as e:
-                logger.debug(f"MCP notes not available for THN: {e}")
-            
-            if code_context:
-                # Build context with code and project knowledge
-                context_parts = []
-                notes = []
-                
-                # Add MCP meditation notes if available
-                if mcp_notes_context:
-                    context_parts.append(f"Here are relevant meditation notes from this project:\n\n{mcp_notes_context}")
-                    notes.append("MCP notes: Retrieved relevant project-scoped meditation notes")
-                
-                # Add project knowledge if available
-                knowledge_summaries = fetch_project_knowledge(project)
-                if knowledge_summaries:
-                    project_summary = "\n\n".join(knowledge_summaries)
-                    context_parts.append(f"Here is a general summary of the THN project:\n{project_summary}")
-                    notes.extend([f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries])
-                
-                # Add code context
-                context_parts.append(f"Here is relevant code from the THN codebase:\n\n{code_context}")
-                notes.append("THN code retrieval: Retrieved relevant code snippets")
-                
-                # Also include conversation memories (fallback to default behavior for memories)
-                # But prioritize code context
-                context = "\n\n".join(context_parts)
-                context += "\n\nUse this information naturally in our conversation. Recall and reference "
-                context += "relevant code and notes as we discuss topics. Focus on actual code when "
-                context += "providing technical guidance. Use actual code examples, explain "
-                context += "how code works, identify patterns, and suggest practical exercises."
-                
-                logger.debug(f"Built THN context with code retrieval")
-                return {
-                    "context": context,
-                    "notes": notes[:10]
-                }
-            else:
-                # No code found, but still include project knowledge if available
-                knowledge_summaries = fetch_project_knowledge(project)
-                if knowledge_summaries:
-                    project_summary = "\n\n".join(knowledge_summaries)
-                    context = f"Here is a general summary of the THN project:\n{project_summary}"
-                    return {
-                        "context": context,
-                        "notes": [f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries[:5]]
-                    }
-                else:
-                    # No code or knowledge, fall through to default
-                    logger.debug("No THN code or knowledge found, using default context")
-                    
+            return build_thn_rag_context(user_message)
         except Exception as e:
-            logger.error(f"THN code retrieval failed, falling back to default keyword search: {e}")
+            logger.error(f"THN RAG generation failed: {e}")
             # Fall through to default behavior (keyword-based search)
     
     # Get project-scoped meditation notes (if MCP available)
