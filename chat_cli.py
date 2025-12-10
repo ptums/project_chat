@@ -204,6 +204,33 @@ def debug_project_context(project: str, conversation_id: uuid.UUID):
     print(color_text("-" * 60, "grey"))
 
 
+def debug_rag_context(project: str, user_message: str = ""):
+    """Print out the RAG context for THN project (/rag)."""
+    if project.upper() != "THN":
+        print(color_text(f"[rag] RAG context is only available for THN project (current: {project})", "orange"))
+        return
+    
+    from brain_core.context_builder import build_thn_rag_context
+    
+    print(color_text(f"[rag] Generating RAG context for THN", "green"))
+    print(color_text("-" * 60, "grey"))
+    
+    try:
+        rag_result = build_thn_rag_context(user_message or "THN project")
+        if rag_result.get("context"):
+            print(rag_result["context"])
+            if rag_result.get("notes"):
+                print(color_text("\nKey sources:", "grey"))
+                for note in rag_result["notes"]:
+                    print(color_text(f"  - {note}", "grey"))
+        else:
+            print(color_text("No RAG context generated (empty result)", "orange"))
+    except Exception as e:
+        print(color_text(f"[rag] Error generating RAG context: {e}", "orange"))
+    
+    print(color_text("-" * 60, "grey"))
+
+
 def run_search_command(project: str, query: str):
     """Run a text-only deep search over messages (/search)."""
     style = get_project_style(project)
@@ -494,6 +521,10 @@ def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):
     # context
     if cmd in ("context", "ctx"):
         return current_project, True, "", "context"
+
+    # rag - show RAG content for THN
+    if cmd == "rag":
+        return current_project, True, arg if arg else "", "rag"
 
     # search
     if cmd in ("search", "s"):
@@ -1146,6 +1177,8 @@ def main():
 
             if special == "context":
                 debug_project_context(current_project, conv_id)
+            elif special == "rag":
+                debug_rag_context(current_project, msg)
             elif special == "search":
                 run_search_command(current_project, msg)
             elif special == "save":
@@ -1693,4 +1726,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # Configure logging to show INFO level messages (for RAG verification)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(levelname)s: %(message)s',
+        stream=sys.stderr
+    )
     main()
