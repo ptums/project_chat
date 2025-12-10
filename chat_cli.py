@@ -205,18 +205,26 @@ def debug_project_context(project: str, conversation_id: uuid.UUID):
 
 
 def debug_rag_context(project: str, user_message: str = ""):
-    """Print out the RAG context for THN project (/rag)."""
-    if project.upper() != "THN":
-        print(color_text(f"[rag] RAG context is only available for THN project (current: {project})", "orange"))
+    """Print out the RAG context for THN or DAAS project (/rag)."""
+    if project.upper() not in ("THN", "DAAS"):
+        print(color_text(f"[rag] RAG context is only available for THN or DAAS project (current: {project})", "orange"))
         return
     
-    from brain_core.context_builder import build_thn_rag_context
+    from brain_core.context_builder import build_thn_rag_context, build_daas_rag_context
     
-    print(color_text(f"[rag] Generating RAG context for THN", "green"))
+    project_label = project.upper()
+    print(color_text(f"[rag] Generating RAG context for {project_label}", "green"))
     print(color_text("-" * 60, "grey"))
     
     try:
-        rag_result = build_thn_rag_context(user_message or "THN project")
+        if project.upper() == "THN":
+            rag_result = build_thn_rag_context(user_message or "THN project")
+        elif project.upper() == "DAAS":
+            rag_result = build_daas_rag_context(user_message or "DAAS project", top_k=3)
+        else:
+            print(color_text(f"[rag] Unsupported project for RAG: {project}", "orange"))
+            return
+        
         if rag_result.get("context"):
             print(rag_result["context"])
             if rag_result.get("notes"):
@@ -1353,24 +1361,13 @@ def main():
                         print(color_text("Cancelled.", "grey"))
                         continue
 
-                thinking_label = f"{style['emoji']} Thinking for {style['label']}"
-                stop_event = threading.Event()
-                spinner_thread = threading.Thread(
-                    target=spinner,
-                    args=(stop_event, thinking_label, style["color"]),
-                    daemon=True,
-                )
-
-                spinner_thread.start()
                 try:
                     # Set streaming flag so signal handler knows we're streaming
                     _is_streaming = True
                     
-                    # Spinner runs while we wait for API response
                     # Get the generator first (this starts the API call)
                     stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)
                     
-                    # Stop spinner and clear it when we get first chunk
                     first_chunk_received = False
                     reply = ""
                     try:
@@ -1386,13 +1383,8 @@ def main():
                                 _interrupt_streaming = False
                                 raise KeyboardInterrupt("Streaming interrupted by user")
                             
-                            # Stop spinner on first chunk
+                            # Start AI response line on first chunk
                             if not first_chunk_received:
-                                stop_event.set()
-                                spinner_thread.join()
-                                # Clear spinner line
-                                sys.stdout.write("\r" + " " * 80 + "\r")
-                                sys.stdout.flush()
                                 # Start AI response line
                                 print(f"\n{ai_label} ", end="", flush=True)
                                 first_chunk_received = True
@@ -1418,8 +1410,6 @@ def main():
                         
                         print()  # Newline after streaming completes
                     except KeyboardInterrupt:
-                        stop_event.set()
-                        spinner_thread.join()
                         _is_streaming = False  # Reset streaming flag
                         print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
                         # Save partial response if any was received
@@ -1442,8 +1432,6 @@ def main():
                     finally:
                         _is_streaming = False  # Always reset streaming flag when done
                 except KeyboardInterrupt:
-                    stop_event.set()
-                    spinner_thread.join()
                     print(color_text("\n\nAPI call interrupted. This may indicate:", "orange", bold=True))
                     print(color_text("  - Input is too large for API", "orange"))
                     print(color_text("  - Network timeout", "orange"))
@@ -1451,14 +1439,10 @@ def main():
                     print(color_text("\nTry breaking the input into smaller chunks.", "orange"))
                     continue
                 except Exception as e:
-                    stop_event.set()
-                    spinner_thread.join()
                     print(color_text(f"\n\nError processing request: {e}", "orange", bold=True))
                     print(color_text("The input may be too large or there may be a network issue.", "orange"))
                     continue
                 finally:
-                    stop_event.set()
-                    spinner_thread.join()
                     if reply:
                         print()  # Ensure newline after response
             elif special == "mcp":
@@ -1499,25 +1483,14 @@ def main():
                         print(color_text("Cancelled.", "grey"))
                         continue
                 
-                thinking_label = f"{style['emoji']} Thinking for {style['label']}"
-                stop_event = threading.Event()
-                spinner_thread = threading.Thread(
-                    target=spinner,
-                    args=(stop_event, thinking_label, style["color"]),
-                    daemon=True,
-                )
-
-                spinner_thread.start()
                 try:
                     # Set streaming flag so signal handler knows we're streaming
                     _is_streaming = True
                     _interrupt_streaming = False  # Reset interrupt flag
                     
-                    # Spinner runs while we wait for API response
                     # Get the generator first (this starts the API call)
                     stream_gen = chat_turn(conv_id, file_content, current_project, stream=True)
                     
-                    # Stop spinner and clear it when we get first chunk
                     first_chunk_received = False
                     reply = ""
                     try:
@@ -1532,13 +1505,8 @@ def main():
                                 _interrupt_streaming = False
                                 raise KeyboardInterrupt("Streaming interrupted by user")
                             
-                            # Stop spinner on first chunk
+                            # Start AI response line on first chunk
                             if not first_chunk_received:
-                                stop_event.set()
-                                spinner_thread.join()
-                                # Clear spinner line
-                                sys.stdout.write("\r" + " " * 80 + "\r")
-                                sys.stdout.flush()
                                 # Start AI response line
                                 print(f"\n{ai_label} ", end="", flush=True)
                                 first_chunk_received = True
@@ -1564,8 +1532,6 @@ def main():
                         
                         print()  # Newline after streaming completes
                     except KeyboardInterrupt:
-                        stop_event.set()
-                        spinner_thread.join()
                         _is_streaming = False  # Reset streaming flag
                         print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
                         # Save partial response if any was received
@@ -1588,8 +1554,6 @@ def main():
                     finally:
                         _is_streaming = False  # Always reset streaming flag when done
                 except KeyboardInterrupt:
-                    stop_event.set()
-                    spinner_thread.join()
                     print(color_text("\n\nAPI call interrupted. This may indicate:", "orange", bold=True))
                     print(color_text("  - Input is too large for API", "orange"))
                     print(color_text("  - Network timeout", "orange"))
@@ -1597,21 +1561,17 @@ def main():
                     print(color_text("\nTry breaking the input into smaller chunks.", "orange"))
                     continue
                 except Exception as e:
-                    stop_event.set()
-                    spinner_thread.join()
                     print(color_text(f"\n\nError processing request: {e}", "orange", bold=True))
                     print(color_text("The input may be too large or there may be a network issue.", "orange"))
                     continue
                 finally:
-                    stop_event.set()
-                    spinner_thread.join()
                     if reply:
                         print()  # Ensure newline after response
             elif msg:
                 print(color_text(msg, style["color"], bold=True))
             continue
 
-        # normal chat turn with spinner (single-line or large input)
+        # normal chat turn (single-line or large input)
         # Provide feedback for large inputs
         char_count = len(user_text)
         if char_count > 1000:
@@ -1622,20 +1582,10 @@ def main():
                 )
             )
 
-        thinking_label = f"{style['emoji']} Thinking for {style['label']}"
-        stop_event = threading.Event()
-        spinner_thread = threading.Thread(
-            target=spinner,
-            args=(stop_event, thinking_label, style["color"]),
-            daemon=True,
-        )
-
-        spinner_thread.start()
         try:
             # Set streaming flag so signal handler knows we're streaming
             _is_streaming = True
             
-            # Spinner runs while we wait for API response
             # Get the generator first (this starts the API call)
             stream_gen = chat_turn(conv_id, user_text, current_project, stream=True)
             
@@ -1643,7 +1593,6 @@ def main():
             _is_streaming = True
             _interrupt_streaming = False  # Reset interrupt flag
             
-            # Stop spinner and clear it when we get first chunk
             first_chunk_received = False
             reply = ""
             try:
@@ -1658,13 +1607,8 @@ def main():
                         _interrupt_streaming = False
                         raise KeyboardInterrupt("Streaming interrupted by user")
                     
-                    # Stop spinner on first chunk
+                    # Start AI response line on first chunk
                     if not first_chunk_received:
-                        stop_event.set()
-                        spinner_thread.join()
-                        # Clear spinner line
-                        sys.stdout.write("\r" + " " * 80 + "\r")
-                        sys.stdout.flush()
                         # Start AI response line
                         print(f"\n{ai_label} ", end="", flush=True)
                         first_chunk_received = True
@@ -1690,8 +1634,6 @@ def main():
                 
                 print()  # Newline after streaming completes
             except KeyboardInterrupt:
-                stop_event.set()
-                spinner_thread.join()
                 _is_streaming = False  # Reset streaming flag
                 print(color_text("\n\nStreaming stopped. You can continue with a new message.", "orange", bold=True))
                 # Save partial response if any was received
@@ -1714,13 +1656,9 @@ def main():
             finally:
                 _is_streaming = False  # Always reset streaming flag when done
         except Exception as e:
-            stop_event.set()
-            spinner_thread.join()
             print(color_text(f"\n\nError: {e}", "orange", bold=True))
             continue
         finally:
-            stop_event.set()
-            spinner_thread.join()
             if reply:
                 print()  # Ensure newline after response
 
