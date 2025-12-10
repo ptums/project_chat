@@ -1,45 +1,44 @@
-# Implementation Plan: Enhance THN RAG System
+# Implementation Plan: [FEATURE]
 
-**Branch**: `013-enhance-thn-rag` | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/013-enhance-thn-rag/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Replace current THN-specific RAG implementation with a new format that provides:
-
-1. **History & Context**: Last 5 conversations from `conversation_index` table (title, tags, key_entities, summary_detailed, memory_snippet)
-2. **Relevant Code Snippets**: Top 5 code chunks from `code_index` table using vector similarity search
-
-The new RAG format gives THN project a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate conversation direction. Code snippets aid in code review and analysis tasks.
-
-**Important**: The THN RAG appears **after** the project_knowledge section (overview and rules) in system messages. Message order: System prompt (base + project extension) → THN RAG → Note reads → Conversation history.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: Python 3.10+ (existing project standard)  
-**Primary Dependencies**: Existing dependencies (psycopg2-binary, python-dotenv, pgvector extension)  
-**Storage**: PostgreSQL (conversation_index table, code_index table)  
-**Testing**: Manual testing (consistent with project standards)  
-**Target Platform**: macOS/Linux (same as existing project)  
-**Project Type**: Single project (CLI application with shared brain_core modules)  
-**Performance Goals**: RAG generation completes in <500ms  
-**Constraints**: Limit to 5 conversations and 5 code snippets; optimize for cost; handle NULL fields gracefully  
-**Scale/Scope**: THN project only; ~5 conversations per query; ~5 code chunks per query
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
-_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Status**: PASS - No constitution violations detected. This is a refactoring and enhancement of existing RAG functionality that maintains existing patterns while improving format and structure.
+[Gates determined based on constitution file]
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/013-enhance-thn-rag/
+specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
@@ -49,56 +48,57 @@ specs/013-enhance-thn-rag/
 ```
 
 ### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
 
 ```text
-brain_core/
-├── context_builder.py                             # MODIFY: Replace THN RAG logic in build_project_context()
-└── thn_code_retrieval.py                          # MODIFY: May need updates for new format
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
 
-[existing structure unchanged]
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Single project structure. Modifications to `context_builder.py` to implement new THN RAG format. May update `thn_code_retrieval.py` if needed for code snippet formatting.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-No violations - this is a straightforward refactoring and enhancement of existing RAG functionality.
-
-## Phase 0: Research Complete
-
-**Status**: ✅ Complete
-
-**Output**: `research.md` - Resolved all technical decisions:
-
-- Conversation retrieval strategy (date-based ordering)
-- Missing field handling (NULL-safe formatting)
-- Code snippet repository filtering (no filter, use vector similarity)
-- Code snippet description generation (from metadata or file path)
-- RAG format optimization (truncation limits)
-- Integration approach (replace THN block in build_project_context)
-
-## Phase 1: Design Complete
-
-**Status**: ✅ Complete
-
-**Outputs**:
-
-- `data-model.md` - Database schema usage, data flow, transformations
-- `contracts/api.md` - Function contracts for new RAG functions
-- `quickstart.md` - Implementation and validation guide
-- Design decisions documented for implementation
-
-## Next Steps
-
-**Phase 2**: Implementation tasks will be generated by `/speckit.tasks` command.
-
-**Key Implementation Areas**:
-
-1. Implement `build_thn_rag_context()` function in `context_builder.py`
-2. Implement helper functions: `_format_conversation_entry()`, `_format_code_snippet()`, `_retrieve_thn_conversations()`, `_retrieve_thn_code()`
-3. Replace THN-specific block in `build_project_context()` with new implementation
-4. Remove old THN RAG code (get_thn_code_context usage, MCP notes logic)
-5. Test RAG generation with various data states
-6. Verify performance meets <500ms requirement
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

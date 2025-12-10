@@ -5,7 +5,7 @@ import logging
 from .config import client, OPENAI_MODEL, MOCK_MODE
 from .db import save_message, load_conversation_messages
 from .memory import get_project_context
-from .context_builder import build_project_context, build_project_system_prompt
+from .context_builder import build_project_context, build_project_system_prompt, should_include_daas_rag
 from .usage_tracker import (
     get_session_tracker,
     calculate_cost,
@@ -43,9 +43,16 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
     is_first_message = len(other_messages) == 0
 
     # Build project-aware context from conversation_index (if available)
-    # Skip RAG generation for THN if not first message to save tokens
+    # Skip RAG generation for THN if not first message (THN RAG included in system prompt on first message only)
+    # Skip RAG generation for DAAS if analysis not requested (DAAS RAG included in system prompt when analysis requested)
     indexed_context = {}
-    if not (project.upper() == "THN" and not is_first_message):
+    skip_rag = False
+    if project.upper() == "THN" and not is_first_message:
+        skip_rag = True
+    elif project.upper() == "DAAS" and not should_include_daas_rag(user_text):
+        skip_rag = True
+    
+    if not skip_rag:
         try:
             indexed_context = build_project_context(project, user_text)
         except Exception as e:
@@ -60,17 +67,30 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
 
     # Message order: system prompt → RAG context → note reads → history
     
-    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST
-    # For THN, RAG context is included directly in the system prompt only on first message
-    include_rag = project.upper() == "THN" and is_first_message
-    system_prompt = build_project_system_prompt(project, user_text if include_rag else "")
+    # 1. System prompt (base + project extension + RAG for THN/DAAS) - FIRST
+    # For THN: RAG included on first message only
+    # For DAAS: RAG included when analysis is requested (any message)
+    include_thn_rag = project.upper() == "THN" and is_first_message
+    include_daas_rag = project.upper() == "DAAS" and should_include_daas_rag(user_text)
+    
+    # Pass user_message to system prompt builder if RAG should be included
+    user_message_for_rag = ""
+    if include_thn_rag or include_daas_rag:
+        user_message_for_rag = user_text
+    
+    system_prompt = build_project_system_prompt(project, user_message_for_rag)
     
     # Log RAG inclusion status for verification
     if project.upper() == "THN":
-        if include_rag:
+        if include_thn_rag:
             logger.info(f"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)")
         else:
             logger.debug(f"THN RAG skipped (not first message, is_first_message={is_first_message})")
+    elif project.upper() == "DAAS":
+        if include_daas_rag:
+            logger.info(f"DAAS RAG included in system prompt (analysis requested, length: {len(system_prompt)} chars)")
+        else:
+            logger.debug(f"DAAS RAG skipped (no analysis intent detected)")
     else:
         logger.debug(f"System prompt for project {project} (length: {len(system_prompt)} chars)")
     
@@ -78,9 +98,9 @@ def chat_turn(conversation_id, user_text: str, project: str, stream: bool = Fals
     # logger.info(f"System prompt content:\n{system_prompt}")
     messages.append({"role": "system", "content": system_prompt})
 
-    # 2. Project context from RAG (if available and not THN) - SECOND
-    # THN RAG is now included in system prompt above, so skip here
-    if project.upper() != "THN" and indexed_context and indexed_context.get("context"):
+    # 2. Project context from RAG (if available and not THN/DAAS) - SECOND
+    # THN/DAAS RAG is now included in system prompt above, so skip here
+    if project.upper() not in ("THN", "DAAS") and indexed_context and indexed_context.get("context"):
         # RAG content is self-explanatory, no verbose wrapper needed
         context_msg = indexed_context['context']
         if indexed_context.get("notes"):

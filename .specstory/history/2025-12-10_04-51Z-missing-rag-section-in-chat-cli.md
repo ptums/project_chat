@@ -33476,7 +33476,20970 @@ Added logging configuration. Here's how to check the logs:
 
 ## How to Check Logs
 
-### 1. **Terminal Output (Aut
+### 1. **Terminal Output (Automatic)**
+When you run `chat_cli`, logs appear in the same terminal window. Look for messages like:
+
+- `INFO: THN RAG included in system prompt (first message, length: X chars)`
+- `INFO: Added THN RAG context to system prompt (X chars, Y sources)`
+- `DEBUG: THN RAG skipped (not first message, is_first_message=False)`
+- `WARNING: THN RAG generation exceeded 500ms target: Xms`
+
+These appear in real time as you chat.
+
+### 2. **Log Levels**
+- **INFO**: RAG inclusion/skipping messages (visible by default)
+- **DEBUG**: Detailed timing and context info (set level to DEBUG to see)
+- **WARNING**: Performance issues or errors
+
+### 3. **Enable More Detailed Logs**
+To see DEBUG logs (more detail), modify the logging level in `chat_cli.py`:
+
+```python
+logging.basicConfig(
+    level=logging.DEBUG,  # Change from INFO to DEBUG
+    format='%(levelname)s: %(message)s',
+    stream=sys.stderr
+)
+```
+
+### 4. **Quick Verification**
+1. Start a new THN conversation (first message)
+2. Look for: `INFO: THN RAG included in system prompt...`
+3. Send a second message
+4. Look for: `DEBUG: THN RAG skipped (not first message...)`
+
+Logs are printed to stderr, so they appear in your terminal alongside the chat output.
+
+---
+
+_**User (2025-12-09 23:02Z)**_
+
+/speckit.plan Okay now I need a custom RAG for DAAS project.  I dont want to add a conversation history to the RAG historically that has made things very confusing. So we are going to have a straight forward RAG with clear goals and boundaries. Also keep in mind cost per token
+
+
+
+1 - First remove the current DAAS RAG code 
+
+2 - Implment the following RAG based on these details 
+
+
+
+### DAAS Retrieval-Augmented Generation (RAG) Template
+
+
+
+- When analyzing a dream, retrieve related DAAS-embedded data by themes, symbols, or events to enrich understanding.
+
+- Use retrieved material to highlight symbolic parallels or contrasts without merging dream events.
+
+- Always keep each dream’s events, characters, and timelines separate and self-contained.
+
+- Compare symbols and themes only at the conceptual level to reveal deeper meaning or patterns.
+
+- Integrate DAAS’s multitradition framework naturally for layered insight.
+
+- Limit retrieval and responses strictly to DAAS-tagged data; no outside references.
+
+- Provide concise, thoughtful guidance encouraging reflection without over-explaining.
+
+- If no relevant retrieval results appear, focus on the unique details of the current dream honestly.
+
+
+
+3 - Remove the debugging messages when the model is thinking
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Planning the DAAS RAG revamp. Gathering context and creating the implementation plan.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/setup-plan.sh --json",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/setup-plan.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/setup-plan.sh --json"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "Copied plan template to /Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md\n{\"FEATURE_SPEC\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/spec.md\",\"IMPL_PLAN\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md\",\"SPECS_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"BRANCH\":\"013-enhance-thn-rag\",\"HAS_GIT\":\"true\"}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "Where is the current DAAS RAG retrieval code implemented?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/daas_retrieval.py",
+        "range": {
+          "startPosition": {
+            "line": 176,
+            "column": 17
+          },
+          "endPosition": {
+            "line": 252
+          }
+        },
+        "contents": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:\n    \"\"\"\n    Main retrieval function: routes to single-dream or pattern-based mode.\n    \n    Never mixes modes - single-dream queries only use that dream's memory.\n    \n    Args:\n        user_message: User's query message\n        top_k: Number of top results for pattern-based mode (default: 5)\n        \n    Returns:\n        Dict with:\n        - 'mode': 'single' or 'pattern'\n        - 'dreams': List of dream dicts\n        - 'context': Formatted context string for prompt\n    \"\"\"\n    quoted_title = detect_quoted_title(user_message)\n    \n    if quoted_title:\n        # Single-dream mode\n        logger.info(f\"DAAS single-dream mode: searching for '{quoted_title}'\")\n        dream = retrieve_single_dream(quoted_title)\n        \n        if dream:\n            context = (\n                f\"Dream: {dream['title']}\\n\"\n                f\"{dream.get('summary_short', '')}\\n\"\n                f\"{dream.get('memory_snippet', '')}\"\n            )\n            return {\n                'mode': 'single',\n                'dreams': [dream],\n                'context': context\n            }\n        else:\n            # No match found\n            return {\n                'mode': 'single',\n                'dreams': [],\n                'context': f\"No dream found matching '{quoted_title}'. Did you mean one of these? (Try searching without quotes for pattern matching.)\"\n            }\n    else:\n        # Pattern-based mode\n        logger.info",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:",
+            "lineNumber": 180,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 181
+          },
+          {
+            "text": "    Main retrieval function: routes to single-dream or pattern-based mode.",
+            "lineNumber": 182
+          },
+          {
+            "text": "    ",
+            "lineNumber": 183
+          },
+          {
+            "text": "    Never mixes modes - single-dream queries only use that dream's memory.",
+            "lineNumber": 184
+          },
+          {
+            "text": "    ",
+            "lineNumber": 185
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 186
+          },
+          {
+            "text": "        user_message: User's query message",
+            "lineNumber": 187
+          },
+          {
+            "text": "        top_k: Number of top results for pattern-based mode (default: 5)",
+            "lineNumber": 188
+          },
+          {
+            "text": "        ",
+            "lineNumber": 189
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 190
+          },
+          {
+            "text": "        Dict with:",
+            "lineNumber": 191
+          },
+          {
+            "text": "        - 'mode': 'single' or 'pattern'",
+            "lineNumber": 192
+          },
+          {
+            "text": "        - 'dreams': List of dream dicts",
+            "lineNumber": 193
+          },
+          {
+            "text": "        - 'context': Formatted context string for prompt",
+            "lineNumber": 194
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 195
+          },
+          {
+            "text": "    quoted_title = detect_quoted_title(user_message)",
+            "lineNumber": 196
+          },
+          {
+            "text": "    ",
+            "lineNumber": 197
+          },
+          {
+            "text": "    if quoted_title:",
+            "lineNumber": 198
+          },
+          {
+            "text": "        # Single-dream mode",
+            "lineNumber": 199
+          },
+          {
+            "text": "        logger.info(f\"DAAS single-dream mode: searching for '{quoted_title}'\")",
+            "lineNumber": 200
+          },
+          {
+            "text": "        dream = retrieve_single_dream(quoted_title)",
+            "lineNumber": 201
+          },
+          {
+            "text": "        ",
+            "lineNumber": 202
+          },
+          {
+            "text": "        if dream:",
+            "lineNumber": 203
+          },
+          {
+            "text": "            context = (",
+            "lineNumber": 204
+          },
+          {
+            "text": "                f\"Dream: {dream['title']}\\n\"",
+            "lineNumber": 205
+          },
+          {
+            "text": "                f\"{dream.get('summary_short', '')}\\n\"",
+            "lineNumber": 206
+          },
+          {
+            "text": "                f\"{dream.get('memory_snippet', '')}\"",
+            "lineNumber": 207
+          },
+          {
+            "text": "            )",
+            "lineNumber": 208
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 209
+          },
+          {
+            "text": "                'mode': 'single',",
+            "lineNumber": 210
+          },
+          {
+            "text": "                'dreams': [dream],",
+            "lineNumber": 211
+          },
+          {
+            "text": "                'context': context",
+            "lineNumber": 212
+          },
+          {
+            "text": "            }",
+            "lineNumber": 213
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 214
+          },
+          {
+            "text": "            # No match found",
+            "lineNumber": 215
+          },
+          {
+            "text": "            return {",
+            "lineNumber": 216
+          },
+          {
+            "text": "                'mode': 'single',",
+            "lineNumber": 217
+          },
+          {
+            "text": "                'dreams': [],",
+            "lineNumber": 218
+          },
+          {
+            "text": "                'context': f\"No dream found matching '{quoted_title}'. Did you mean one of these? (Try searching without quotes for pattern matching.)\"",
+            "lineNumber": 219
+          },
+          {
+            "text": "            }",
+            "lineNumber": 220
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 221
+          },
+          {
+            "text": "        # Pattern-based mode",
+            "lineNumber": 222
+          },
+          {
+            "text": "        logger.info",
+            "lineNumber": 223
+          }
+        ]
+      },
+      "score": 0.48629990220069885
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/daas_retrieval.py",
+        "range": {
+          "startPosition": {
+            "line": 101,
+            "column": 19
+          },
+          "endPosition": {
+            "line": 176
+          }
+        },
+        "contents": "def retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:\n    \"\"\"\n    Retrieve top-k dreams using vector similarity search.\n    \n    Generates embedding for the query and performs cosine similarity search\n    over stored embeddings for DAAS entries.\n    \n    Args:\n        query: User query text to find similar dreams\n        top_k: Number of top results to return (default: 5)\n        \n    Returns:\n        List of dicts with dream data and similarity scores\n        Empty list if no matches or embeddings unavailable\n    \"\"\"\n    if not query or not query.strip():\n        return []\n    \n    try:\n        # Generate query embedding\n        logger.info(f\"DAAS pattern-based retrieval: generating embedding for query (top_k={top_k})\")\n        query_embedding = generate_embedding(query)\n        \n        # Convert embedding list to string format for PostgreSQL\n        # pgvector expects format: '[0.1,0.2,0.3,...]'\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n        \n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                # Vector similarity search using cosine distance operator (&lt;=&gt;)\n                # 1 - distance gives similarity score (higher = more similar)\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet,\n                           1 - (embedding &lt;=&gt; %s::vector) as similarity\n                    FROM conversation_index\n                    WHERE project = 'DAAS' \n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector\n                    LIMIT %s\n                    \"\"\",\n                    (embedding_str, embedding_str, top_k),\n                )\n                rows = cur.fetchall()\n        \n        if not rows:\n            logger.debug(\"No dreams found via vector similarity search\")\n            return []\n        \n        results = []\n        for row in rows:\n            results.append({\n                'session_id': str(row[0]),",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:",
+            "lineNumber": 105,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 106
+          },
+          {
+            "text": "    Retrieve top-k dreams using vector similarity search.",
+            "lineNumber": 107
+          },
+          {
+            "text": "    ",
+            "lineNumber": 108
+          },
+          {
+            "text": "    Generates embedding for the query and performs cosine similarity search",
+            "lineNumber": 109
+          },
+          {
+            "text": "    over stored embeddings for DAAS entries.",
+            "lineNumber": 110
+          },
+          {
+            "text": "    ",
+            "lineNumber": 111
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 112
+          },
+          {
+            "text": "        query: User query text to find similar dreams",
+            "lineNumber": 113
+          },
+          {
+            "text": "        top_k: Number of top results to return (default: 5)",
+            "lineNumber": 114
+          },
+          {
+            "text": "        ",
+            "lineNumber": 115
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 116
+          },
+          {
+            "text": "        List of dicts with dream data and similarity scores",
+            "lineNumber": 117
+          },
+          {
+            "text": "        Empty list if no matches or embeddings unavailable",
+            "lineNumber": 118
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 119
+          },
+          {
+            "text": "    if not query or not query.strip():",
+            "lineNumber": 120
+          },
+          {
+            "text": "        return []",
+            "lineNumber": 121
+          },
+          {
+            "text": "    ",
+            "lineNumber": 122
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 123
+          },
+          {
+            "text": "        # Generate query embedding",
+            "lineNumber": 124
+          },
+          {
+            "text": "        logger.info(f\"DAAS pattern-based retrieval: generating embedding for query (top_k={top_k})\")",
+            "lineNumber": 125
+          },
+          {
+            "text": "        query_embedding = generate_embedding(query)",
+            "lineNumber": 126
+          },
+          {
+            "text": "        ",
+            "lineNumber": 127
+          },
+          {
+            "text": "        # Convert embedding list to string format for PostgreSQL",
+            "lineNumber": 128
+          },
+          {
+            "text": "        # pgvector expects format: '[0.1,0.2,0.3,...]'",
+            "lineNumber": 129
+          },
+          {
+            "text": "        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'",
+            "lineNumber": 130
+          },
+          {
+            "text": "        ",
+            "lineNumber": 131
+          },
+          {
+            "text": "        with get_conn() as conn:",
+            "lineNumber": 132
+          },
+          {
+            "text": "            with conn.cursor() as cur:",
+            "lineNumber": 133
+          },
+          {
+            "text": "                # Vector similarity search using cosine distance operator (&lt;=&gt;)",
+            "lineNumber": 134
+          },
+          {
+            "text": "                # 1 - distance gives similarity score (higher = more similar)",
+            "lineNumber": 135
+          },
+          {
+            "text": "                cur.execute(",
+            "lineNumber": 136
+          },
+          {
+            "text": "                    \"\"\"",
+            "lineNumber": 137
+          },
+          {
+            "text": "                    SELECT session_id, title, summary_short, memory_snippet,",
+            "lineNumber": 138
+          },
+          {
+            "text": "                           1 - (embedding &lt;=&gt; %s::vector) as similarity",
+            "lineNumber": 139
+          },
+          {
+            "text": "                    FROM conversation_index",
+            "lineNumber": 140
+          },
+          {
+            "text": "                    WHERE project = 'DAAS' ",
+            "lineNumber": 141
+          },
+          {
+            "text": "                      AND embedding IS NOT NULL",
+            "lineNumber": 142
+          },
+          {
+            "text": "                    ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 143
+          },
+          {
+            "text": "                    LIMIT %s",
+            "lineNumber": 144
+          },
+          {
+            "text": "                    \"\"\",",
+            "lineNumber": 145
+          },
+          {
+            "text": "                    (embedding_str, embedding_str, top_k),",
+            "lineNumber": 146
+          },
+          {
+            "text": "                )",
+            "lineNumber": 147
+          },
+          {
+            "text": "                rows = cur.fetchall()",
+            "lineNumber": 148
+          },
+          {
+            "text": "        ",
+            "lineNumber": 149
+          },
+          {
+            "text": "        if not rows:",
+            "lineNumber": 150
+          },
+          {
+            "text": "            logger.debug(\"No dreams found via vector similarity search\")",
+            "lineNumber": 151
+          },
+          {
+            "text": "            return []",
+            "lineNumber": 152
+          },
+          {
+            "text": "        ",
+            "lineNumber": 153
+          },
+          {
+            "text": "        results = []",
+            "lineNumber": 154
+          },
+          {
+            "text": "        for row in rows:",
+            "lineNumber": 155
+          },
+          {
+            "text": "            results.append({",
+            "lineNumber": 156
+          },
+          {
+            "text": "                'session_id': str(row[0]),",
+            "lineNumber": 157
+          }
+        ]
+      },
+      "score": 0.44562819600105286
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/daas_retrieval.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 101
+          }
+        },
+        "contents": "\"\"\"\nDAAS-specific retrieval logic for single-dream and pattern-based queries.\n\nProvides custom retrieval rules for DAAS project:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport re\nfrom typing import Dict, List, Optional\n\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n\ndef detect_quoted_title(message: str) -&gt; Optional[str]:\n    \"\"\"\n    Detect quoted title in user message using regex pattern.\n    \n    Looks for text within double quotes like \"Title\".\n    Handles edge cases: malformed quotes, partial titles, very long titles.\n    \n    Args:\n        message: User message text\n        \n    Returns:\n        Extracted title if found, None otherwise\n    \"\"\"\n    if not message:\n        return None\n    \n    # Pattern to match text within double quotes\n    pattern = r'\"([^\"]+)\"'\n    matches = re.findall(pattern, message)\n    \n    if matches:\n        # Take the first match and strip whitespace\n        title = matches[0].strip()\n        # Validate: not empty and reasonable length\n        # Handle very long titles by truncating (still try to match)\n        if title:\n            if len(title) &gt; 500:\n                logger.debug(f\"Quoted title very long ({len(title)} chars), truncating for matching\")\n                title = title[:500]\n            logger.info(f\"DAAS single-dream mode: detected quoted title '{title[:50]}...'\")\n            return title\n    \n    return None\n\n\ndef retrieve_single_dream(title: str) -&gt; Optional[Dict]:\n    \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "DAAS-specific retrieval logic for single-dream and pattern-based queries.",
+            "lineNumber": 2
+          },
+          {
+            "lineNumber": 3
+          },
+          {
+            "text": "Provides custom retrieval rules for DAAS project:",
+            "lineNumber": 4
+          },
+          {
+            "text": "- Single-dream mode: Quoted title detection and title-based matching",
+            "lineNumber": 5
+          },
+          {
+            "text": "- Pattern-based mode: Vector similarity search using embeddings",
+            "lineNumber": 6
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "import re",
+            "lineNumber": 9
+          },
+          {
+            "text": "from typing import Dict, List, Optional",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 12
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "def detect_quoted_title(message: str) -&gt; Optional[str]:",
+            "lineNumber": 18,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 19
+          },
+          {
+            "text": "    Detect quoted title in user message using regex pattern.",
+            "lineNumber": 20
+          },
+          {
+            "text": "    ",
+            "lineNumber": 21
+          },
+          {
+            "text": "    Looks for text within double quotes like \"Title\".",
+            "lineNumber": 22
+          },
+          {
+            "text": "    Handles edge cases: malformed quotes, partial titles, very long titles.",
+            "lineNumber": 23
+          },
+          {
+            "text": "    ",
+            "lineNumber": 24
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 25
+          },
+          {
+            "text": "        message: User message text",
+            "lineNumber": 26
+          },
+          {
+            "text": "        ",
+            "lineNumber": 27
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 28
+          },
+          {
+            "text": "        Extracted title if found, None otherwise",
+            "lineNumber": 29
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 30
+          },
+          {
+            "text": "    if not message:",
+            "lineNumber": 31
+          },
+          {
+            "text": "        return None",
+            "lineNumber": 32
+          },
+          {
+            "text": "    ",
+            "lineNumber": 33
+          },
+          {
+            "text": "    # Pattern to match text within double quotes",
+            "lineNumber": 34
+          },
+          {
+            "text": "    pattern = r'\"([^\"]+)\"'",
+            "lineNumber": 35
+          },
+          {
+            "text": "    matches = re.findall(pattern, message)",
+            "lineNumber": 36
+          },
+          {
+            "text": "    ",
+            "lineNumber": 37
+          },
+          {
+            "text": "    if matches:",
+            "lineNumber": 38
+          },
+          {
+            "text": "        # Take the first match and strip whitespace",
+            "lineNumber": 39
+          },
+          {
+            "text": "        title = matches[0].strip()",
+            "lineNumber": 40
+          },
+          {
+            "text": "        # Validate: not empty and reasonable length",
+            "lineNumber": 41
+          },
+          {
+            "text": "        # Handle very long titles by truncating (still try to match)",
+            "lineNumber": 42
+          },
+          {
+            "text": "        if title:",
+            "lineNumber": 43
+          },
+          {
+            "text": "            if len(title) &gt; 500:",
+            "lineNumber": 44
+          },
+          {
+            "text": "                logger.debug(f\"Quoted title very long ({len(title)} chars), truncating for matching\")",
+            "lineNumber": 45
+          },
+          {
+            "text": "                title = title[:500]",
+            "lineNumber": 46
+          },
+          {
+            "text": "            logger.info(f\"DAAS single-dream mode: detected quoted title '{title[:50]}...'\")",
+            "lineNumber": 47
+          },
+          {
+            "text": "            return title",
+            "lineNumber": 48
+          },
+          {
+            "text": "    ",
+            "lineNumber": 49
+          },
+          {
+            "text": "    return None",
+            "lineNumber": 50,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "def retrieve_single_dream(title: str) -&gt; Optional[Dict]:",
+            "lineNumber": 53,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 54
+          }
+        ]
+      },
+      "score": 0.43269309401512146
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 674
+          },
+          "endPosition": {
+            "line": 936
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"\n                    context += \"relevant details from these notes and dreams as we discuss topics.\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)\n        except Exception as e:\n            logger.error(f\"THN RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 675,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 681,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 675,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 676,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 677,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 679,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 680,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 755
+          },
+          {
+            "text": "                ",
+            "lineNumber": 756
+          },
+          {
+            "text": "                if context_parts:",
+            "lineNumber": 757
+          },
+          {
+            "text": "                    context = \"\\n\\n\".join(context_parts)",
+            "lineNumber": 758
+          },
+          {
+            "text": "                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"",
+            "lineNumber": 759
+          },
+          {
+            "text": "                    context += \"relevant details from these notes and dreams as we discuss topics.\"",
+            "lineNumber": 760
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 761
+          },
+          {
+            "text": "                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")",
+            "lineNumber": 762
+          },
+          {
+            "text": "                    return {",
+            "lineNumber": 763
+          },
+          {
+            "text": "                        \"context\": context,",
+            "lineNumber": 764
+          },
+          {
+            "text": "                        \"notes\": notes[:10]",
+            "lineNumber": 765
+          },
+          {
+            "text": "                    }",
+            "lineNumber": 766
+          },
+          {
+            "text": "            else:",
+            "lineNumber": 767
+          },
+          {
+            "text": "                # No dreams found, but still include project knowledge if available",
+            "lineNumber": 768
+          },
+          {
+            "text": "                knowledge_summaries = fetch_project_knowledge(project)",
+            "lineNumber": 769
+          },
+          {
+            "text": "                if knowledge_summaries:",
+            "lineNumber": 770
+          },
+          {
+            "text": "                    project_summary = \"\\n\\n\".join(knowledge_summaries)",
+            "lineNumber": 771
+          },
+          {
+            "text": "                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"",
+            "lineNumber": 772
+          },
+          {
+            "text": "                    return {",
+            "lineNumber": 773
+          },
+          {
+            "text": "                        \"context\": context,",
+            "lineNumber": 774
+          },
+          {
+            "text": "                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]",
+            "lineNumber": 775
+          },
+          {
+            "text": "                    }",
+            "lineNumber": 776
+          },
+          {
+            "text": "                else:",
+            "lineNumber": 777
+          },
+          {
+            "text": "                    # Return empty or error message",
+            "lineNumber": 778
+          },
+          {
+            "text": "                    return {",
+            "lineNumber": 779
+          },
+          {
+            "text": "                        \"context\": daas_result.get('context', ''),",
+            "lineNumber": 780
+          },
+          {
+            "text": "                        \"notes\": []",
+            "lineNumber": 781
+          },
+          {
+            "text": "                    }",
+            "lineNumber": 782
+          },
+          {
+            "text": "                    ",
+            "lineNumber": 783
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 784
+          },
+          {
+            "text": "            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")",
+            "lineNumber": 785
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 786
+          },
+          {
+            "text": "    ",
+            "lineNumber": 787
+          },
+          {
+            "text": "    # THN-specific retrieval: new RAG format",
+            "lineNumber": 788
+          },
+          {
+            "text": "    if project == 'THN':",
+            "lineNumber": 789
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 790
+          },
+          {
+            "text": "            return build_thn_rag_context(user_message)",
+            "lineNumber": 791
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 792
+          },
+          {
+            "text": "            logger.error(f\"THN RAG generation failed: {e}\")",
+            "lineNumber": 793
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 794
+          },
+          {
+            "text": "    ",
+            "lineNumber": 795
+          },
+          {
+            "text": "    # Get project-scoped meditation notes (if MCP available)",
+            "lineNumber": 796
+          },
+          {
+            "text": "    mcp_notes_context = None",
+            "lineNumber": 797
+          }
+        ]
+      },
+      "score": 0.4289799928665161
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/daas_retrieval.py",
+        "range": {
+          "startPosition": {
+            "line": 179
+          },
+          "endPosition": {
+            "line": 252,
+            "column": 9
+          }
+        },
+        "contents": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:\n\"\n            }\n    else:\n        # Pattern-based mode\n        logger.info(f\"DAAS pattern-based mode: vector similarity search (top_k={top_k})\")\n        dreams = retrieve_pattern_dreams(user_message, top_k)\n        \n        if dreams:\n            context_parts = []\n            for dream in dreams:\n                parts = []\n                if dream.get('title'):\n                    parts.append(f\"Dream: {dream['title']}\")\n                if dream.get('summary_short'):\n                    parts.append(f\"Summary: {dream['summary_short']}\")\n                if dream.get('memory_snippet'):\n                    parts.append(f\"Memory: {dream['memory_snippet']}\")\n                \n                if parts:\n                    context_parts.append(\"\\n\".join(parts))\n            \n            if context_parts:\n                context = \"\\n\\n---\\n\\n\".join(context_parts)\n                return {\n                    'mode': 'pattern',\n                    'dreams': dreams,\n                    'context': context\n                }\n        \n        # No relevant dreams found\n        return {\n            'mode': 'pattern',\n            'dreams': [],\n            'context': \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"\n        }",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 180,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 181,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:",
+            "lineNumber": 180,
+            "isSignature": true
+          },
+          {
+            "text": "\"",
+            "lineNumber": 219
+          },
+          {
+            "text": "            }",
+            "lineNumber": 220
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 221
+          },
+          {
+            "text": "        # Pattern-based mode",
+            "lineNumber": 222
+          },
+          {
+            "text": "        logger.info(f\"DAAS pattern-based mode: vector similarity search (top_k={top_k})\")",
+            "lineNumber": 223
+          },
+          {
+            "text": "        dreams = retrieve_pattern_dreams(user_message, top_k)",
+            "lineNumber": 224
+          },
+          {
+            "text": "        ",
+            "lineNumber": 225
+          },
+          {
+            "text": "        if dreams:",
+            "lineNumber": 226
+          },
+          {
+            "text": "            context_parts = []",
+            "lineNumber": 227
+          },
+          {
+            "text": "            for dream in dreams:",
+            "lineNumber": 228
+          },
+          {
+            "text": "                parts = []",
+            "lineNumber": 229
+          },
+          {
+            "text": "                if dream.get('title'):",
+            "lineNumber": 230
+          },
+          {
+            "text": "                    parts.append(f\"Dream: {dream['title']}\")",
+            "lineNumber": 231
+          },
+          {
+            "text": "                if dream.get('summary_short'):",
+            "lineNumber": 232
+          },
+          {
+            "text": "                    parts.append(f\"Summary: {dream['summary_short']}\")",
+            "lineNumber": 233
+          },
+          {
+            "text": "                if dream.get('memory_snippet'):",
+            "lineNumber": 234
+          },
+          {
+            "text": "                    parts.append(f\"Memory: {dream['memory_snippet']}\")",
+            "lineNumber": 235
+          },
+          {
+            "text": "                ",
+            "lineNumber": 236
+          },
+          {
+            "text": "                if parts:",
+            "lineNumber": 237
+          },
+          {
+            "text": "                    context_parts.append(\"\\n\".join(parts))",
+            "lineNumber": 238
+          },
+          {
+            "text": "            ",
+            "lineNumber": 239
+          },
+          {
+            "text": "            if context_parts:",
+            "lineNumber": 240
+          },
+          {
+            "text": "                context = \"\\n\\n---\\n\\n\".join(context_parts)",
+            "lineNumber": 241
+          },
+          {
+            "text": "                return {",
+            "lineNumber": 242
+          },
+          {
+            "text": "                    'mode': 'pattern',",
+            "lineNumber": 243
+          },
+          {
+            "text": "                    'dreams': dreams,",
+            "lineNumber": 244
+          },
+          {
+            "text": "                    'context': context",
+            "lineNumber": 245
+          },
+          {
+            "text": "                }",
+            "lineNumber": 246
+          },
+          {
+            "text": "        ",
+            "lineNumber": 247
+          },
+          {
+            "text": "        # No relevant dreams found",
+            "lineNumber": 248
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 249
+          },
+          {
+            "text": "            'mode': 'pattern',",
+            "lineNumber": 250
+          },
+          {
+            "text": "            'dreams': [],",
+            "lineNumber": 251
+          },
+          {
+            "text": "            'context': \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"",
+            "lineNumber": 252
+          },
+          {
+            "text": "        }",
+            "lineNumber": 253,
+            "isSignature": true
+          }
+        ]
+      },
+      "score": 0.4112454652786255
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/daas_retrieval.py",
+        "range": {
+          "startPosition": {
+            "line": 49,
+            "column": 15
+          },
+          "endPosition": {
+            "line": 176
+          }
+        },
+        "contents": "def retrieve_single_dream(title: str) -&gt; Optional[Dict]:\n    \"\"\"\n    Retrieve single dream by title match using pattern matching.\n    \n    Handles edge cases: no matches, multiple matches (uses most recent).\n    \n    Args:\n        title: Dream title to search for (from quoted title detection)\n        \n    Returns:\n        Dict with dream data (session_id, title, summary_short, memory_snippet)\n        or None if no match found\n    \"\"\"\n    if not title:\n        return None\n    \n    try:\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                # First try exact match\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS' \n                      AND title ILIKE %s\n                    ORDER BY indexed_at DESC\n                    LIMIT 1\n                    \"\"\",\n                    (f'%{title}%',),\n                )\n                row = cur.fetchone()\n                \n                if row:\n                    result = {\n                        'session_id': str(row[0]),\n                        'title': row[1],\n                        'summary_short': row[2],\n                        'memory_snippet': row[3]\n                    }\n                    logger.info(f\"Retrieved single dream: {result['title']}\")\n                    return result\n                \n                logger.info(f\"No dream found matching title: {title}\")\n                return None\n                \n    except Exception as e:\n        logger.error(f\"Error retrieving single dream: {e}\")\n        # Don't raise - return None so caller can handle gracefully\n        return None\n\n\ndef retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:\n    \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def retrieve_single_dream(title: str) -&gt; Optional[Dict]:",
+            "lineNumber": 53,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 54
+          },
+          {
+            "text": "    Retrieve single dream by title match using pattern matching.",
+            "lineNumber": 55
+          },
+          {
+            "text": "    ",
+            "lineNumber": 56
+          },
+          {
+            "text": "    Handles edge cases: no matches, multiple matches (uses most recent).",
+            "lineNumber": 57
+          },
+          {
+            "text": "    ",
+            "lineNumber": 58
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 59
+          },
+          {
+            "text": "        title: Dream title to search for (from quoted title detection)",
+            "lineNumber": 60
+          },
+          {
+            "text": "        ",
+            "lineNumber": 61
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 62
+          },
+          {
+            "text": "        Dict with dream data (session_id, title, summary_short, memory_snippet)",
+            "lineNumber": 63
+          },
+          {
+            "text": "        or None if no match found",
+            "lineNumber": 64
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 65
+          },
+          {
+            "text": "    if not title:",
+            "lineNumber": 66
+          },
+          {
+            "text": "        return None",
+            "lineNumber": 67
+          },
+          {
+            "text": "    ",
+            "lineNumber": 68
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 69
+          },
+          {
+            "text": "        with get_conn() as conn:",
+            "lineNumber": 70
+          },
+          {
+            "text": "            with conn.cursor() as cur:",
+            "lineNumber": 71
+          },
+          {
+            "text": "                # First try exact match",
+            "lineNumber": 72
+          },
+          {
+            "text": "                cur.execute(",
+            "lineNumber": 73
+          },
+          {
+            "text": "                    \"\"\"",
+            "lineNumber": 74
+          },
+          {
+            "text": "                    SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 75
+          },
+          {
+            "text": "                    FROM conversation_index",
+            "lineNumber": 76
+          },
+          {
+            "text": "                    WHERE project = 'DAAS' ",
+            "lineNumber": 77
+          },
+          {
+            "text": "                      AND title ILIKE %s",
+            "lineNumber": 78
+          },
+          {
+            "text": "                    ORDER BY indexed_at DESC",
+            "lineNumber": 79
+          },
+          {
+            "text": "                    LIMIT 1",
+            "lineNumber": 80
+          },
+          {
+            "text": "                    \"\"\",",
+            "lineNumber": 81
+          },
+          {
+            "text": "                    (f'%{title}%',),",
+            "lineNumber": 82
+          },
+          {
+            "text": "                )",
+            "lineNumber": 83
+          },
+          {
+            "text": "                row = cur.fetchone()",
+            "lineNumber": 84
+          },
+          {
+            "text": "                ",
+            "lineNumber": 85
+          },
+          {
+            "text": "                if row:",
+            "lineNumber": 86
+          },
+          {
+            "text": "                    result = {",
+            "lineNumber": 87
+          },
+          {
+            "text": "                        'session_id': str(row[0]),",
+            "lineNumber": 88
+          },
+          {
+            "text": "                        'title': row[1],",
+            "lineNumber": 89
+          },
+          {
+            "text": "                        'summary_short': row[2],",
+            "lineNumber": 90
+          },
+          {
+            "text": "                        'memory_snippet': row[3]",
+            "lineNumber": 91
+          },
+          {
+            "text": "                    }",
+            "lineNumber": 92
+          },
+          {
+            "text": "                    logger.info(f\"Retrieved single dream: {result['title']}\")",
+            "lineNumber": 93
+          },
+          {
+            "text": "                    return result",
+            "lineNumber": 94
+          },
+          {
+            "text": "                ",
+            "lineNumber": 95
+          },
+          {
+            "text": "                logger.info(f\"No dream found matching title: {title}\")",
+            "lineNumber": 96
+          },
+          {
+            "text": "                return None",
+            "lineNumber": 97
+          },
+          {
+            "text": "                ",
+            "lineNumber": 98
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 99
+          },
+          {
+            "text": "        logger.error(f\"Error retrieving single dream: {e}\")",
+            "lineNumber": 100
+          },
+          {
+            "text": "        # Don't raise - return None so caller can handle gracefully",
+            "lineNumber": 101
+          },
+          {
+            "text": "        return None",
+            "lineNumber": 102,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 103
+          },
+          {
+            "lineNumber": 104
+          },
+          {
+            "text": "def retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:",
+            "lineNumber": 105,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 106
+          }
+        ]
+      },
+      "score": 0.40816426277160645
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 674
+          },
+          "endPosition": {
+            "line": 936
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n\"\"\"\n    \n    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get project-scoped meditation notes for DAAS\n            mcp_notes_context = None\n            try:\n                from src.mcp.api import get_mcp_api\n                api = get_mcp_api()\n                project_notes = api.get_project_notes(project, user_message, limit=5)\n                if project_notes:\n                    notes_parts = []\n                    for note in project_notes:\n                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n                    if notes_parts:\n                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n            except Exception as e:\n                logger.debug(f\"MCP notes not available for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 675,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 681,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 675,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 676,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 677,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 679,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 680,
+            "isSignature": true
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 702
+          },
+          {
+            "text": "    ",
+            "lineNumber": 703
+          },
+          {
+            "text": "    # DAAS-specific retrieval: custom rules for dream analysis",
+            "lineNumber": 704
+          },
+          {
+            "text": "    if project == 'DAAS':",
+            "lineNumber": 705
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 706
+          },
+          {
+            "text": "            from .daas_retrieval import retrieve_daas_context",
+            "lineNumber": 707
+          },
+          {
+            "text": "            from .config import DAAS_VECTOR_TOP_K",
+            "lineNumber": 708
+          },
+          {
+            "text": "            ",
+            "lineNumber": 709
+          },
+          {
+            "text": "            # Use configured top_k",
+            "lineNumber": 710
+          },
+          {
+            "text": "            top_k = DAAS_VECTOR_TOP_K",
+            "lineNumber": 711
+          },
+          {
+            "text": "            ",
+            "lineNumber": 712
+          },
+          {
+            "text": "            daas_result = retrieve_daas_context(user_message, top_k=top_k)",
+            "lineNumber": 713
+          },
+          {
+            "text": "            ",
+            "lineNumber": 714
+          },
+          {
+            "text": "            # Get project-scoped meditation notes for DAAS",
+            "lineNumber": 715
+          },
+          {
+            "text": "            mcp_notes_context = None",
+            "lineNumber": 716
+          },
+          {
+            "text": "            try:",
+            "lineNumber": 717
+          },
+          {
+            "text": "                from src.mcp.api import get_mcp_api",
+            "lineNumber": 718
+          },
+          {
+            "text": "                api = get_mcp_api()",
+            "lineNumber": 719
+          },
+          {
+            "text": "                project_notes = api.get_project_notes(project, user_message, limit=5)",
+            "lineNumber": 720
+          },
+          {
+            "text": "                if project_notes:",
+            "lineNumber": 721
+          },
+          {
+            "text": "                    notes_parts = []",
+            "lineNumber": 722
+          },
+          {
+            "text": "                    for note in project_notes:",
+            "lineNumber": 723
+          },
+          {
+            "text": "                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")",
+            "lineNumber": 724
+          },
+          {
+            "text": "                    if notes_parts:",
+            "lineNumber": 725
+          },
+          {
+            "text": "                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)",
+            "lineNumber": 726
+          },
+          {
+            "text": "            except Exception as e:",
+            "lineNumber": 727
+          },
+          {
+            "text": "                logger.debug(f\"MCP notes not available for DAAS: {e}\")",
+            "lineNumber": 728
+          },
+          {
+            "text": "            ",
+            "lineNumber": 729
+          },
+          {
+            "text": "            # If we have dreams from DAAS retrieval, use them",
+            "lineNumber": 730
+          },
+          {
+            "text": "            if",
+            "lineNumber": 731
+          }
+        ]
+      },
+      "score": 0.403533935546875
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 42
+          }
+        },
+        "contents": "# Research: DAAS Semantic Dream Retrieval and Streaming Responses\n\n## Embedding Model/Service Selection\n\n### Decision: Use OpenAI's &#96;text-embedding-3-small&#96; model via OpenAI SDK\n\n**Rationale**:\n- Project already uses OpenAI SDK for chat completions, maintaining consistency\n- &#96;text-embedding-3-small&#96; provides good quality embeddings at low cost ($0.02 per 1M tokens)\n- 1536-dimensional vectors are manageable for PostgreSQL storage\n- No additional service dependencies required\n- Well-documented and reliable API\n\n**Alternatives Considered**:\n- **Ollama embeddings**: Already in use for conversation indexing, but requires local model management and may be slower for batch operations\n- **Sentence Transformers (local)**: Would require additional dependencies and model storage, but offers offline capability\n- **Other cloud services (Cohere, HuggingFace)**: Adds new dependencies and API keys\n\n**Implementation Notes**:\n- Use OpenAI's &#96;embeddings.create()&#96; API endpoint\n- Cache embeddings to avoid regenerating for same content\n- Handle rate limits gracefully (OpenAI has generous limits for embeddings)\n\n## Vector Storage in PostgreSQL\n\n### Decision: Use PostgreSQL's &#96;vector&#96; extension (pgvector) for native vector similarity search\n\n**Rationale**:\n- Native PostgreSQL extension provides efficient vector operations\n- Supports cosine similarity, L2 distance, and inner product\n- Indexing support (IVFFlat, HNSW) for fast similarity search\n- No external vector database required (keeps architecture simple)\n- Works seamlessly with existing PostgreSQL infrastructure\n\n**Alternatives Considered**:\n- **Store as JSONB array**: Would require application-level similarity calculation (slow for large datasets)\n- **External vector DB (Pinecone, Weaviate)**: Adds complexity, network latency, and additional service dependency\n- **Embeddings in separate table**: More normalized but requires joins; pgvector allows embedding column in conversation_index\n\n**Implementation Notes**:\n- Install &#96;pgvector&#96; extension: &#96;CREATE EXTENSION vector;&#96;\n- Add &#96;embedding vector(1536)&#96; column to &#96;conversation_index&#96; table (nullable, DAAS-only)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Embedding Model/Service Selection",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### Decision: Use OpenAI's &#96;text-embedding-3-small&#96; model via OpenAI SDK",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 7
+          },
+          {
+            "text": "- Project already uses OpenAI SDK for chat completions, maintaining consistency",
+            "lineNumber": 8
+          },
+          {
+            "text": "- &#96;text-embedding-3-small&#96; provides good quality embeddings at low cost ($0.02 per 1M tokens)",
+            "lineNumber": 9
+          },
+          {
+            "text": "- 1536-dimensional vectors are manageable for PostgreSQL storage",
+            "lineNumber": 10
+          },
+          {
+            "text": "- No additional service dependencies required",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Well-documented and reliable API",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Alternatives Considered**:",
+            "lineNumber": 14
+          },
+          {
+            "text": "- **Ollama embeddings**: Already in use for conversation indexing, but requires local model management and may be slower for batch operations",
+            "lineNumber": 15
+          },
+          {
+            "text": "- **Sentence Transformers (local)**: Would require additional dependencies and model storage, but offers offline capability",
+            "lineNumber": 16
+          },
+          {
+            "text": "- **Other cloud services (Cohere, HuggingFace)**: Adds new dependencies and API keys",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "**Implementation Notes**:",
+            "lineNumber": 19
+          },
+          {
+            "text": "- Use OpenAI's &#96;embeddings.create()&#96; API endpoint",
+            "lineNumber": 20
+          },
+          {
+            "text": "- Cache embeddings to avoid regenerating for same content",
+            "lineNumber": 21
+          },
+          {
+            "text": "- Handle rate limits gracefully (OpenAI has generous limits for embeddings)",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "## Vector Storage in PostgreSQL",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "### Decision: Use PostgreSQL's &#96;vector&#96; extension (pgvector) for native vector similarity search",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Native PostgreSQL extension provides efficient vector operations",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Supports cosine similarity, L2 distance, and inner product",
+            "lineNumber": 30
+          },
+          {
+            "text": "- Indexing support (IVFFlat, HNSW) for fast similarity search",
+            "lineNumber": 31
+          },
+          {
+            "text": "- No external vector database required (keeps architecture simple)",
+            "lineNumber": 32
+          },
+          {
+            "text": "- Works seamlessly with existing PostgreSQL infrastructure",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**Alternatives Considered**:",
+            "lineNumber": 35
+          },
+          {
+            "text": "- **Store as JSONB array**: Would require application-level similarity calculation (slow for large datasets)",
+            "lineNumber": 36
+          },
+          {
+            "text": "- **External vector DB (Pinecone, Weaviate)**: Adds complexity, network latency, and additional service dependency",
+            "lineNumber": 37
+          },
+          {
+            "text": "- **Embeddings in separate table**: More normalized but requires joins; pgvector allows embedding column in conversation_index",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "**Implementation Notes**:",
+            "lineNumber": 40
+          },
+          {
+            "text": "- Install &#96;pgvector&#96; extension: &#96;CREATE EXTENSION vector;&#96;",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Add &#96;embedding vector(1536)&#96; column to &#96;conversation_index&#96; table (nullable, DAAS-only)",
+            "lineNumber": 42
+          }
+        ]
+      },
+      "score": 0.37921690940856934
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 58
+          }
+        },
+        "contents": "# Data Model: DAAS Semantic Dream Retrieval and Streaming Responses\n\n## 1. conversation_index (MODIFIED)\n\n### New Column: embedding\n\n| Column | Type | Constraints | Notes |\n|--------|------|-------------|-------|\n| embedding | vector(1536) | NULL allowed | Vector embedding for DAAS project entries only. Generated via OpenAI &#96;text-embedding-3-small&#96; model. Used for semantic similarity search. |\n\n### Existing Columns (unchanged)\n- session_id (UUID, PK)\n- project (TEXT, NOT NULL)\n- title (TEXT, NULL)\n- tags (JSONB, NULL)\n- summary_short (TEXT, NULL)\n- summary_detailed (TEXT, NULL)\n- key_entities (JSONB, NULL)\n- key_topics (JSONB, NULL)\n- memory_snippet (TEXT, NULL)\n- ollama_model (TEXT, NOT NULL)\n- version (INTEGER, NOT NULL)\n- indexed_at (TIMESTAMPTZ, NOT NULL)\n\n### Indexes\n\n**New Index**: Vector similarity search index\n&#96;&#96;&#96;sql\nCREATE INDEX idx_conversation_index_embedding \nON conversation_index \nUSING ivfflat (embedding vector_cosine_ops) \nWITH (lists = 100)\nWHERE project = 'DAAS' AND embedding IS NOT NULL;\n&#96;&#96;&#96;\n\n**Rationale**: \n- IVFFlat index provides fast approximate nearest neighbor search\n- Partial index (WHERE clause) only indexes DAAS entries with embeddings\n- Cosine similarity operator (&#96;&lt;=&gt;&#96;) for semantic search\n- &#96;lists = 100&#96; balances speed vs accuracy for expected dataset size\n\n## 2. Embedding Generation Workflow\n\n### Input Data\n- Source: &#96;conversation_index&#96; rows where &#96;project = 'DAAS'&#96;\n- Text to embed: Combination of &#96;title&#96;, &#96;summary_detailed&#96;, &#96;key_topics&#96;, and &#96;memory_snippet&#96;\n- Format: Concatenated text string for embedding generation\n\n### Embedding Storage\n- Stored in &#96;conversation_index.embedding&#96; column\n- Generated during indexing phase (when &#96;index_session()&#96; is called)\n- Backfilled for existing DAAS entries via &#96;backfill_embeddings.py&#96; script\n\n### Validation Rules\n- Embedding is NULL for non-DAAS projects (enforced by application logic)\n- Embedding is NULL for DAAS entries that haven't been indexed yet\n- Embedding dimension must be 1536 (enforced by column type &#96;vector(1536)&#96;)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## 1. conversation_index (MODIFIED)",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### New Column: embedding",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "| Column | Type | Constraints | Notes |",
+            "lineNumber": 7
+          },
+          {
+            "text": "|--------|------|-------------|-------|",
+            "lineNumber": 8
+          },
+          {
+            "text": "| embedding | vector(1536) | NULL allowed | Vector embedding for DAAS project entries only. Generated via OpenAI &#96;text-embedding-3-small&#96; model. Used for semantic similarity search. |",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "### Existing Columns (unchanged)",
+            "lineNumber": 11
+          },
+          {
+            "text": "- session_id (UUID, PK)",
+            "lineNumber": 12
+          },
+          {
+            "text": "- project (TEXT, NOT NULL)",
+            "lineNumber": 13
+          },
+          {
+            "text": "- title (TEXT, NULL)",
+            "lineNumber": 14
+          },
+          {
+            "text": "- tags (JSONB, NULL)",
+            "lineNumber": 15
+          },
+          {
+            "text": "- summary_short (TEXT, NULL)",
+            "lineNumber": 16
+          },
+          {
+            "text": "- summary_detailed (TEXT, NULL)",
+            "lineNumber": 17
+          },
+          {
+            "text": "- key_entities (JSONB, NULL)",
+            "lineNumber": 18
+          },
+          {
+            "text": "- key_topics (JSONB, NULL)",
+            "lineNumber": 19
+          },
+          {
+            "text": "- memory_snippet (TEXT, NULL)",
+            "lineNumber": 20
+          },
+          {
+            "text": "- ollama_model (TEXT, NOT NULL)",
+            "lineNumber": 21
+          },
+          {
+            "text": "- version (INTEGER, NOT NULL)",
+            "lineNumber": 22
+          },
+          {
+            "text": "- indexed_at (TIMESTAMPTZ, NOT NULL)",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "### Indexes",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "**New Index**: Vector similarity search index",
+            "lineNumber": 27
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 28
+          },
+          {
+            "text": "CREATE INDEX idx_conversation_index_embedding ",
+            "lineNumber": 29
+          },
+          {
+            "text": "ON conversation_index ",
+            "lineNumber": 30
+          },
+          {
+            "text": "USING ivfflat (embedding vector_cosine_ops) ",
+            "lineNumber": 31
+          },
+          {
+            "text": "WITH (lists = 100)",
+            "lineNumber": 32
+          },
+          {
+            "text": "WHERE project = 'DAAS' AND embedding IS NOT NULL;",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "**Rationale**: ",
+            "lineNumber": 36
+          },
+          {
+            "text": "- IVFFlat index provides fast approximate nearest neighbor search",
+            "lineNumber": 37
+          },
+          {
+            "text": "- Partial index (WHERE clause) only indexes DAAS entries with embeddings",
+            "lineNumber": 38
+          },
+          {
+            "text": "- Cosine similarity operator (&#96;&lt;=&gt;&#96;) for semantic search",
+            "lineNumber": 39
+          },
+          {
+            "text": "- &#96;lists = 100&#96; balances speed vs accuracy for expected dataset size",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "## 2. Embedding Generation Workflow",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "### Input Data",
+            "lineNumber": 44
+          },
+          {
+            "text": "- Source: &#96;conversation_index&#96; rows where &#96;project = 'DAAS'&#96;",
+            "lineNumber": 45
+          },
+          {
+            "text": "- Text to embed: Combination of &#96;title&#96;, &#96;summary_detailed&#96;, &#96;key_topics&#96;, and &#96;memory_snippet&#96;",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Format: Concatenated text string for embedding generation",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### Embedding Storage",
+            "lineNumber": 49
+          },
+          {
+            "text": "- Stored in &#96;conversation_index.embedding&#96; column",
+            "lineNumber": 50
+          },
+          {
+            "text": "- Generated during indexing phase (when &#96;index_session()&#96; is called)",
+            "lineNumber": 51
+          },
+          {
+            "text": "- Backfilled for existing DAAS entries via &#96;backfill_embeddings.py&#96; script",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "### Validation Rules",
+            "lineNumber": 54
+          },
+          {
+            "text": "- Embedding is NULL for non-DAAS projects (enforced by application logic)",
+            "lineNumber": 55
+          },
+          {
+            "text": "- Embedding is NULL for DAAS entries that haven't been indexed yet",
+            "lineNumber": 56
+          },
+          {
+            "text": "- Embedding dimension must be 1536 (enforced by column type &#96;vector(1536)&#96;)",
+            "lineNumber": 57
+          }
+        ]
+      },
+      "score": 0.3791619539260864
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/contracts/cli.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 54
+          }
+        },
+        "contents": "# CLI Contracts: DAAS Semantic Dream Retrieval\n\n## No New Commands\n\nThis feature does not introduce new CLI commands. Existing chat interface automatically uses DAAS-specific retrieval when:\n- Project is set to DAAS (&#96;/project DAAS&#96; or initial project selection)\n- User sends a message (quoted title or pattern query)\n\n## Modified Behavior\n\n### Chat Query Processing\n\n**Input**: User message in DAAS project context\n\n**Processing**:\n1. Detect quoted title pattern: &#96;\"Dream Title\"&#96;\n2. If found → Single-dream mode (title matching)\n3. If not found → Pattern-based mode (vector similarity search)\n4. Retrieve relevant context\n5. Generate response with streaming\n\n**Output**: Streaming response text (progressive display)\n\n## Streaming Response Display\n\n**Format**: Text appears progressively word-by-word or chunk-by-chunk\n\n**Implementation**:\n- Use OpenAI streaming API (&#96;stream=True&#96;)\n- Print chunks as received via &#96;sys.stdout.write()&#96;\n- Flush after each chunk: &#96;sys.stdout.flush()&#96;\n- Handle line breaks appropriately\n- Support Ctrl+C interruption gracefully\n\n**User Experience**:\n- Response begins appearing within 2 seconds\n- Text cascades down the screen\n- Mimics ChatGPT progressive display\n\n## Error Handling\n\n**No Match Found (Single-Dream Mode)**:\n- Display: \"No dream found matching '[Title]'. Did you mean one of these?\" (list similar titles)\n- Allow user to retry with corrected title\n\n**No Relevant Dreams (Pattern Mode)**:\n- Display: \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"\n- Continue with general context (project knowledge only)\n\n**Embedding Generation Failure**:\n- Log error\n- Fall back to keyword-based search (existing behavior)\n- Notify user: \"Using keyword search (semantic search unavailable)\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# CLI Contracts: DAAS Semantic Dream Retrieval",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## No New Commands",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature does not introduce new CLI commands. Existing chat interface automatically uses DAAS-specific retrieval when:",
+            "lineNumber": 5
+          },
+          {
+            "text": "- Project is set to DAAS (&#96;/project DAAS&#96; or initial project selection)",
+            "lineNumber": 6
+          },
+          {
+            "text": "- User sends a message (quoted title or pattern query)",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "## Modified Behavior",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "### Chat Query Processing",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Input**: User message in DAAS project context",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Processing**:",
+            "lineNumber": 15
+          },
+          {
+            "text": "1. Detect quoted title pattern: &#96;\"Dream Title\"&#96;",
+            "lineNumber": 16
+          },
+          {
+            "text": "2. If found → Single-dream mode (title matching)",
+            "lineNumber": 17
+          },
+          {
+            "text": "3. If not found → Pattern-based mode (vector similarity search)",
+            "lineNumber": 18
+          },
+          {
+            "text": "4. Retrieve relevant context",
+            "lineNumber": 19
+          },
+          {
+            "text": "5. Generate response with streaming",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Output**: Streaming response text (progressive display)",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "## Streaming Response Display",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Format**: Text appears progressively word-by-word or chunk-by-chunk",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "**Implementation**:",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Use OpenAI streaming API (&#96;stream=True&#96;)",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Print chunks as received via &#96;sys.stdout.write()&#96;",
+            "lineNumber": 30
+          },
+          {
+            "text": "- Flush after each chunk: &#96;sys.stdout.flush()&#96;",
+            "lineNumber": 31
+          },
+          {
+            "text": "- Handle line breaks appropriately",
+            "lineNumber": 32
+          },
+          {
+            "text": "- Support Ctrl+C interruption gracefully",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**User Experience**:",
+            "lineNumber": 35
+          },
+          {
+            "text": "- Response begins appearing within 2 seconds",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Text cascades down the screen",
+            "lineNumber": 37
+          },
+          {
+            "text": "- Mimics ChatGPT progressive display",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "## Error Handling",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "**No Match Found (Single-Dream Mode)**:",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Display: \"No dream found matching '[Title]'. Did you mean one of these?\" (list similar titles)",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Allow user to retry with corrected title",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "**No Relevant Dreams (Pattern Mode)**:",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Display: \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"",
+            "lineNumber": 47
+          },
+          {
+            "text": "- Continue with general context (project knowledge only)",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "**Embedding Generation Failure**:",
+            "lineNumber": 50
+          },
+          {
+            "text": "- Log error",
+            "lineNumber": 51
+          },
+          {
+            "text": "- Fall back to keyword-based search (existing behavior)",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Notify user: \"Using keyword search (semantic search unavailable)\"",
+            "lineNumber": 53
+          }
+        ]
+      },
+      "score": 0.36797550320625305
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/plan.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 24
+          }
+        },
+        "contents": "# Implementation Plan: DAAS Semantic Dream Retrieval and Streaming Responses\n\n**Branch**: &#96;002-daas-semantic-retrieval&#96; | **Date**: 2025-01-27 | **Spec**: [/specs/002-daas-semantic-retrieval/spec.md](./spec.md)  \n**Input**: Feature specification from &#96;/specs/002-daas-semantic-retrieval/spec.md&#96;\n\n## Summary\n\nImplement custom retrieval rules for DAAS project that support both single-dream queries (by quoted title) and pattern-based queries (via vector similarity search). Add semantic vector embeddings to DAAS conversation entries to enable theme and pattern recognition across dreams. Implement streaming response display for both CLI and API interfaces to provide ChatGPT-like progressive text display. Work covers embedding generation/storage, vector similarity search, quoted title detection, retrieval mode routing, and streaming response infrastructure.\n\n## Technical Context\n\n**Language/Version**: Python 3.10+ (repo &#96;.python-version&#96; + venv)  \n**Primary Dependencies**: psycopg2, Flask, OpenAI SDK, &#96;requests&#96; (existing), &#96;pgvector&#96; extension (PostgreSQL), OpenAI embeddings API  \n**Storage**: PostgreSQL (existing &#96;conversation_index&#96; table + new &#96;embedding&#96; column for DAAS entries)  \n**Testing**: Existing project relies on manual + ad-hoc testing (no dedicated framework specified)  \n**Target Platform**: Local CLI + Flask API running on macOS/Linux dev hosts  \n**Project Type**: Single repository housing CLI, API server, and shared &#96;brain_core&#96; modules  \n**Performance Goals**: Vector similarity search completes in &lt;500ms; streaming responses begin within 2 seconds; embedding backfill processes 50 entries per batch with 1s delay (3000 req/min rate limit)  \n**Constraints**: Must avoid breaking current chat flows; DAAS-only feature (other projects unchanged); embeddings only for DAAS project entries; streaming must work in both CLI and API contexts  \n**Scale/Scope**: Single user workflow, dozens-to-hundreds of DAAS dream sessions; vector search over DAAS entries only; top-k retrieval (default 5-10 dreams)\n\n## Constitution Check\n\n**Pre-Phase 0**: Constitution file currently contains placeholders with no enforced principles, so no blocking gates. Continue to document reasoning and keep changes incremental to stay aligned with implied simplicity/observability expectations.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Implementation Plan: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Branch**: &#96;002-daas-semantic-retrieval&#96; | **Date**: 2025-01-27 | **Spec**: [/specs/002-daas-semantic-retrieval/spec.md](./spec.md)  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Input**: Feature specification from &#96;/specs/002-daas-semantic-retrieval/spec.md&#96;",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Summary",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "Implement custom retrieval rules for DAAS project that support both single-dream queries (by quoted title) and pattern-based queries (via vector similarity search). Add semantic vector embeddings to DAAS conversation entries to enable theme and pattern recognition across dreams. Implement streaming response display for both CLI and API interfaces to provide ChatGPT-like progressive text display. Work covers embedding generation/storage, vector similarity search, quoted title detection, retrieval mode routing, and streaming response infrastructure.",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "## Technical Context",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "**Language/Version**: Python 3.10+ (repo &#96;.python-version&#96; + venv)  ",
+            "lineNumber": 12
+          },
+          {
+            "text": "**Primary Dependencies**: psycopg2, Flask, OpenAI SDK, &#96;requests&#96; (existing), &#96;pgvector&#96; extension (PostgreSQL), OpenAI embeddings API  ",
+            "lineNumber": 13
+          },
+          {
+            "text": "**Storage**: PostgreSQL (existing &#96;conversation_index&#96; table + new &#96;embedding&#96; column for DAAS entries)  ",
+            "lineNumber": 14
+          },
+          {
+            "text": "**Testing**: Existing project relies on manual + ad-hoc testing (no dedicated framework specified)  ",
+            "lineNumber": 15
+          },
+          {
+            "text": "**Target Platform**: Local CLI + Flask API running on macOS/Linux dev hosts  ",
+            "lineNumber": 16
+          },
+          {
+            "text": "**Project Type**: Single repository housing CLI, API server, and shared &#96;brain_core&#96; modules  ",
+            "lineNumber": 17
+          },
+          {
+            "text": "**Performance Goals**: Vector similarity search completes in &lt;500ms; streaming responses begin within 2 seconds; embedding backfill processes 50 entries per batch with 1s delay (3000 req/min rate limit)  ",
+            "lineNumber": 18
+          },
+          {
+            "text": "**Constraints**: Must avoid breaking current chat flows; DAAS-only feature (other projects unchanged); embeddings only for DAAS project entries; streaming must work in both CLI and API contexts  ",
+            "lineNumber": 19
+          },
+          {
+            "text": "**Scale/Scope**: Single user workflow, dozens-to-hundreds of DAAS dream sessions; vector search over DAAS entries only; top-k retrieval (default 5-10 dreams)",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "## Constitution Check",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "**Pre-Phase 0**: Constitution file currently contains placeholders with no enforced principles, so no blocking gates. Continue to document reasoning and keep changes incremental to stay aligned with implied simplicity/observability expectations.",
+            "lineNumber": 24
+          }
+        ]
+      },
+      "score": 0.3669646084308624
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/data-model.md",
+        "range": {
+          "startPosition": {
+            "line": 56
+          },
+          "endPosition": {
+            "line": 107
+          }
+        },
+        "contents": "- Embedding dimension must be 1536 (enforced by column type &#96;vector(1536)&#96;)\n\n## 3. Retrieval Modes\n\n### Single-Dream Mode (Quoted Title)\n- **Trigger**: User message contains quoted title pattern &#96;\"Title\"&#96;\n- **Query**: Match &#96;conversation_index.title&#96; using pattern matching (ILIKE)\n- **Filter**: &#96;project = 'DAAS'&#96; AND &#96;title ILIKE %extracted_title%&#96;\n- **Result**: Single conversation entry (most recent if multiple matches)\n- **Embedding**: Not used in this mode\n\n### Pattern-Based Mode (Vector Search)\n- **Trigger**: User message does NOT contain quoted title\n- **Query**: \n  1. Generate embedding for user message\n  2. Vector similarity search: &#96;ORDER BY embedding &lt;=&gt; query_embedding LIMIT k&#96;\n  3. Filter: &#96;project = 'DAAS' AND embedding IS NOT NULL&#96;\n- **Result**: Top-k most semantically similar conversation entries\n- **Embedding**: Required for this mode\n\n## 4. Derived Structures\n\n### Query Embedding\n- **Source**: User message text\n- **Model**: OpenAI &#96;text-embedding-3-small&#96;\n- **Dimension**: 1536\n- **Usage**: Compared against stored embeddings using cosine similarity\n\n### Retrieval Result\n- **Structure**: List of conversation entries with similarity scores\n- **Fields**: session_id, title, summary_short, memory_snippet, similarity_score\n- **Ordering**: By similarity score (descending)\n- **Limit**: Top-k (default 5, configurable)\n\n## 5. Relationships\n\n- &#96;conversation_index.embedding&#96; is self-contained (no foreign keys)\n- Vector similarity search operates within &#96;conversation_index&#96; table only\n- Embeddings reference the same &#96;session_id&#96; as other conversation_index columns\n- No cascading deletes needed (embedding is part of conversation_index row)\n\n## 6. Migration Considerations\n\n### Schema Migration\n1. Install pgvector extension: &#96;CREATE EXTENSION IF NOT EXISTS vector;&#96;\n2. Add embedding column: &#96;ALTER TABLE conversation_index ADD COLUMN embedding vector(1536);&#96;\n3. Create index: (see Indexes section above)\n\n### Data Migration\n1. Backfill script processes existing DAAS entries\n2. Generates embeddings for entries missing them",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- Embedding dimension must be 1536 (enforced by column type &#96;vector(1536)&#96;)",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## 3. Retrieval Modes",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "### Single-Dream Mode (Quoted Title)",
+            "lineNumber": 61
+          },
+          {
+            "text": "- **Trigger**: User message contains quoted title pattern &#96;\"Title\"&#96;",
+            "lineNumber": 62
+          },
+          {
+            "text": "- **Query**: Match &#96;conversation_index.title&#96; using pattern matching (ILIKE)",
+            "lineNumber": 63
+          },
+          {
+            "text": "- **Filter**: &#96;project = 'DAAS'&#96; AND &#96;title ILIKE %extracted_title%&#96;",
+            "lineNumber": 64
+          },
+          {
+            "text": "- **Result**: Single conversation entry (most recent if multiple matches)",
+            "lineNumber": 65
+          },
+          {
+            "text": "- **Embedding**: Not used in this mode",
+            "lineNumber": 66
+          },
+          {
+            "lineNumber": 67
+          },
+          {
+            "text": "### Pattern-Based Mode (Vector Search)",
+            "lineNumber": 68
+          },
+          {
+            "text": "- **Trigger**: User message does NOT contain quoted title",
+            "lineNumber": 69
+          },
+          {
+            "text": "- **Query**: ",
+            "lineNumber": 70
+          },
+          {
+            "text": "  1. Generate embedding for user message",
+            "lineNumber": 71
+          },
+          {
+            "text": "  2. Vector similarity search: &#96;ORDER BY embedding &lt;=&gt; query_embedding LIMIT k&#96;",
+            "lineNumber": 72
+          },
+          {
+            "text": "  3. Filter: &#96;project = 'DAAS' AND embedding IS NOT NULL&#96;",
+            "lineNumber": 73
+          },
+          {
+            "text": "- **Result**: Top-k most semantically similar conversation entries",
+            "lineNumber": 74
+          },
+          {
+            "text": "- **Embedding**: Required for this mode",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "## 4. Derived Structures",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "### Query Embedding",
+            "lineNumber": 79
+          },
+          {
+            "text": "- **Source**: User message text",
+            "lineNumber": 80
+          },
+          {
+            "text": "- **Model**: OpenAI &#96;text-embedding-3-small&#96;",
+            "lineNumber": 81
+          },
+          {
+            "text": "- **Dimension**: 1536",
+            "lineNumber": 82
+          },
+          {
+            "text": "- **Usage**: Compared against stored embeddings using cosine similarity",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "### Retrieval Result",
+            "lineNumber": 85
+          },
+          {
+            "text": "- **Structure**: List of conversation entries with similarity scores",
+            "lineNumber": 86
+          },
+          {
+            "text": "- **Fields**: session_id, title, summary_short, memory_snippet, similarity_score",
+            "lineNumber": 87
+          },
+          {
+            "text": "- **Ordering**: By similarity score (descending)",
+            "lineNumber": 88
+          },
+          {
+            "text": "- **Limit**: Top-k (default 5, configurable)",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "## 5. Relationships",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "- &#96;conversation_index.embedding&#96; is self-contained (no foreign keys)",
+            "lineNumber": 93
+          },
+          {
+            "text": "- Vector similarity search operates within &#96;conversation_index&#96; table only",
+            "lineNumber": 94
+          },
+          {
+            "text": "- Embeddings reference the same &#96;session_id&#96; as other conversation_index columns",
+            "lineNumber": 95
+          },
+          {
+            "text": "- No cascading deletes needed (embedding is part of conversation_index row)",
+            "lineNumber": 96
+          },
+          {
+            "lineNumber": 97
+          },
+          {
+            "text": "## 6. Migration Considerations",
+            "lineNumber": 98
+          },
+          {
+            "lineNumber": 99
+          },
+          {
+            "text": "### Schema Migration",
+            "lineNumber": 100
+          },
+          {
+            "text": "1. Install pgvector extension: &#96;CREATE EXTENSION IF NOT EXISTS vector;&#96;",
+            "lineNumber": 101
+          },
+          {
+            "text": "2. Add embedding column: &#96;ALTER TABLE conversation_index ADD COLUMN embedding vector(1536);&#96;",
+            "lineNumber": 102
+          },
+          {
+            "text": "3. Create index: (see Indexes section above)",
+            "lineNumber": 103
+          },
+          {
+            "lineNumber": 104
+          },
+          {
+            "text": "### Data Migration",
+            "lineNumber": 105
+          },
+          {
+            "text": "1. Backfill script processes existing DAAS entries",
+            "lineNumber": 106
+          },
+          {
+            "text": "2. Generates embeddings for entries missing them",
+            "lineNumber": 107
+          }
+        ]
+      },
+      "score": 0.3659975528717041
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 593,
+            "column": 27
+          },
+          "endPosition": {
+            "line": 671
+          }
+        },
+        "contents": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.\n    \n    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks\n    from code_index using vector similarity search. Formats them into a structured RAG context\n    that appears after the project_knowledge section (overview + rules) in system messages.\n    \n    Args:\n        user_message: Current user message for code similarity search\n    \n    Returns:\n        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)\n        \n    Performance:\n        Target: &lt;500ms total generation time\n        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)\n        - Code similarity search: &lt;200ms (uses vector index)\n        - Formatting: &lt;50ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    notes = []\n    context_parts = []\n    \n    # Retrieve and format conversations\n    conv_start = time.time()\n    conversations = _retrieve_thn_conversations(limit=5)\n    conv_time = (time.time() - conv_start) * 1000  # Convert to ms\n    \n    if conversations:\n        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]\n        for row in conversations:\n            formatted = _format_conversation_entry(row)\n            if formatted:\n                history_parts.append(formatted)\n                history_parts.append(\"\")  # Empty line between entries\n        \n        if len(history_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(history_parts))\n            notes.append(\"Retrieved 5 conversations from conversation_index\")\n    \n    # Retrieve and format code snippets\n    code_start = time.time()\n    code_chunks = _retrieve_thn_code(user_message, top_k=5)\n    code_time = (time.time() - code_start) * 1000  # Convert to ms\n    \n    if code_chunks:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:",
+            "lineNumber": 597,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 598
+          },
+          {
+            "text": "    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.",
+            "lineNumber": 599
+          },
+          {
+            "text": "    ",
+            "lineNumber": 600
+          },
+          {
+            "text": "    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks",
+            "lineNumber": 601
+          },
+          {
+            "text": "    from code_index using vector similarity search. Formats them into a structured RAG context",
+            "lineNumber": 602
+          },
+          {
+            "text": "    that appears after the project_knowledge section (overview + rules) in system messages.",
+            "lineNumber": 603
+          },
+          {
+            "text": "    ",
+            "lineNumber": 604
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 605
+          },
+          {
+            "text": "        user_message: Current user message for code similarity search",
+            "lineNumber": 606
+          },
+          {
+            "text": "    ",
+            "lineNumber": 607
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 608
+          },
+          {
+            "text": "        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)",
+            "lineNumber": 609
+          },
+          {
+            "text": "        ",
+            "lineNumber": 610
+          },
+          {
+            "text": "    Performance:",
+            "lineNumber": 611
+          },
+          {
+            "text": "        Target: &lt;500ms total generation time",
+            "lineNumber": 612
+          },
+          {
+            "text": "        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)",
+            "lineNumber": 613
+          },
+          {
+            "text": "        - Code similarity search: &lt;200ms (uses vector index)",
+            "lineNumber": 614
+          },
+          {
+            "text": "        - Formatting: &lt;50ms",
+            "lineNumber": 615
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 616
+          },
+          {
+            "text": "    import time",
+            "lineNumber": 617
+          },
+          {
+            "text": "    start_time = time.time()",
+            "lineNumber": 618
+          },
+          {
+            "text": "    ",
+            "lineNumber": 619
+          },
+          {
+            "text": "    notes = []",
+            "lineNumber": 620
+          },
+          {
+            "text": "    context_parts = []",
+            "lineNumber": 621
+          },
+          {
+            "text": "    ",
+            "lineNumber": 622
+          },
+          {
+            "text": "    # Retrieve and format conversations",
+            "lineNumber": 623
+          },
+          {
+            "text": "    conv_start = time.time()",
+            "lineNumber": 624
+          },
+          {
+            "text": "    conversations = _retrieve_thn_conversations(limit=5)",
+            "lineNumber": 625
+          },
+          {
+            "text": "    conv_time = (time.time() - conv_start) * 1000  # Convert to ms",
+            "lineNumber": 626
+          },
+          {
+            "text": "    ",
+            "lineNumber": 627
+          },
+          {
+            "text": "    if conversations:",
+            "lineNumber": 628
+          },
+          {
+            "text": "        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]",
+            "lineNumber": 629
+          },
+          {
+            "text": "        for row in conversations:",
+            "lineNumber": 630
+          },
+          {
+            "text": "            formatted = _format_conversation_entry(row)",
+            "lineNumber": 631
+          },
+          {
+            "text": "            if formatted:",
+            "lineNumber": 632
+          },
+          {
+            "text": "                history_parts.append(formatted)",
+            "lineNumber": 633
+          },
+          {
+            "text": "                history_parts.append(\"\")  # Empty line between entries",
+            "lineNumber": 634
+          },
+          {
+            "text": "        ",
+            "lineNumber": 635
+          },
+          {
+            "text": "        if len(history_parts) &gt; 1:  # More than just the header",
+            "lineNumber": 636
+          },
+          {
+            "text": "            context_parts.append(\"\\n\".join(history_parts))",
+            "lineNumber": 637
+          },
+          {
+            "text": "            notes.append(\"Retrieved 5 conversations from conversation_index\")",
+            "lineNumber": 638
+          },
+          {
+            "text": "    ",
+            "lineNumber": 639
+          },
+          {
+            "text": "    # Retrieve and format code snippets",
+            "lineNumber": 640
+          },
+          {
+            "text": "    code_start = time.time()",
+            "lineNumber": 641
+          },
+          {
+            "text": "    code_chunks = _retrieve_thn_code(user_message, top_k=5)",
+            "lineNumber": 642
+          },
+          {
+            "text": "    code_time = (time.time() - code_start) * 1000  # Convert to ms",
+            "lineNumber": 643
+          },
+          {
+            "text": "    ",
+            "lineNumber": 644
+          },
+          {
+            "text": "    if code_chunks:",
+            "lineNumber": 645
+          }
+        ]
+      },
+      "score": 0.3605313301086426
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 53
+          }
+        },
+        "contents": "# Feature Specification: Enhance THN RAG System\n\n**Feature ID**: &#96;013-enhance-thn-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nReplace the current RAG implementation for THN project with a new, improved RAG system that provides:\n\n1. **History &amp; Context**: Last 5 conversations from &#96;conversation_index&#96; table\n2. **Relevant Code Snippets**: Code chunks from &#96;thn_code_index&#96; table (via &#96;code_index&#96; table)\n\nThe goal is to give project THN a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate where conversations should be going. Code snippets aid in code review and analysis tasks.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current THN RAG Implementation**\n\n   - Remove existing THN-specific RAG code in &#96;build_project_context()&#96; function\n   - Remove or deprecate &#96;get_thn_code_context()&#96; usage in context builder\n   - Clean up any THN-specific retrieval logic that doesn't match new format\n\n2. **Implement New RAG Format**\n\n   **History &amp; Context Section:**\n\n   - Query &#96;conversation_index&#96; table for THN project\n   - Retrieve last 5 conversations (ordered by &#96;indexed_at DESC&#96;)\n   - Format each entry with:\n     - Title (&#96;title&#96;)\n     - Tags (&#96;tags&#96; - JSONB array)\n     - Key Entities (&#96;key_entities&#96; - JSONB array)\n     - Summary (&#96;summary_detailed&#96;)\n     - Memory Snippet (&#96;memory_snippet&#96;)\n\n   **Relevant Code Snippets Section:**\n\n   - Query &#96;code_index&#96; table (THN code)\n   - Retrieve top 5 relevant code chunks using vector similarity search\n   - Format each entry with:\n     - File path (&#96;file_path&#96;)\n     - Language (&#96;language&#96;)\n     - Brief description (extracted from metadata or file path)\n     - Code chunk text (&#96;chunk_text&#96;)\n\n3. **RAG Format Template**\n\n   &#96;&#96;&#96;&#96;\n   ### History &amp; Context: Last 5 Conversations",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature ID**: &#96;013-enhance-thn-rag&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Planning",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "Replace the current RAG implementation for THN project with a new, improved RAG system that provides:",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "1. **History &amp; Context**: Last 5 conversations from &#96;conversation_index&#96; table",
+            "lineNumber": 11
+          },
+          {
+            "text": "2. **Relevant Code Snippets**: Code chunks from &#96;thn_code_index&#96; table (via &#96;code_index&#96; table)",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "The goal is to give project THN a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate where conversations should be going. Code snippets aid in code review and analysis tasks.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "1. **Remove Current THN RAG Implementation**",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "   - Remove existing THN-specific RAG code in &#96;build_project_context()&#96; function",
+            "lineNumber": 22
+          },
+          {
+            "text": "   - Remove or deprecate &#96;get_thn_code_context()&#96; usage in context builder",
+            "lineNumber": 23
+          },
+          {
+            "text": "   - Clean up any THN-specific retrieval logic that doesn't match new format",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "2. **Implement New RAG Format**",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "   **History &amp; Context Section:**",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "   - Query &#96;conversation_index&#96; table for THN project",
+            "lineNumber": 30
+          },
+          {
+            "text": "   - Retrieve last 5 conversations (ordered by &#96;indexed_at DESC&#96;)",
+            "lineNumber": 31
+          },
+          {
+            "text": "   - Format each entry with:",
+            "lineNumber": 32
+          },
+          {
+            "text": "     - Title (&#96;title&#96;)",
+            "lineNumber": 33
+          },
+          {
+            "text": "     - Tags (&#96;tags&#96; - JSONB array)",
+            "lineNumber": 34
+          },
+          {
+            "text": "     - Key Entities (&#96;key_entities&#96; - JSONB array)",
+            "lineNumber": 35
+          },
+          {
+            "text": "     - Summary (&#96;summary_detailed&#96;)",
+            "lineNumber": 36
+          },
+          {
+            "text": "     - Memory Snippet (&#96;memory_snippet&#96;)",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "   **Relevant Code Snippets Section:**",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "   - Query &#96;code_index&#96; table (THN code)",
+            "lineNumber": 41
+          },
+          {
+            "text": "   - Retrieve top 5 relevant code chunks using vector similarity search",
+            "lineNumber": 42
+          },
+          {
+            "text": "   - Format each entry with:",
+            "lineNumber": 43
+          },
+          {
+            "text": "     - File path (&#96;file_path&#96;)",
+            "lineNumber": 44
+          },
+          {
+            "text": "     - Language (&#96;language&#96;)",
+            "lineNumber": 45
+          },
+          {
+            "text": "     - Brief description (extracted from metadata or file path)",
+            "lineNumber": 46
+          },
+          {
+            "text": "     - Code chunk text (&#96;chunk_text&#96;)",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "3. **RAG Format Template**",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "   &#96;&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "text": "   ### History &amp; Context: Last 5 Conversations",
+            "lineNumber": 52
+          }
+        ]
+      },
+      "score": 0.35970520973205566
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 22
+          }
+        },
+        "contents": "# Feature Specification: DAAS Semantic Dream Retrieval and Streaming Responses\n\n**Feature Branch**: &#96;002-daas-semantic-retrieval&#96;  \n**Created**: 2025-01-27  \n**Status**: Draft  \n**Input**: User description: \"The DAAS project is designed for dream analysis and often times I'll ask to review a dream from a variety of perspectives Christian, Jungian, Pagan, etc. Currently, it is having a hard time providing the optimal response when I want to discuss a dream. So I'd like to update project_chat in three ways: 1. DAAS will have custom retrieval rules. 2. Implement Semantic Vector Embedding in DAAS project entries only. 3. Currently, from a UI perspective the response come out in a single block of text. I prefer to have the text cascaded down and mimic the experience of using ChatGPT\"\n\n## User Scenarios &amp; Testing *(mandatory)*\n\n### User Story 1 - Single Dream Analysis by Title (Priority: P1)\n\nA user wants to analyze a specific dream they've previously recorded. They reference the dream by its title in quotes, expecting the system to retrieve only that specific dream's context and provide analysis from multiple perspectives (Christian, Jungian, Pagan, etc.).\n\n**Why this priority**: This is the most common use case - users want to revisit and analyze specific dreams they've already discussed. It requires precise retrieval to avoid mixing contexts from other dreams.\n\n**Independent Test**: Can be fully tested by asking \"Analyze 'Dream Title Here' from a Christian perspective\" and verifying that only the matching dream is retrieved, no other dreams are included, and the response focuses solely on that dream.\n\n**Acceptance Scenarios**:\n\n1. **Given** a user has multiple dreams stored in DAAS project, **When** the user asks \"What does 'My Flying Dream' mean from a Jungian perspective?\", **Then** the system retrieves only the conversation titled \"My Flying Dream\" (or matching title) and provides analysis using only that dream's context\n2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap\n3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature Branch**: &#96;002-daas-semantic-retrieval&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Created**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Draft  ",
+            "lineNumber": 5
+          },
+          {
+            "text": "**Input**: User description: \"The DAAS project is designed for dream analysis and often times I'll ask to review a dream from a variety of perspectives Christian, Jungian, Pagan, etc. Currently, it is having a hard time providing the optimal response when I want to discuss a dream. So I'd like to update project_chat in three ways: 1. DAAS will have custom retrieval rules. 2. Implement Semantic Vector Embedding in DAAS project entries only. 3. Currently, from a UI perspective the response come out in a single block of text. I prefer to have the text cascaded down and mimic the experience of using ChatGPT\"",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "## User Scenarios &amp; Testing *(mandatory)*",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "### User Story 1 - Single Dream Analysis by Title (Priority: P1)",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "A user wants to analyze a specific dream they've previously recorded. They reference the dream by its title in quotes, expecting the system to retrieve only that specific dream's context and provide analysis from multiple perspectives (Christian, Jungian, Pagan, etc.).",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Why this priority**: This is the most common use case - users want to revisit and analyze specific dreams they've already discussed. It requires precise retrieval to avoid mixing contexts from other dreams.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Independent Test**: Can be fully tested by asking \"Analyze 'Dream Title Here' from a Christian perspective\" and verifying that only the matching dream is retrieved, no other dreams are included, and the response focuses solely on that dream.",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "**Acceptance Scenarios**:",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "1. **Given** a user has multiple dreams stored in DAAS project, **When** the user asks \"What does 'My Flying Dream' mean from a Jungian perspective?\", **Then** the system retrieves only the conversation titled \"My Flying Dream\" (or matching title) and provides analysis using only that dream's context",
+            "lineNumber": 20
+          },
+          {
+            "text": "2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap",
+            "lineNumber": 21
+          },
+          {
+            "text": "3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response",
+            "lineNumber": 22
+          }
+        ]
+      },
+      "score": 0.3586435914039612
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 75
+          },
+          "endPosition": {
+            "line": 99
+          }
+        },
+        "contents": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py\n- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py\n- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py\n\n**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional\n\n---\n\n## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)\n\n**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations\n\n**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.\n\n### Implementation for User Story 3\n\n- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths\n- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py\n- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py\n- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py",
+            "lineNumber": 76
+          },
+          {
+            "text": "- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py",
+            "lineNumber": 77
+          },
+          {
+            "text": "- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional",
+            "lineNumber": 80
+          },
+          {
+            "lineNumber": 81
+          },
+          {
+            "text": "---",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)",
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85
+          },
+          {
+            "text": "**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "### Implementation for User Story 3",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths",
+            "lineNumber": 92
+          },
+          {
+            "text": "- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 93
+          },
+          {
+            "text": "- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 94
+          },
+          {
+            "text": "- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py",
+            "lineNumber": 95
+          },
+          {
+            "text": "- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 96
+          },
+          {
+            "text": "- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 97
+          },
+          {
+            "text": "- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 98
+          },
+          {
+            "text": "- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+            "lineNumber": 99
+          }
+        ]
+      },
+      "score": 0.35462990403175354
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 62
+          }
+        },
+        "contents": "# Data Model: Enhance THN RAG System\n\n## Overview\n\nThis feature modifies the RAG (Retrieval Augmented Generation) system for THN project. No database schema changes are required - we use existing tables (&#96;conversation_index&#96; and &#96;code_index&#96;).\n\n## Existing Tables Used\n\n### 1. conversation_index\n\n**Purpose**: Stores conversation summaries and metadata for all projects.\n\n**Relevant Columns for THN RAG**:\n| Column | Type | Usage |\n|--------|------|-------|\n| &#96;session_id&#96; | UUID | Primary key (not used in RAG output) |\n| &#96;project&#96; | TEXT | Filter: &#96;WHERE project = 'THN'&#96; |\n| &#96;title&#96; | TEXT | Displayed in RAG as \"**Title:** {title}\" |\n| &#96;tags&#96; | JSONB | Displayed as comma-separated list |\n| &#96;key_entities&#96; | JSONB | Displayed as comma-separated list |\n| &#96;summary_detailed&#96; | TEXT | Displayed in RAG (truncated to 500 chars if needed) |\n| &#96;memory_snippet&#96; | TEXT | Displayed in RAG (truncated to 300 chars if needed) |\n| &#96;indexed_at&#96; | TIMESTAMPTZ | Used for ordering: &#96;ORDER BY indexed_at DESC&#96; |\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT title, tags, key_entities, summary_detailed, memory_snippet\nFROM conversation_index\nWHERE project = 'THN'\nORDER BY indexed_at DESC\nLIMIT 5\n&#96;&#96;&#96;\n\n### 2. code_index\n\n**Purpose**: Stores code chunks with embeddings for semantic search.\n\n**Relevant Columns for THN RAG**:\n| Column | Type | Usage |\n|--------|------|-------|\n| &#96;id&#96; | UUID | Primary key (not used in RAG output) |\n| &#96;file_path&#96; | TEXT | Displayed as \"**File:** {file_path}\" |\n| &#96;language&#96; | TEXT | Displayed as \"**Language:** {language}\" |\n| &#96;chunk_text&#96; | TEXT | Displayed in code block (truncated to 1000 chars if needed) |\n| &#96;chunk_metadata&#96; | JSONB | Used to extract function_name/class_name for description |\n| &#96;embedding&#96; | vector(1536) | Used for vector similarity search |\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT file_path, language, chunk_text, chunk_metadata\nFROM code_index\nWHERE embedding IS NOT NULL\nORDER BY embedding &lt;=&gt; %s::vector\nLIMIT 5\n&#96;&#96;&#96;\n\n## Data Flow\n\n1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;\n2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature modifies the RAG (Retrieval Augmented Generation) system for THN project. No database schema changes are required - we use existing tables (&#96;conversation_index&#96; and &#96;code_index&#96;).",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Existing Tables Used",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. conversation_index",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Purpose**: Stores conversation summaries and metadata for all projects.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Relevant Columns for THN RAG**:",
+            "lineNumber": 13
+          },
+          {
+            "text": "| Column | Type | Usage |",
+            "lineNumber": 14
+          },
+          {
+            "text": "|--------|------|-------|",
+            "lineNumber": 15
+          },
+          {
+            "text": "| &#96;session_id&#96; | UUID | Primary key (not used in RAG output) |",
+            "lineNumber": 16
+          },
+          {
+            "text": "| &#96;project&#96; | TEXT | Filter: &#96;WHERE project = 'THN'&#96; |",
+            "lineNumber": 17
+          },
+          {
+            "text": "| &#96;title&#96; | TEXT | Displayed in RAG as \"**Title:** {title}\" |",
+            "lineNumber": 18
+          },
+          {
+            "text": "| &#96;tags&#96; | JSONB | Displayed as comma-separated list |",
+            "lineNumber": 19
+          },
+          {
+            "text": "| &#96;key_entities&#96; | JSONB | Displayed as comma-separated list |",
+            "lineNumber": 20
+          },
+          {
+            "text": "| &#96;summary_detailed&#96; | TEXT | Displayed in RAG (truncated to 500 chars if needed) |",
+            "lineNumber": 21
+          },
+          {
+            "text": "| &#96;memory_snippet&#96; | TEXT | Displayed in RAG (truncated to 300 chars if needed) |",
+            "lineNumber": 22
+          },
+          {
+            "text": "| &#96;indexed_at&#96; | TIMESTAMPTZ | Used for ordering: &#96;ORDER BY indexed_at DESC&#96; |",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 27
+          },
+          {
+            "text": "SELECT title, tags, key_entities, summary_detailed, memory_snippet",
+            "lineNumber": 28
+          },
+          {
+            "text": "FROM conversation_index",
+            "lineNumber": 29
+          },
+          {
+            "text": "WHERE project = 'THN'",
+            "lineNumber": 30
+          },
+          {
+            "text": "ORDER BY indexed_at DESC",
+            "lineNumber": 31
+          },
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 32
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "### 2. code_index",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Purpose**: Stores code chunks with embeddings for semantic search.",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Relevant Columns for THN RAG**:",
+            "lineNumber": 39
+          },
+          {
+            "text": "| Column | Type | Usage |",
+            "lineNumber": 40
+          },
+          {
+            "text": "|--------|------|-------|",
+            "lineNumber": 41
+          },
+          {
+            "text": "| &#96;id&#96; | UUID | Primary key (not used in RAG output) |",
+            "lineNumber": 42
+          },
+          {
+            "text": "| &#96;file_path&#96; | TEXT | Displayed as \"**File:** {file_path}\" |",
+            "lineNumber": 43
+          },
+          {
+            "text": "| &#96;language&#96; | TEXT | Displayed as \"**Language:** {language}\" |",
+            "lineNumber": 44
+          },
+          {
+            "text": "| &#96;chunk_text&#96; | TEXT | Displayed in code block (truncated to 1000 chars if needed) |",
+            "lineNumber": 45
+          },
+          {
+            "text": "| &#96;chunk_metadata&#96; | JSONB | Used to extract function_name/class_name for description |",
+            "lineNumber": 46
+          },
+          {
+            "text": "| &#96;embedding&#96; | vector(1536) | Used for vector similarity search |",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 51
+          },
+          {
+            "text": "SELECT file_path, language, chunk_text, chunk_metadata",
+            "lineNumber": 52
+          },
+          {
+            "text": "FROM code_index",
+            "lineNumber": 53
+          },
+          {
+            "text": "WHERE embedding IS NOT NULL",
+            "lineNumber": 54
+          },
+          {
+            "text": "ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 55
+          },
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;",
+            "lineNumber": 61
+          },
+          {
+            "text": "2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+            "lineNumber": 62
+          }
+        ]
+      },
+      "score": 0.35353168845176697
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 26
+          },
+          "endPosition": {
+            "line": 51
+          }
+        },
+        "contents": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function\n\n---\n\n## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP\n\n**Goal**: Users can reference specific dreams by quoted title and receive analysis using only that dream's context.\n**Independent Test**: Ask \"What does 'My Flying Dream' mean from a Jungian perspective?\" in DAAS project and verify only that specific dream is retrieved, no other dreams included, response focuses solely on that dream.\n\n- [x] T012 [US1] Integrate DAAS retrieval routing into &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check at start of &#96;build_project_context()&#96; function\n- [x] T013 [US1] Modify &#96;brain_core/context_builder.py&#96; to call &#96;retrieve_daas_context()&#96; when &#96;project == 'DAAS'&#96; and use single-dream mode result\n- [x] T014 [US1] Update &#96;brain_core/context_builder.py&#96; to handle no-match case for single-dream mode with user-friendly error message\n- [ ] T015 [US1] Test single-dream retrieval: Create test DAAS conversation, query with quoted title, verify only that dream is retrieved\n\n---\n\n## Phase 4: User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)\n\n**Goal**: Users can explore themes and patterns across multiple dreams using semantic similarity search.\n**Independent Test**: Ask \"What patterns do I have with water in my dreams?\" in DAAS project and verify system uses vector similarity search, retrieves top-k semantically similar dreams, provides analysis across those dreams.\n\n- [x] T016 [US2] Modify &#96;brain_core/conversation_indexer.py&#96; &#96;index_session()&#96; function to generate embedding for DAAS entries after indexing completes\n- [x] T017 [US2] Add embedding generation logic in &#96;brain_core/conversation_indexer.py&#96; that combines &#96;title&#96;, &#96;summary_detailed&#96;, and &#96;memory_snippet&#96; for embedding text\n- [x] T018 [US2] Add embedding storage logic in &#96;brain_core/conversation_indexer.py&#96; that updates &#96;conversation_index.embedding&#96; column with generated vector\n- [x] T019 [US2] Update &#96;brain_core/context_builder.py&#96; to use pattern-based mode (vector search) when no quoted title detected in DAAS queries",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "---",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Goal**: Users can reference specific dreams by quoted title and receive analysis using only that dream's context.",
+            "lineNumber": 33
+          },
+          {
+            "text": "**Independent Test**: Ask \"What does 'My Flying Dream' mean from a Jungian perspective?\" in DAAS project and verify only that specific dream is retrieved, no other dreams included, response focuses solely on that dream.",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "- [x] T012 [US1] Integrate DAAS retrieval routing into &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check at start of &#96;build_project_context()&#96; function",
+            "lineNumber": 36
+          },
+          {
+            "text": "- [x] T013 [US1] Modify &#96;brain_core/context_builder.py&#96; to call &#96;retrieve_daas_context()&#96; when &#96;project == 'DAAS'&#96; and use single-dream mode result",
+            "lineNumber": 37
+          },
+          {
+            "text": "- [x] T014 [US1] Update &#96;brain_core/context_builder.py&#96; to handle no-match case for single-dream mode with user-friendly error message",
+            "lineNumber": 38
+          },
+          {
+            "text": "- [ ] T015 [US1] Test single-dream retrieval: Create test DAAS conversation, query with quoted title, verify only that dream is retrieved",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "---",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "## Phase 4: User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Goal**: Users can explore themes and patterns across multiple dreams using semantic similarity search.",
+            "lineNumber": 45
+          },
+          {
+            "text": "**Independent Test**: Ask \"What patterns do I have with water in my dreams?\" in DAAS project and verify system uses vector similarity search, retrieves top-k semantically similar dreams, provides analysis across those dreams.",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "- [x] T016 [US2] Modify &#96;brain_core/conversation_indexer.py&#96; &#96;index_session()&#96; function to generate embedding for DAAS entries after indexing completes",
+            "lineNumber": 48
+          },
+          {
+            "text": "- [x] T017 [US2] Add embedding generation logic in &#96;brain_core/conversation_indexer.py&#96; that combines &#96;title&#96;, &#96;summary_detailed&#96;, and &#96;memory_snippet&#96; for embedding text",
+            "lineNumber": 49
+          },
+          {
+            "text": "- [x] T018 [US2] Add embedding storage logic in &#96;brain_core/conversation_indexer.py&#96; that updates &#96;conversation_index.embedding&#96; column with generated vector",
+            "lineNumber": 50
+          },
+          {
+            "text": "- [x] T019 [US2] Update &#96;brain_core/context_builder.py&#96; to use pattern-based mode (vector search) when no quoted title detected in DAAS queries",
+            "lineNumber": 51
+          }
+        ]
+      },
+      "score": 0.3496924638748169
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 55
+          }
+        },
+        "contents": "# Research: Enhance THN RAG System\n\n**Feature**: 013-enhance-thn-rag  \n**Date**: 2025-01-27\n\n## Research Tasks\n\n### 1. Conversation Retrieval Strategy\n\n**Question**: Should we use vector similarity search for conversation retrieval, or simple date-based ordering?\n\n**Findings**:\n\n- &#96;conversation_index&#96; table has &#96;indexed_at&#96; column with DESC index for efficient date-based ordering\n- THN conversations may not have embeddings (embeddings are DAAS-specific per migration 002)\n- User requirement specifies \"Last 5 Conversations\" which implies chronological ordering\n- Simple date-based query is faster and more predictable than vector search\n\n**Decision**: Use simple date-based ordering (&#96;ORDER BY indexed_at DESC LIMIT 5&#96;) for conversation retrieval.\n\n**Rationale**:\n\n- Matches user requirement for \"last 5 conversations\"\n- Faster query execution (uses existing index)\n- More predictable results (always gets most recent conversations)\n- No need for embeddings or similarity calculations\n\n**Alternatives considered**:\n\n- Vector similarity search: Rejected - THN conversations may not have embeddings, adds complexity\n- Keyword-based relevance: Rejected - User wants chronological overview, not relevance-filtered\n\n---\n\n### 2. Handling Missing Fields\n\n**Question**: How should we handle missing fields (e.g., if &#96;summary_detailed&#96; is NULL)?\n\n**Findings**:\n\n- &#96;conversation_index&#96; fields are nullable (title, tags, summary_detailed, key_entities, memory_snippet)\n- Need graceful handling to avoid empty sections in RAG output\n- Should still include conversation entry even if some fields are missing\n\n**Decision**:\n\n- Use NULL-safe formatting: Check if field exists before including in output\n- Format tags/key_entities as empty string if NULL, or format JSONB arrays as comma-separated strings\n- Always include conversation entry if at least one field (title or summary_detailed) exists\n- Skip conversation entry only if both title and summary_detailed are NULL\n\n**Rationale**:\n\n- Maintains RAG structure even with incomplete data\n- Provides maximum context when available",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research: Enhance THN RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature**: 013-enhance-thn-rag  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Research Tasks",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "### 1. Conversation Retrieval Strategy",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "**Question**: Should we use vector similarity search for conversation retrieval, or simple date-based ordering?",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "**Findings**:",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "- &#96;conversation_index&#96; table has &#96;indexed_at&#96; column with DESC index for efficient date-based ordering",
+            "lineNumber": 14
+          },
+          {
+            "text": "- THN conversations may not have embeddings (embeddings are DAAS-specific per migration 002)",
+            "lineNumber": 15
+          },
+          {
+            "text": "- User requirement specifies \"Last 5 Conversations\" which implies chronological ordering",
+            "lineNumber": 16
+          },
+          {
+            "text": "- Simple date-based query is faster and more predictable than vector search",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "**Decision**: Use simple date-based ordering (&#96;ORDER BY indexed_at DESC LIMIT 5&#96;) for conversation retrieval.",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "- Matches user requirement for \"last 5 conversations\"",
+            "lineNumber": 23
+          },
+          {
+            "text": "- Faster query execution (uses existing index)",
+            "lineNumber": 24
+          },
+          {
+            "text": "- More predictable results (always gets most recent conversations)",
+            "lineNumber": 25
+          },
+          {
+            "text": "- No need for embeddings or similarity calculations",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "**Alternatives considered**:",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "- Vector similarity search: Rejected - THN conversations may not have embeddings, adds complexity",
+            "lineNumber": 30
+          },
+          {
+            "text": "- Keyword-based relevance: Rejected - User wants chronological overview, not relevance-filtered",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "---",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "### 2. Handling Missing Fields",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Question**: How should we handle missing fields (e.g., if &#96;summary_detailed&#96; is NULL)?",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Findings**:",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- &#96;conversation_index&#96; fields are nullable (title, tags, summary_detailed, key_entities, memory_snippet)",
+            "lineNumber": 41
+          },
+          {
+            "text": "- Need graceful handling to avoid empty sections in RAG output",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Should still include conversation entry even if some fields are missing",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Decision**:",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "- Use NULL-safe formatting: Check if field exists before including in output",
+            "lineNumber": 47
+          },
+          {
+            "text": "- Format tags/key_entities as empty string if NULL, or format JSONB arrays as comma-separated strings",
+            "lineNumber": 48
+          },
+          {
+            "text": "- Always include conversation entry if at least one field (title or summary_detailed) exists",
+            "lineNumber": 49
+          },
+          {
+            "text": "- Skip conversation entry only if both title and summary_detailed are NULL",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "- Maintains RAG structure even with incomplete data",
+            "lineNumber": 54
+          },
+          {
+            "text": "- Provides maximum context when available",
+            "lineNumber": 55
+          }
+        ]
+      },
+      "score": 0.3456991910934448
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/quickstart.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 84
+          }
+        },
+        "contents": "# Quickstart: DAAS Semantic Dream Retrieval Implementation\n\n## Prerequisites\n\n1. **PostgreSQL with pgvector extension**\n   &#96;&#96;&#96;bash\n   # Install pgvector (varies by OS)\n   # macOS: brew install pgvector\n   # Ubuntu: apt-get install postgresql-XX-pgvector\n   &#96;&#96;&#96;\n\n2. **Python dependencies**\n   &#96;&#96;&#96;bash\n   pip install pgvector psycopg2-binary openai python-dotenv\n   &#96;&#96;&#96;\n\n3. **OpenAI API key** (for embedding generation)\n   - Set in &#96;.env&#96;: &#96;OPENAI_API_KEY=sk-...&#96;\n\n## Implementation Steps\n\n### Step 1: Database Schema Migration\n\n&#96;&#96;&#96;sql\n-- Install pgvector extension\nCREATE EXTENSION IF NOT EXISTS vector;\n\n-- Add embedding column to conversation_index\nALTER TABLE conversation_index \nADD COLUMN embedding vector(1536);\n\n-- Create vector similarity index (DAAS entries only)\nCREATE INDEX idx_conversation_index_embedding \nON conversation_index \nUSING ivfflat (embedding vector_cosine_ops) \nWITH (lists = 100)\nWHERE project = 'DAAS' AND embedding IS NOT NULL;\n&#96;&#96;&#96;\n\n### Step 2: Create Embedding Service Module\n\n**File**: &#96;brain_core/embedding_service.py&#96;\n\n&#96;&#96;&#96;python\n\"\"\"\nEmbedding generation service using OpenAI API.\n\"\"\"\nfrom openai import OpenAI\nfrom typing import List, Optional\n\nclient = OpenAI()\n\ndef generate_embedding(text: str) -&gt; List[float]:\n    \"\"\"\n    Generate embedding for text using OpenAI.\n    \n    Args:\n        text: Text to embed\n        \n    Returns:\n        List of 1536 float values representing the embedding\n    \"\"\"\n    response = client.embeddings.create(\n        model=\"text-embedding-3-small\",\n        input=text\n    )\n    return response.data[0].embedding\n&#96;&#96;&#96;\n\n### Step 3: Create DAAS Retrieval Module\n\n**File**: &#96;brain_core/daas_retrieval.py&#96;\n\n&#96;&#96;&#96;python\n\"\"\"\nDAAS-specific retrieval logic for single-dream and pattern-based queries.\n\"\"\"\nimport re\nfrom typing import List, Dict, Optional, Tuple\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\ndef detect_quoted_title(message: str) -&gt; Optional[str]:\n    \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Quickstart: DAAS Semantic Dream Retrieval Implementation",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Prerequisites",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "1. **PostgreSQL with pgvector extension**",
+            "lineNumber": 5
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 6
+          },
+          {
+            "text": "   # Install pgvector (varies by OS)",
+            "lineNumber": 7
+          },
+          {
+            "text": "   # macOS: brew install pgvector",
+            "lineNumber": 8
+          },
+          {
+            "text": "   # Ubuntu: apt-get install postgresql-XX-pgvector",
+            "lineNumber": 9
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "2. **Python dependencies**",
+            "lineNumber": 12
+          },
+          {
+            "text": "   &#96;&#96;&#96;bash",
+            "lineNumber": 13
+          },
+          {
+            "text": "   pip install pgvector psycopg2-binary openai python-dotenv",
+            "lineNumber": 14
+          },
+          {
+            "text": "   &#96;&#96;&#96;",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "3. **OpenAI API key** (for embedding generation)",
+            "lineNumber": 17
+          },
+          {
+            "text": "   - Set in &#96;.env&#96;: &#96;OPENAI_API_KEY=sk-...&#96;",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "## Implementation Steps",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "### Step 1: Database Schema Migration",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 24
+          },
+          {
+            "text": "-- Install pgvector extension",
+            "lineNumber": 25
+          },
+          {
+            "text": "CREATE EXTENSION IF NOT EXISTS vector;",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "-- Add embedding column to conversation_index",
+            "lineNumber": 28
+          },
+          {
+            "text": "ALTER TABLE conversation_index ",
+            "lineNumber": 29
+          },
+          {
+            "text": "ADD COLUMN embedding vector(1536);",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "-- Create vector similarity index (DAAS entries only)",
+            "lineNumber": 32
+          },
+          {
+            "text": "CREATE INDEX idx_conversation_index_embedding ",
+            "lineNumber": 33
+          },
+          {
+            "text": "ON conversation_index ",
+            "lineNumber": 34
+          },
+          {
+            "text": "USING ivfflat (embedding vector_cosine_ops) ",
+            "lineNumber": 35
+          },
+          {
+            "text": "WITH (lists = 100)",
+            "lineNumber": 36
+          },
+          {
+            "text": "WHERE project = 'DAAS' AND embedding IS NOT NULL;",
+            "lineNumber": 37
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "### Step 2: Create Embedding Service Module",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "**File**: &#96;brain_core/embedding_service.py&#96;",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 44
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 45
+          },
+          {
+            "text": "Embedding generation service using OpenAI API.",
+            "lineNumber": 46
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 47
+          },
+          {
+            "text": "from openai import OpenAI",
+            "lineNumber": 48
+          },
+          {
+            "text": "from typing import List, Optional",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "client = OpenAI()",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "def generate_embedding(text: str) -&gt; List[float]:",
+            "lineNumber": 53
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 54
+          },
+          {
+            "text": "    Generate embedding for text using OpenAI.",
+            "lineNumber": 55
+          },
+          {
+            "text": "    ",
+            "lineNumber": 56
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 57
+          },
+          {
+            "text": "        text: Text to embed",
+            "lineNumber": 58
+          },
+          {
+            "text": "        ",
+            "lineNumber": 59
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 60
+          },
+          {
+            "text": "        List of 1536 float values representing the embedding",
+            "lineNumber": 61
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 62
+          },
+          {
+            "text": "    response = client.embeddings.create(",
+            "lineNumber": 63
+          },
+          {
+            "text": "        model=\"text-embedding-3-small\",",
+            "lineNumber": 64
+          },
+          {
+            "text": "        input=text",
+            "lineNumber": 65
+          },
+          {
+            "text": "    )",
+            "lineNumber": 66
+          },
+          {
+            "text": "    return response.data[0].embedding",
+            "lineNumber": 67
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "### Step 3: Create DAAS Retrieval Module",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "**File**: &#96;brain_core/daas_retrieval.py&#96;",
+            "lineNumber": 72
+          },
+          {
+            "lineNumber": 73
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 74
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 75
+          },
+          {
+            "text": "DAAS-specific retrieval logic for single-dream and pattern-based queries.",
+            "lineNumber": 76
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 77
+          },
+          {
+            "text": "import re",
+            "lineNumber": 78
+          },
+          {
+            "text": "from typing import List, Dict, Optional, Tuple",
+            "lineNumber": 79
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 80
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "def detect_quoted_title(message: str) -&gt; Optional[str]:",
+            "lineNumber": 83
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 84
+          }
+        ]
+      },
+      "score": 0.34394240379333496
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/quickstart.md",
+        "range": {
+          "startPosition": {
+            "line": 118
+          },
+          "endPosition": {
+            "line": 152
+          }
+        },
+        "contents": "def retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:\n    \"\"\"\n    Retrieve top-k dreams using vector similarity search.\n    \"\"\"\n    # Generate query embedding\n    query_embedding = generate_embedding(query)\n    \n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(\"\"\"\n                SELECT session_id, title, summary_short, memory_snippet,\n                       1 - (embedding &lt;=&gt; %s::vector) as similarity\n                FROM conversation_index\n                WHERE project = 'DAAS' \n                  AND embedding IS NOT NULL\n                ORDER BY embedding &lt;=&gt; %s::vector\n                LIMIT %s\n            \"\"\", (str(query_embedding), str(query_embedding), top_k))\n            rows = cur.fetchall()\n            \n    return [\n        {\n            'session_id': row[0],\n            'title': row[1],\n            'summary_short': row[2],\n            'memory_snippet': row[3],\n            'similarity': float(row[4])\n        }\n        for row in rows\n    ]\n\ndef retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:\n    \"\"\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:",
+            "lineNumber": 120
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 121
+          },
+          {
+            "text": "    Retrieve top-k dreams using vector similarity search.",
+            "lineNumber": 122
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 123
+          },
+          {
+            "text": "    # Generate query embedding",
+            "lineNumber": 124
+          },
+          {
+            "text": "    query_embedding = generate_embedding(query)",
+            "lineNumber": 125
+          },
+          {
+            "text": "    ",
+            "lineNumber": 126
+          },
+          {
+            "text": "    with get_conn() as conn:",
+            "lineNumber": 127
+          },
+          {
+            "text": "        with conn.cursor() as cur:",
+            "lineNumber": 128
+          },
+          {
+            "text": "            cur.execute(\"\"\"",
+            "lineNumber": 129
+          },
+          {
+            "text": "                SELECT session_id, title, summary_short, memory_snippet,",
+            "lineNumber": 130
+          },
+          {
+            "text": "                       1 - (embedding &lt;=&gt; %s::vector) as similarity",
+            "lineNumber": 131
+          },
+          {
+            "text": "                FROM conversation_index",
+            "lineNumber": 132
+          },
+          {
+            "text": "                WHERE project = 'DAAS' ",
+            "lineNumber": 133
+          },
+          {
+            "text": "                  AND embedding IS NOT NULL",
+            "lineNumber": 134
+          },
+          {
+            "text": "                ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 135
+          },
+          {
+            "text": "                LIMIT %s",
+            "lineNumber": 136
+          },
+          {
+            "text": "            \"\"\", (str(query_embedding), str(query_embedding), top_k))",
+            "lineNumber": 137
+          },
+          {
+            "text": "            rows = cur.fetchall()",
+            "lineNumber": 138
+          },
+          {
+            "text": "            ",
+            "lineNumber": 139
+          },
+          {
+            "text": "    return [",
+            "lineNumber": 140
+          },
+          {
+            "text": "        {",
+            "lineNumber": 141
+          },
+          {
+            "text": "            'session_id': row[0],",
+            "lineNumber": 142
+          },
+          {
+            "text": "            'title': row[1],",
+            "lineNumber": 143
+          },
+          {
+            "text": "            'summary_short': row[2],",
+            "lineNumber": 144
+          },
+          {
+            "text": "            'memory_snippet': row[3],",
+            "lineNumber": 145
+          },
+          {
+            "text": "            'similarity': float(row[4])",
+            "lineNumber": 146
+          },
+          {
+            "text": "        }",
+            "lineNumber": 147
+          },
+          {
+            "text": "        for row in rows",
+            "lineNumber": 148
+          },
+          {
+            "text": "    ]",
+            "lineNumber": 149
+          },
+          {
+            "lineNumber": 150
+          },
+          {
+            "text": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:",
+            "lineNumber": 151
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 152
+          }
+        ]
+      },
+      "score": 0.34040430188179016
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 90
+          }
+        },
+        "contents": "# API Contracts: DAAS Semantic Dream Retrieval\n\n## Modified Endpoints\n\n### POST /api/chat\n\n**Existing Behavior**: Accepts conversation_id, message, project; returns complete response\n\n**New Behavior**: Supports streaming responses via Server-Sent Events (SSE) or streaming JSON\n\n#### Request (unchanged)\n&#96;&#96;&#96;json\n{\n  \"conversation_id\": \"uuid\",\n  \"message\": \"What does 'My Flying Dream' mean?\",\n  \"project\": \"DAAS\"\n}\n&#96;&#96;&#96;\n\n#### Response Options\n\n**Option 1: Streaming JSON (default for backward compatibility)**\n- Returns complete response as before\n- No breaking changes\n\n**Option 2: Server-Sent Events (new, opt-in)**\n- Request header: &#96;Accept: text/event-stream&#96;\n- Response: SSE stream with chunks\n- Format: &#96;data: {\"chunk\": \"text chunk here\"}\\n\\n&#96;\n\n#### DAAS-Specific Retrieval\n\n**Automatic**: When &#96;project = \"DAAS\"&#96;, system automatically:\n1. Detects quoted title in message\n2. Routes to single-dream or pattern-based retrieval\n3. Uses vector similarity search for pattern queries\n4. Returns response with appropriate context\n\n**No API Changes Required**: Retrieval logic is internal, transparent to API consumers\n\n## New Endpoints (Optional - Future)\n\n### POST /api/embeddings/generate\n\n**Purpose**: Generate embedding for text (admin/debug endpoint)\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"text\": \"text to embed\"\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"embedding\": [0.123, -0.456, ...],\n  \"dimension\": 1536\n}\n&#96;&#96;&#96;\n\n**Status**: Not required for initial implementation, can be added later if needed\n\n## Error Responses\n\n### 400 Bad Request\n- Missing required fields\n- Invalid conversation_id format\n- Invalid project value\n\n### 404 Not Found\n- Conversation not found (for single-dream mode with quoted title)\n- No relevant dreams found (for pattern mode) - returns 200 with empty context message\n\n### 500 Internal Server Error\n- Embedding generation failure\n- Vector search failure\n- Streaming interruption\n\n## Streaming Response Format\n\n### SSE Format\n&#96;&#96;&#96;\nevent: message\ndata: {\"chunk\": \"This is a chunk of text\"}\n\nevent: message\ndata: {\"chunk\": \" continuing the response\"}\n\nevent: done",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contracts: DAAS Semantic Dream Retrieval",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Modified Endpoints",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### POST /api/chat",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Existing Behavior**: Accepts conversation_id, message, project; returns complete response",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**New Behavior**: Supports streaming responses via Server-Sent Events (SSE) or streaming JSON",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "#### Request (unchanged)",
+            "lineNumber": 11
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 12
+          },
+          {
+            "text": "{",
+            "lineNumber": 13
+          },
+          {
+            "text": "  \"conversation_id\": \"uuid\",",
+            "lineNumber": 14
+          },
+          {
+            "text": "  \"message\": \"What does 'My Flying Dream' mean?\",",
+            "lineNumber": 15
+          },
+          {
+            "text": "  \"project\": \"DAAS\"",
+            "lineNumber": 16
+          },
+          {
+            "text": "}",
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "#### Response Options",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Option 1: Streaming JSON (default for backward compatibility)**",
+            "lineNumber": 22
+          },
+          {
+            "text": "- Returns complete response as before",
+            "lineNumber": 23
+          },
+          {
+            "text": "- No breaking changes",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Option 2: Server-Sent Events (new, opt-in)**",
+            "lineNumber": 26
+          },
+          {
+            "text": "- Request header: &#96;Accept: text/event-stream&#96;",
+            "lineNumber": 27
+          },
+          {
+            "text": "- Response: SSE stream with chunks",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Format: &#96;data: {\"chunk\": \"text chunk here\"}\\n\\n&#96;",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "#### DAAS-Specific Retrieval",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Automatic**: When &#96;project = \"DAAS\"&#96;, system automatically:",
+            "lineNumber": 33
+          },
+          {
+            "text": "1. Detects quoted title in message",
+            "lineNumber": 34
+          },
+          {
+            "text": "2. Routes to single-dream or pattern-based retrieval",
+            "lineNumber": 35
+          },
+          {
+            "text": "3. Uses vector similarity search for pattern queries",
+            "lineNumber": 36
+          },
+          {
+            "text": "4. Returns response with appropriate context",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**No API Changes Required**: Retrieval logic is internal, transparent to API consumers",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "## New Endpoints (Optional - Future)",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "### POST /api/embeddings/generate",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Purpose**: Generate embedding for text (admin/debug endpoint)",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 47
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 48
+          },
+          {
+            "text": "{",
+            "lineNumber": 49
+          },
+          {
+            "text": "  \"text\": \"text to embed\"",
+            "lineNumber": 50
+          },
+          {
+            "text": "}",
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 55
+          },
+          {
+            "text": "{",
+            "lineNumber": 56
+          },
+          {
+            "text": "  \"embedding\": [0.123, -0.456, ...],",
+            "lineNumber": 57
+          },
+          {
+            "text": "  \"dimension\": 1536",
+            "lineNumber": 58
+          },
+          {
+            "text": "}",
+            "lineNumber": 59
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "**Status**: Not required for initial implementation, can be added later if needed",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "## Error Responses",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### 400 Bad Request",
+            "lineNumber": 66
+          },
+          {
+            "text": "- Missing required fields",
+            "lineNumber": 67
+          },
+          {
+            "text": "- Invalid conversation_id format",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Invalid project value",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### 404 Not Found",
+            "lineNumber": 71
+          },
+          {
+            "text": "- Conversation not found (for single-dream mode with quoted title)",
+            "lineNumber": 72
+          },
+          {
+            "text": "- No relevant dreams found (for pattern mode) - returns 200 with empty context message",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "### 500 Internal Server Error",
+            "lineNumber": 75
+          },
+          {
+            "text": "- Embedding generation failure",
+            "lineNumber": 76
+          },
+          {
+            "text": "- Vector search failure",
+            "lineNumber": 77
+          },
+          {
+            "text": "- Streaming interruption",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "## Streaming Response Format",
+            "lineNumber": 80
+          },
+          {
+            "lineNumber": 81
+          },
+          {
+            "text": "### SSE Format",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "text": "event: message",
+            "lineNumber": 84
+          },
+          {
+            "text": "data: {\"chunk\": \"This is a chunk of text\"}",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "event: message",
+            "lineNumber": 87
+          },
+          {
+            "text": "data: {\"chunk\": \" continuing the response\"}",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "event: done",
+            "lineNumber": 90
+          }
+        ]
+      },
+      "score": 0.3381667137145996
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/tasks.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 31
+          }
+        },
+        "contents": "# Tasks: DAAS Semantic Dream Retrieval and Streaming Responses\n\n**Input**: Design documents from &#96;/specs/002-daas-semantic-retrieval/&#96;\n**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Prepare dependencies and configuration required for vector embeddings and streaming responses.\n\n- [x] T001 [P] Add &#96;pgvector&#96; installation instructions to &#96;README.md&#96; (PostgreSQL extension setup)\n- [x] T002 [P] Document &#96;DAAS_VECTOR_TOP_K&#96; environment variable in &#96;.env.example&#96; with default value (5)\n- [x] T003 [P] Verify OpenAI API key is configured for embedding generation (check &#96;.env.example&#96;)\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: Core building blocks needed by all user stories - database schema and core modules.\n\n- [x] T004 Create database migration script to install pgvector extension: &#96;CREATE EXTENSION IF NOT EXISTS vector;&#96; in &#96;db/migrations/002_add_pgvector.sql&#96; or similar\n- [x] T005 Create database migration script to add &#96;embedding vector(1536)&#96; column to &#96;conversation_index&#96; table in &#96;db/migrations/002_add_embedding_column.sql&#96;\n- [x] T006 Create database migration script to create vector similarity index &#96;idx_conversation_index_embedding&#96; in &#96;db/migrations/002_add_embedding_index.sql&#96;\n- [x] T007 Implement &#96;brain_core/embedding_service.py&#96; with &#96;generate_embedding(text: str) -&gt; List[float]&#96; function using OpenAI &#96;text-embedding-3-small&#96; model\n- [x] T008 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;detect_quoted_title(message: str) -&gt; Optional[str]&#96; function using regex pattern &#96;\"([^\"]+)\"&#96;\n- [x] T009 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_single_dream(title: str) -&gt; Optional[Dict]&#96; function for title-based matching\n- [x] T010 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_pattern_dreams(query: str, top_k: int) -&gt; List[Dict]&#96; function for vector similarity search\n- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function\n\n---\n\n## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Tasks: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Input**: Design documents from &#96;/specs/002-daas-semantic-retrieval/&#96;",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Phase 1: Setup (Shared Infrastructure)",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "**Purpose**: Prepare dependencies and configuration required for vector embeddings and streaming responses.",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "- [x] T001 [P] Add &#96;pgvector&#96; installation instructions to &#96;README.md&#96; (PostgreSQL extension setup)",
+            "lineNumber": 10
+          },
+          {
+            "text": "- [x] T002 [P] Document &#96;DAAS_VECTOR_TOP_K&#96; environment variable in &#96;.env.example&#96; with default value (5)",
+            "lineNumber": 11
+          },
+          {
+            "text": "- [x] T003 [P] Verify OpenAI API key is configured for embedding generation (check &#96;.env.example&#96;)",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "---",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "## Phase 2: Foundational (Blocking Prerequisites)",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "**Purpose**: Core building blocks needed by all user stories - database schema and core modules.",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "- [x] T004 Create database migration script to install pgvector extension: &#96;CREATE EXTENSION IF NOT EXISTS vector;&#96; in &#96;db/migrations/002_add_pgvector.sql&#96; or similar",
+            "lineNumber": 20
+          },
+          {
+            "text": "- [x] T005 Create database migration script to add &#96;embedding vector(1536)&#96; column to &#96;conversation_index&#96; table in &#96;db/migrations/002_add_embedding_column.sql&#96;",
+            "lineNumber": 21
+          },
+          {
+            "text": "- [x] T006 Create database migration script to create vector similarity index &#96;idx_conversation_index_embedding&#96; in &#96;db/migrations/002_add_embedding_index.sql&#96;",
+            "lineNumber": 22
+          },
+          {
+            "text": "- [x] T007 Implement &#96;brain_core/embedding_service.py&#96; with &#96;generate_embedding(text: str) -&gt; List[float]&#96; function using OpenAI &#96;text-embedding-3-small&#96; model",
+            "lineNumber": 23
+          },
+          {
+            "text": "- [x] T008 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;detect_quoted_title(message: str) -&gt; Optional[str]&#96; function using regex pattern &#96;\"([^\"]+)\"&#96;",
+            "lineNumber": 24
+          },
+          {
+            "text": "- [x] T009 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_single_dream(title: str) -&gt; Optional[Dict]&#96; function for title-based matching",
+            "lineNumber": 25
+          },
+          {
+            "text": "- [x] T010 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_pattern_dreams(query: str, top_k: int) -&gt; List[Dict]&#96; function for vector similarity search",
+            "lineNumber": 26
+          },
+          {
+            "text": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "---",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP",
+            "lineNumber": 31
+          }
+        ]
+      },
+      "score": 0.3378326892852783
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 69
+          }
+        },
+        "contents": "\"\"\"\nProject context builder for injecting conversation memory into chat prompts.\nBuilds context directly from project_knowledge and conversation_index entries.\n\nFor DAAS project, uses custom retrieval rules:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport os\nimport re\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nfrom .db import get_conn\nfrom .memory import fetch_project_knowledge\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n# Module-level cache for base system prompt\n_base_system_prompt_cache: Optional[str] = None\n\n\ndef load_base_system_prompt() -&gt; str:\n    \"\"\"\n    Load the base system prompt from brain_core/base_system_prompt.txt.\n    \n    Uses module-level caching to avoid repeated file I/O. If the file is missing\n    or unreadable, falls back to a minimal default prompt and logs a warning.\n    \n    Returns:\n        Base system prompt as string\n        \n    Raises:\n        None - always returns a valid string (either from file or fallback)\n    \"\"\"\n    global _base_system_prompt_cache\n    \n    # Return cached value if available\n    if _base_system_prompt_cache is not None:\n        return _base_system_prompt_cache\n    \n    # Determine file path relative to this module\n    module_dir = Path(__file__).parent\n    prompt_file = module_dir / \"base_system_prompt.txt\"\n    \n    try:\n        # Load prompt from file\n        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Project context builder for injecting conversation memory into chat prompts.",
+            "lineNumber": 2
+          },
+          {
+            "text": "Builds context directly from project_knowledge and conversation_index entries.",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "For DAAS project, uses custom retrieval rules:",
+            "lineNumber": 5
+          },
+          {
+            "text": "- Single-dream mode: Quoted title detection and title-based matching",
+            "lineNumber": 6
+          },
+          {
+            "text": "- Pattern-based mode: Vector similarity search using embeddings",
+            "lineNumber": 7
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 8
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 9
+          },
+          {
+            "text": "import os",
+            "lineNumber": 10
+          },
+          {
+            "text": "import re",
+            "lineNumber": 11
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 12
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 15
+          },
+          {
+            "text": "from .memory import fetch_project_knowledge",
+            "lineNumber": 16
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "# Module-level cache for base system prompt",
+            "lineNumber": 21
+          },
+          {
+            "text": "_base_system_prompt_cache: Optional[str] = None",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "def load_base_system_prompt() -&gt; str:",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 26
+          },
+          {
+            "text": "    Load the base system prompt from brain_core/base_system_prompt.txt.",
+            "lineNumber": 27
+          },
+          {
+            "text": "    ",
+            "lineNumber": 28
+          },
+          {
+            "text": "    Uses module-level caching to avoid repeated file I/O. If the file is missing",
+            "lineNumber": 29
+          },
+          {
+            "text": "    or unreadable, falls back to a minimal default prompt and logs a warning.",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 32
+          },
+          {
+            "text": "        Base system prompt as string",
+            "lineNumber": 33
+          },
+          {
+            "text": "        ",
+            "lineNumber": 34
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 35
+          },
+          {
+            "text": "        None - always returns a valid string (either from file or fallback)",
+            "lineNumber": 36
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 37
+          },
+          {
+            "text": "    global _base_system_prompt_cache",
+            "lineNumber": 38
+          },
+          {
+            "text": "    ",
+            "lineNumber": 39
+          },
+          {
+            "text": "    # Return cached value if available",
+            "lineNumber": 40
+          },
+          {
+            "text": "    if _base_system_prompt_cache is not None:",
+            "lineNumber": 41
+          },
+          {
+            "text": "        return _base_system_prompt_cache",
+            "lineNumber": 42
+          },
+          {
+            "text": "    ",
+            "lineNumber": 43
+          },
+          {
+            "text": "    # Determine file path relative to this module",
+            "lineNumber": 44
+          },
+          {
+            "text": "    module_dir = Path(__file__).parent",
+            "lineNumber": 45
+          },
+          {
+            "text": "    prompt_file = module_dir / \"base_system_prompt.txt\"",
+            "lineNumber": 46
+          },
+          {
+            "text": "    ",
+            "lineNumber": 47
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 48
+          },
+          {
+            "text": "        # Load prompt from file",
+            "lineNumber": 49
+          },
+          {
+            "text": "        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+            "lineNumber": 50
+          }
+        ]
+      },
+      "score": 0.3344825506210327
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 671,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 936
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: custom rules for dream analysis\n    if",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 675,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 676,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 677,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 678,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 679,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 680,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 681
+          },
+          {
+            "text": "    Build project-aware context from project_knowledge and conversation_index entries.",
+            "lineNumber": 682
+          },
+          {
+            "text": "    ",
+            "lineNumber": 683
+          },
+          {
+            "text": "    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).",
+            "lineNumber": 684
+          },
+          {
+            "text": "    For other projects: Uses keyword-based relevance scoring.",
+            "lineNumber": 685
+          },
+          {
+            "text": "    ",
+            "lineNumber": 686
+          },
+          {
+            "text": "    Fetches stable project overview from project_knowledge table, queries indexed",
+            "lineNumber": 687
+          },
+          {
+            "text": "    memories from conversation_index for the project, applies simple relevance scoring,",
+            "lineNumber": 688
+          },
+          {
+            "text": "    selects top N relevant entries, and formats them directly into context.",
+            "lineNumber": 689
+          },
+          {
+            "text": "    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,",
+            "lineNumber": 690
+          },
+          {
+            "text": "    then conversation_index memories (specific conversation details) SECOND.",
+            "lineNumber": 691
+          },
+          {
+            "text": "    ",
+            "lineNumber": 692
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 693
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 694
+          },
+          {
+            "text": "        user_message: Current user message to match against (used for relevance scoring)",
+            "lineNumber": 695
+          },
+          {
+            "text": "        limit_memories: Max number of indexed entries to consider (default: 200)",
+            "lineNumber": 696
+          },
+          {
+            "text": "        top_n: Number of top relevant entries to use (default: 5)",
+            "lineNumber": 697
+          },
+          {
+            "text": "    ",
+            "lineNumber": 698
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 699
+          },
+          {
+            "text": "        Dict with 'context' (string) and 'notes' (list of strings)",
+            "lineNumber": 700
+          },
+          {
+            "text": "        Returns empty dict if no relevant data found",
+            "lineNumber": 701
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 702
+          },
+          {
+            "text": "    ",
+            "lineNumber": 703
+          },
+          {
+            "text": "    # DAAS-specific retrieval: custom rules for dream analysis",
+            "lineNumber": 704
+          },
+          {
+            "text": "    if",
+            "lineNumber": 705
+          }
+        ]
+      },
+      "score": 0.33377355337142944
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "daas.*retrieval|retrieve_daas|DAAS.*RAG",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+  "caseInsensitive": true
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "daas.*retrieval|retrieve_daas|DAAS.*RAG",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "brain_core/context_builder.py",
+              "matches": [
+                {
+                  "lineNumber": 5,
+                  "content": "For DAAS project, uses custom retrieval rules:"
+                },
+                {
+                  "lineNumber": 684,
+                  "content": "    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based)."
+                },
+                {
+                  "lineNumber": 704,
+                  "content": "    # DAAS-specific retrieval: custom rules for dream analysis"
+                },
+                {
+                  "lineNumber": 707,
+                  "content": "            from .daas_retrieval import retrieve_daas_context"
+                },
+                {
+                  "lineNumber": 713,
+                  "content": "            daas_result = retrieve_daas_context(user_message, top_k=top_k)"
+                },
+                {
+                  "lineNumber": 730,
+                  "content": "            # If we have dreams from DAAS retrieval, use them"
+                },
+                {
+                  "lineNumber": 732,
+                  "content": "                # Build context from DAAS retrieval result"
+                },
+                {
+                  "lineNumber": 748,
+                  "content": "                # Add DAAS retrieval context"
+                },
+                {
+                  "lineNumber": 785,
+                  "content": "            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/daas_retrieval.py",
+              "matches": [
+                {
+                  "lineNumber": 2,
+                  "content": "DAAS-specific retrieval logic for single-dream and pattern-based queries."
+                },
+                {
+                  "lineNumber": 125,
+                  "content": "        logger.info(f\"DAAS pattern-based retrieval: generating embedding for query (top_k={top_k})\")"
+                },
+                {
+                  "lineNumber": 180,
+                  "content": "def retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/config.py",
+              "matches": [
+                {
+                  "lineNumber": 70,
+                  "content": "# DAAS semantic retrieval configuration"
+                }
+              ]
+            }
+          ],
+          "totalLines": 13,
+          "totalMatchedLines": 13
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating a new spec for the DAAS RAG revamp. Checking existing specs to determine the next feature number:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-database-backup/contracts",
+            "childrenFiles": [
+              {
+                "name": "backup-script.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-dev-environment/contracts",
+            "childrenFiles": [
+              {
+                "name": "environment-config.md"
+              },
+              {
+                "name": "mock-client.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "ANALYSIS_REPORT.md"
+          },
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-large-text-input/contracts",
+            "childrenFiles": [
+              {
+                "name": "api-input.md"
+              },
+              {
+                "name": "cli-input.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-ollama-organizer/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-project-organized-notes",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-project-organized-notes/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              },
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/001-usage-tracking/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli-exit.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/002-daas-semantic-retrieval/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              },
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup/checklists",
+            "childrenFiles": [
+              {
+                "name": "requirements.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          },
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/003-seamless-setup/contracts",
+            "childrenFiles": [
+              {
+                "name": "init-db.md"
+              },
+              {
+                "name": "setup-dev.md"
+              },
+              {
+                "name": "setup-prod.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/004-fix-conversation-saving",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/004-fix-conversation-saving/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/005-conversation-audit-tool",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/005-conversation-audit-tool/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/006-fix-api-usage-and-pause-feature",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/006-fix-api-usage-and-pause-feature/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/007-fix-ollama-json-extraction",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/007-fix-ollama-json-extraction/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/008-thn-code-rag-pipeline",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/008-thn-code-rag-pipeline/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/009-refactor-script-organization",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/009-refactor-script-organization/contracts",
+            "childrenFiles": [
+              {
+                "name": "file-moves.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/010-mcp-server-integration",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/010-mcp-server-integration/contracts",
+            "childrenFiles": [
+              {
+                "name": "cli.md"
+              },
+              {
+                "name": "mcp-client.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/011-improve-context-building",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/011-improve-context-building/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/012-expand-project-extension",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/012-expand-project-extension/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/contracts",
+            "childrenFiles": [
+              {
+                "name": "api.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": "data-model.md"
+          },
+          {
+            "name": "plan.md"
+          },
+          {
+            "name": "quickstart.md"
+          },
+          {
+            "name": "research.md"
+          },
+          {
+            "name": "spec.md"
+          },
+          {
+            "name": "tasks.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py",
+  "offset": 1,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nDAAS-specific retrieval logic for single-dream and pattern-based queries.\n\nProvides custom retrieval rules for DAAS project:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport re\nfrom typing import Dict, List, Optional\n\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n\ndef detect_quoted_title(message: str) -&gt; Optional[str]:\n    \"\"\"\n    Detect quoted title in user message using regex pattern.\n    \n    Looks for text within double quotes like \"Title\".\n    Handles edge cases: malformed quotes, partial titles, very long titles.\n    \n    Args:\n        message: User message text\n        \n    Returns:\n        Extracted title if found, None otherwise\n    \"\"\"\n    if not message:\n        return None\n    \n    # Pattern to match text within double quotes\n    pattern = r'\"([^\"]+)\"'\n    matches = re.findall(pattern, message)\n    \n    if matches:\n        # Take the first match and strip whitespace\n        title = matches[0].strip()\n        # Validate: not empty and reasonable length\n        # Handle very long titles by truncating (still try to match)\n        if title:\n            if len(title) &gt; 500:\n                logger.debug(f\"Quoted title very long ({len(title)} chars), truncating for matching\")\n                title = title[:500]\n            logger.info(f\"DAAS single-dream mode: detected quoted title '{title[:50]}...'\")\n            return title\n    \n    return None",
+  "totalLinesInFile": 255
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "Thinking for|🟢 Thinking|🟣 Thinking",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "Thinking for|🟢 Thinking|🟣 Thinking",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 1356,
+                  "content": "                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                },
+                {
+                  "lineNumber": 1502,
+                  "content": "                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                },
+                {
+                  "lineNumber": 1625,
+                  "content": "        thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                }
+              ]
+            }
+          ],
+          "totalLines": 3,
+          "totalMatchedLines": 3
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the spec for feature 014: DAAS RAG revamp. Setting up the spec structure:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; mkdir -p specs/014-revamp-daas-rag/contracts specs/014-revamp-daas-rag/checklists",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "mkdir",
+        "args": [
+          {
+            "type": "word",
+            "value": "-p"
+          },
+          {
+            "type": "word",
+            "value": "specs/014-revamp-daas-rag/contracts"
+          },
+          {
+            "type": "word",
+            "value": "specs/014-revamp-daas-rag/checklists"
+          }
+        ],
+        "fullText": "mkdir -p specs/014-revamp-daas-rag/contracts specs/014-revamp-daas-rag/checklists"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/spec.md",
+  "offset": 1,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/spec.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Feature Specification: Enhance THN RAG System\n\n**Feature ID**: &#96;013-enhance-thn-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nReplace the current RAG implementation for THN project with a new, improved RAG system that provides:\n\n1. **History &amp; Context**: Last 5 conversations from &#96;conversation_index&#96; table\n2. **Relevant Code Snippets**: Code chunks from &#96;thn_code_index&#96; table (via &#96;code_index&#96; table)\n\nThe goal is to give project THN a general overview of conversations from a personal level, maintaining contextual knowledge to anticipate where conversations should be going. Code snippets aid in code review and analysis tasks.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current THN RAG Implementation**\n\n   - Remove existing THN-specific RAG code in &#96;build_project_context()&#96; function\n   - Remove or deprecate &#96;get_thn_code_context()&#96; usage in context builder\n   - Clean up any THN-specific retrieval logic that doesn't match new format\n\n2. **Implement New RAG Format**\n\n   **History &amp; Context Section:**\n\n   - Query &#96;conversation_index&#96; table for THN project",
+  "totalLinesInFile": 159
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/memory/constitution.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/memory/constitution.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# [PROJECT_NAME] Constitution\n&lt;!-- Example: Spec Constitution, TaskFlow Constitution, etc. --&gt;\n\n## Core Principles\n\n### [PRINCIPLE_1_NAME]\n&lt;!-- Example: I. Library-First --&gt;\n[PRINCIPLE_1_DESCRIPTION]\n&lt;!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries --&gt;\n\n### [PRINCIPLE_2_NAME]\n&lt;!-- Example: II. CLI Interface --&gt;\n[PRINCIPLE_2_DESCRIPTION]\n&lt;!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats --&gt;\n\n### [PRINCIPLE_3_NAME]\n&lt;!-- Example: III. Test-First (NON-NEGOTIABLE) --&gt;\n[PRINCIPLE_3_DESCRIPTION]\n&lt;!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced --&gt;\n\n### [PRINCIPLE_4_NAME]\n&lt;!-- Example: IV. Integration Testing --&gt;\n[PRINCIPLE_4_DESCRIPTION]\n&lt;!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas --&gt;\n\n### [PRINCIPLE_5_NAME]\n&lt;!-- Example: V. Observability, VI. Versioning &amp; Breaking Changes, VII. Simplicity --&gt;\n[PRINCIPLE_5_DESCRIPTION]\n&lt;!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles --&gt;\n\n## [SECTION_2_NAME]\n&lt;!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. --&gt;\n\n[SECTION_2_CONTENT]\n&lt;!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. --&gt;\n\n## [SECTION_3_NAME]\n&lt;!-- Example: Development Workflow, Review Process, Quality Gates, etc. --&gt;\n\n[SECTION_3_CONTENT]\n&lt;!-- Example: Code review requirements, testing gates, deployment approval process, etc. --&gt;\n\n## Governance\n&lt;!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan --&gt;\n\n[GOVERNANCE_RULES]\n&lt;!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance --&gt;\n\n**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]\n&lt;!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 --&gt;\n",
+  "totalLinesInFile": 51
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the spec file for the DAAS RAG revamp:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/spec.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "bf8ab2bf-b573-4ef8-b839-79647c85f202"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md",
+  "offset": 1,
+  "limit": 100,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: [FEATURE]\n\n**Branch**: &#96;[###-feature-name]&#96; | **Date**: [DATE] | **Spec**: [link]\n**Input**: Feature specification from &#96;/specs/[###-feature-name]/spec.md&#96;\n\n**Note**: This template is filled in by the &#96;/speckit.plan&#96; command. See &#96;.specify/templates/commands/plan.md&#96; for the execution workflow.\n\n## Summary\n\n[Extract from feature spec: primary requirement + technical approach from research]\n\n## Technical Context\n\n&lt;!--\n  ACTION REQUIRED: Replace the content in this section with the technical details\n  for the project. The structure here is presented in advisory capacity to guide\n  the iteration process.\n--&gt;\n\n**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  \n**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  \n**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  \n**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  \n**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]\n**Project Type**: [single/web/mobile - determines source structure]  \n**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  \n**Constraints**: [domain-specific, e.g., &lt;200ms p95, &lt;100MB memory, offline-capable or NEEDS CLARIFICATION]  \n**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]\n\n## Constitution Check\n\n*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*\n\n[Gates determined based on constitution file]\n\n## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/[###-feature]/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n&lt;!--\n  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout\n  for this feature. Delete unused options and expand the chosen structure with\n  real paths (e.g., apps/admin, packages/something). The delivered plan must\n  not include Option labels.\n--&gt;\n\n&#96;&#96;&#96;text\n# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)\nsrc/\n├── models/\n├── services/\n├── cli/\n└── lib/\n\ntests/\n├── contract/\n├── integration/\n└── unit/\n\n# [REMOVE IF UNUSED] Option 2: Web application (when \"frontend\" + \"backend\" detected)\nbackend/\n├── src/\n│   ├── models/\n│   ├── services/\n│   └── api/\n└── tests/\n\nfrontend/\n├── src/\n│   ├── components/\n│   ├── pages/\n│   └── services/\n└── tests/\n\n# [REMOVE IF UNUSED] Option 3: Mobile + API (when \"iOS/Android\" detected)\napi/\n└── [same as backend above]\n\nios/ or android/\n└── [platform-specific structure: feature modules, UI flows, platform tests]\n&#96;&#96;&#96;\n\n**Structure Decision**: [Document the selected structure and reference the real\ndirectories captured above]\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**\n",
+  "totalLinesInFile": 105
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the implementation plan:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: [FEATURE]\n\n**Branch**: &#96;[###-feature-name]&#96; | **Date**: [DATE] | **Spec**: [link]\n**Input**: Feature specification from &#96;/specs/[###-feature-name]/spec.md&#96;\n\n**Note**: This template is filled in by the &#96;/speckit.plan&#96; command. See &#96;.specify/templates/commands/plan.md&#96; for the execution workflow.\n\n## Summary\n\n[Extract from feature spec: primary requirement + technical approach from research]\n\n## Technical Context\n\n&lt;!--\n  ACTION REQUIRED: Replace the content in this section with the technical details\n  for the project. The structure here is presented in advisory capacity to guide\n  the iteration process.\n--&gt;\n\n**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  \n**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  \n**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  \n**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  \n**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]\n**Project Type**: [single/web/mobile - determines source structure]  \n**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  \n**Constraints**: [domain-specific, e.g., &lt;200ms p95, &lt;100MB memory, offline-capable or NEEDS CLARIFICATION]  \n**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]\n\n## Constitution Check\n\n*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*\n\n[Gates determined based on constitution file]\n\n## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/[###-feature]/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n&lt;!--\n  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout\n  for this feature. Delete unused options and expand the chosen structure with\n  real paths (e.g., apps/admin, packages/something). The delivered plan must\n  not include Option labels.\n--&gt;\n\n&#96;&#96;&#96;text\n# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)\nsrc/\n├── models/\n├── services/\n├── cli/\n└── lib/\n\ntests/\n├── contract/\n├── integration/\n└── unit/\n\n# [REMOVE IF UNUSED] Option 2: Web application (when \"frontend\" + \"backend\" detected)\nbackend/\n├── src/\n│   ├── models/\n│   ├── services/\n│   └── api/\n└── tests/\n\nfrontend/\n├── src/\n│   ├── components/\n│   ├── pages/\n│   └── services/\n└── tests/\n\n# [REMOVE IF UNUSED] Option 3: Mobile + API (when \"iOS/Android\" detected)\napi/\n└── [same as backend above]\n\nios/ or android/\n└── [platform-specific structure: feature modules, UI flows, platform tests]\n&#96;&#96;&#96;\n\n**Structure Decision**: [Document the selected structure and reference the real\ndirectories captured above]\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**\n\n| Violation | Why Needed | Simpler Alternative Rejected Because |\n|-----------|------------|-------------------------------------|\n| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |\n| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |\n",
+  "totalLinesInFile": 105
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 680,
+  "limit": 120,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": ") -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get project-scoped meditation notes for DAAS\n            mcp_notes_context = None\n            try:\n                from src.mcp.api import get_mcp_api\n                api = get_mcp_api()\n                project_notes = api.get_project_notes(project, user_message, limit=5)\n                if project_notes:\n                    notes_parts = []\n                    for note in project_notes:\n                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n                    if notes_parts:\n                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n            except Exception as e:\n                logger.debug(f\"MCP notes not available for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if daas_result.get('dreams'):\n                # Build context from DAAS retrieval result\n                context_parts = []\n                notes = []\n                \n                # Add MCP meditation notes if available\n                if mcp_notes_context:\n                    context_parts.append(f\"Here are relevant meditation notes from this project:\\n\\n{mcp_notes_context}\")\n                    notes.append(\"MCP notes: Retrieved relevant project-scoped meditation notes\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the DAAS project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add DAAS retrieval context\n                if daas_result.get('context'):\n                    if daas_result['mode'] == 'single':\n                        context_parts.append(f\"Here is the specific dream you asked about:\\n\\n{daas_result['context']}\")\n                        notes.append(f\"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}\")\n                    else:\n                        context_parts.append(f\"Here are relevant dreams from your dream history:\\n\\n{daas_result['context']}\")\n                        notes.extend([f\"Dream: {d.get('title', 'Unknown')}\" for d in daas_result['dreams'][:5]])\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"\n                    context += \"relevant details from these notes and dreams as we discuss topics.\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)\n        except Exception as e:\n            logger.error(f\"THN RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None\n    try:\n        from src.mcp.api import get_mcp_api",
+  "totalLinesInFile": 939
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1350,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n\n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False\n                    reply = \"\"\n                    try:\n                        _interrupt_streaming = False  # Reset interrupt flag\n                        import time\n                        # More aggressive throttling: slower display for readability",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Creating the implementation plan:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "e4672584-21c5-41f5-84f8-0527b813f344"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Continuing the planning workflow. Creating research.md for Phase 0:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/research.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "b00d8015-30cb-40c2-970c-d6a33aafcfe7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/data-model.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "c23f5440-23b2-4e7f-9052-5aae33cabd70"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/contracts/api.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "86a1bde4-8c9b-4577-adb1-71515c4a8f4a"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/quickstart.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "f2653400-9489-46c2-8ca9-567c37c2c27a"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the plan with final details and running the agent context update script:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/update-agent-context.sh cursor-agent 2&gt;/dev/null || echo \"Script not found or no update needed\"",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/update-agent-context.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "cursor-agent"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/update-agent-context.sh cursor-agent"
+      },
+      {
+        "name": "echo",
+        "args": [
+          {
+            "type": "string",
+            "value": "\"Script not found or no update needed\""
+          }
+        ],
+        "fullText": "echo \"Script not found or no update needed\""
+      }
+    ],
+    "hasRedirects": true
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "INFO: === Updating agent context files for feature 013-enhance-thn-rag ===\nINFO: Parsing plan data from /Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag/plan.md\nINFO: Found database: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]\nINFO: Found project type: [single/web/mobile - determines source structure]\nINFO: Updating specific agent: cursor-agent\nINFO: Updating Cursor IDE context file: /Users/petertumulty/Documents/Sites/project_chat/project_chat/.cursor/rules/specify-rules.mdc\nINFO: Updating existing agent context file...\n✓ Updated existing Cursor IDE context file\n\nINFO: Summary of changes:\n  - Added database: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]\n\nINFO: Usage: .specify/scripts/bash/update-agent-context.sh [claude|gemini|copilot|cursor-agent|qwen|opencode|codex|windsurf|kilocode|auggie|codebuddy|shai|q]\n✓ Agent context update completed successfully\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md",
+  "offset": 1,
+  "limit": 10,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: Revamp DAAS RAG System\n\n**Branch**: &#96;014-revamp-daas-rag&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)\n**Input**: Feature specification from &#96;/specs/014-revamp-daas-rag/spec.md&#96;\n\n## Summary\n\nRevamp the DAAS RAG system to provide focused, cost-effective dream analysis retrieval. Remove existing DAAS retrieval code that uses conversation history, and implement a new system that retrieves related dreams by themes, symbols, or events while keeping each dream's events separate and self-contained. Remove debugging \"Thinking\" messages from the chat interface.\n\n## Technical Context",
+  "totalLinesInFile": 160
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "c645ceff-90e3-409c-91f4-a848d4d8ee97"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "96566ff5-dc14-4b11-a61d-b2c1caea3217"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Planning Complete
+
+**Feature**: `014-revamp-daas-rag`  
+**Branch**: `014-revamp-daas-rag`  
+**Spec Location**: `/specs/014-revamp-daas-rag/spec.md`
+
+### Generated Artifacts
+
+1. **spec.md** - Feature specification with requirements
+2. **plan.md** - Implementation plan with technical context
+3. **research.md** - Research decisions and rationale
+4. **data-model.md** - Data model documentation (uses existing schema)
+5. **contracts/api.md** - API contract for `build_daas_rag_context()` function
+6. **quickstart.md** - Implementation guide and testing steps
+
+### Key Design Decisions
+
+1. **Vector Search**: Use full user message for embedding (similar to THN RAG)
+2. **Formatting**: Markdown with clear separators between dreams
+3. **Token Optimization**: Truncate summaries to 300 chars, memory to 200 chars, limit to 3-5 dreams
+4. **Removal**: Delete `daas_retrieval.py` and remove "Thinking" spinner from chat_cli.py
+
+### Next Steps
+
+Run `/speckit.tasks` to generate the task breakdown, or start implementation using the quickstart guide.
+
+The plan follows the same pattern as the THN RAG implementation for consistency and maintainability.
+
+---
+
+_**User (2025-12-09 23:02Z)**_
+
+/speckit.tasks 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Generating tasks.md for the DAAS RAG revamp. Checking prerequisites and loading design documents.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/check-prerequisites.sh --json",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/check-prerequisites.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/check-prerequisites.sh --json"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "{\"FEATURE_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\"]}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/spec.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/spec.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Feature Specification: Revamp DAAS RAG System\n\n**Feature ID**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nRevamp the DAAS (Dream Analysis and Symbolism) RAG system to provide a focused, cost-effective retrieval system that enriches dream analysis without confusing conversation history. The new system will retrieve related DAAS-embedded data by themes, symbols, or events to provide symbolic parallels and deeper meaning while keeping each dream's events separate and self-contained.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current DAAS RAG Implementation**\n\n   - Remove &#96;daas_retrieval.py&#96; file and all its functions\n   - Remove DAAS-specific retrieval logic from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n   - Remove single-dream mode and pattern-based mode implementations\n   - Clean up any DAAS-specific retrieval code that uses conversation history\n\n2. **Implement New DAAS RAG System**\n\n   **Core Principles:**\n\n   - Retrieve related DAAS-embedded data by themes, symbols, or events\n   - Highlight symbolic parallels or contrasts without merging dream events\n   - Keep each dream's events, characters, and timelines separate and self-contained\n   - Compare symbols and themes only at the conceptual level\n   - Integrate DAAS's multitradition framework naturally\n   - Limit retrieval strictly to DAAS-tagged data (no outside references)\n   - Provide concise, thoughtful guidance without over-explaining\n   - If no relevant retrieval results, focus on unique details of current dream\n\n   **Retrieval Strategy:**\n\n   - Use vector similarity search on &#96;conversation_index&#96; table for DAAS project\n   - Search by themes, symbols, or events from the current dream/query\n   - Return top-k relevant dreams (configurable, default: 3-5)\n   - Format retrieved dreams with clear separation and boundaries\n   - Include only essential fields: title, key themes, symbols, summary\n\n3. **Remove Debugging Messages**\n\n   - Remove \"Thinking for [PROJECT]\" spinner messages from &#96;chat_cli.py&#96;\n   - Remove or reduce verbose logging during RAG generation\n   - Keep only essential error logging\n\n4. **Cost Optimization**\n\n   - Limit retrieved content to essential information only\n   - Truncate long summaries or memory snippets\n   - Use efficient vector search queries\n   - Consider token limits when formatting RAG context\n\n### Non-Functional Requirements\n\n1. **Performance**\n\n   - RAG generation should complete in &lt;500ms (similar to THN RAG target)\n   - Vector similarity search should use existing indexes\n\n2. **Token Efficiency**\n\n   - Keep RAG context concise (target: &lt;1000 tokens)\n   - Truncate retrieved content appropriately\n   - Avoid redundant information\n\n3. **Maintainability**\n   - Clear separation between DAAS RAG and other project RAG systems\n   - Well-documented retrieval logic\n   - Easy to adjust retrieval parameters\n\n## Design Constraints\n\n1. **No Conversation History in RAG**\n\n   - Do not include conversation history in RAG context\n   - Focus only on dream data from &#96;conversation_index&#96; table\n   - Keep dream analysis focused and unconfused\n\n2. **DAAS-Only Data**\n\n   - Strictly limit retrieval to DAAS-tagged entries\n   - No cross-project data retrieval\n   - No external references\n\n3. **Dream Separation**\n   - Each retrieved dream must be clearly separated\n   - No merging of dream events or timelines\n   - Maintain clear boundaries between dreams\n\n## Integration Points\n\n1. **&#96;build_project_context()&#96; in &#96;context_builder.py&#96;**\n\n   - Replace DAAS retrieval logic with new implementation\n   - Follow pattern similar to THN RAG but with DAAS-specific rules\n\n2. **&#96;chat_cli.py&#96;**\n\n   - Remove \"Thinking for [PROJECT]\" spinner messages\n   - Ensure smooth user experience without debugging noise\n\n3. **Database**\n   - Use existing &#96;conversation_index&#96; table with DAAS project filter\n   - Leverage existing embedding indexes for vector search\n\n## Success Criteria\n\n1. ✅ Old DAAS RAG code completely removed\n2. ✅ New DAAS RAG retrieves relevant dreams by themes/symbols/events\n3. ✅ Retrieved dreams are clearly separated and self-contained\n4. ✅ No conversation history included in RAG\n5. ✅ Debugging messages removed from chat interface\n6. ✅ RAG generation completes in &lt;500ms\n7. ✅ Token usage is optimized (&lt;1000 tokens for RAG context)\n",
+  "totalLinesInFile": 118
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/plan.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Implementation Plan: Revamp DAAS RAG System\n\n**Branch**: &#96;014-revamp-daas-rag&#96; | **Date**: 2025-01-27 | **Spec**: [spec.md](./spec.md)\n**Input**: Feature specification from &#96;/specs/014-revamp-daas-rag/spec.md&#96;\n\n## Summary\n\nRevamp the DAAS RAG system to provide focused, cost-effective dream analysis retrieval. Remove existing DAAS retrieval code that uses conversation history, and implement a new system that retrieves related dreams by themes, symbols, or events while keeping each dream's events separate and self-contained. Remove debugging \"Thinking\" messages from the chat interface.\n\n## Technical Context\n\n**Language/Version**: Python 3.10+ (existing project standard)  \n**Primary Dependencies**: Existing dependencies (psycopg2, OpenAI, pgvector)  \n**Storage**: PostgreSQL with &#96;conversation_index&#96; table (existing schema)  \n**Testing**: Manual testing (consistent with project standards)  \n**Target Platform**: Linux/macOS CLI application  \n**Project Type**: Single project (Python CLI)  \n**Performance Goals**: RAG generation &lt;500ms (similar to THN RAG target)  \n**Constraints**:\n\n- Token limit: &lt;1000 tokens for RAG context\n- No conversation history in RAG\n- DAAS-tagged data only\n- Cost-conscious retrieval (limit retrieved content)\n  **Scale/Scope**:\n- Single DAAS project retrieval\n- 3-5 dreams per query (configurable)\n- Existing database schema (no migrations needed)\n\n## Constitution Check\n\n_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._\n\nNo constitution violations identified. This feature:\n\n- Follows existing project patterns (similar to THN RAG implementation)\n- Uses existing database schema\n- Maintains separation of concerns\n- No breaking changes to existing functionality\n\n## Project Structure\n\n### Documentation (this feature)\n\n&#96;&#96;&#96;text\nspecs/014-revamp-daas-rag/\n├── plan.md              # This file (/speckit.plan command output)\n├── research.md          # Phase 0 output (/speckit.plan command)\n├── data-model.md        # Phase 1 output (/speckit.plan command)\n├── quickstart.md        # Phase 1 output (/speckit.plan command)\n├── contracts/           # Phase 1 output (/speckit.plan command)\n└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)\n&#96;&#96;&#96;\n\n### Source Code (repository root)\n\n&#96;&#96;&#96;text\nbrain_core/\n├── context_builder.py    # Modify: Remove old DAAS retrieval, add new implementation\n├── daas_retrieval.py    # DELETE: Remove entire file\n└── embedding_service.py  # Use existing: Vector similarity search\n\nchat_cli.py              # Modify: Remove \"Thinking for [PROJECT]\" spinner messages\n&#96;&#96;&#96;\n\n**Structure Decision**: Single project structure. All changes are modifications to existing files in &#96;brain_core/&#96; and &#96;chat_cli.py&#96;. No new modules required.\n\n## Complexity Tracking\n\n&gt; **Fill ONLY if Constitution Check has violations that must be justified**\n\nNo violations identified.\n\n## Phase 0: Research &amp; Design Decisions ✅\n\n**Status**: Complete - See &#96;research.md&#96; for all decisions.\n\n### Research Tasks\n\n1. **Vector Similarity Search for DAAS Dreams**\n\n   - Research: How to extract themes/symbols/events from user query for vector search\n   - Decision: Use full user message for embedding generation (similar to THN code search)\n   - Rationale: Simpler than parsing themes/symbols, leverages existing embedding infrastructure\n\n2. **Dream Formatting and Separation**\n\n   - Research: Best format for presenting multiple dreams with clear boundaries\n   - Decision: Use markdown-style separation with clear headers and separators\n   - Rationale: Maintains readability while keeping dreams distinct\n\n3. **Token Optimization Strategies**\n\n   - Research: How to limit retrieved content while maintaining usefulness\n   - Decision:\n     - Truncate summaries to 300 chars\n     - Truncate memory snippets to 200 chars\n     - Limit to 3-5 dreams (configurable)\n   - Rationale: Balances context richness with token efficiency\n\n4. **Removing Debugging Messages**\n   - Research: Where \"Thinking\" spinner is implemented\n   - Decision: Remove spinner thread and thinking label from chat_cli.py\n   - Rationale: Improves user experience by removing unnecessary visual noise\n\n## Phase 1: Design &amp; Contracts ✅\n\n**Status**: Complete - See &#96;data-model.md&#96;, &#96;contracts/api.md&#96;, and &#96;quickstart.md&#96;.\n\n### Data Model\n\n**Existing Tables Used:**\n\n- &#96;conversation_index&#96;: Contains DAAS dreams with embeddings\n  - Fields used: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;, &#96;embedding&#96;\n  - Filter: &#96;project = 'DAAS'&#96;\n  - Search: Vector similarity using &#96;embedding &lt;=&gt; query_embedding&#96;\n\n**No Schema Changes Required**\n\n### API Contracts\n\n**Function: &#96;build_daas_rag_context(user_message: str) -&gt; Dict[str, Any]&#96;**\n\n- **Location**: &#96;brain_core/context_builder.py&#96;\n- **Purpose**: Build RAG context for DAAS project\n- **Input**: User message string\n- **Output**: Dict with &#96;context&#96; (formatted string) and &#96;notes&#96; (list of source notes)\n- **Behavior**:\n  - Generate embedding for user_message\n  - Query &#96;conversation_index&#96; WHERE &#96;project = 'DAAS'&#96; using vector similarity\n  - Return top 3-5 dreams (configurable)\n  - Format with clear separation between dreams\n  - Truncate content to stay within token limits\n\n**Integration Point: &#96;build_project_context()&#96;**\n\n- Remove old DAAS retrieval logic (lines 704-786)\n- Add call to &#96;build_daas_rag_context()&#96; for DAAS project\n- Follow pattern similar to THN RAG implementation\n\n### Quickstart Guide\n\n**For Developers:**\n\n1. Remove &#96;brain_core/daas_retrieval.py&#96; file\n2. Remove DAAS-specific code from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n3. Implement &#96;build_daas_rag_context()&#96; function\n4. Remove \"Thinking\" spinner from &#96;chat_cli.py&#96; (3 locations)\n5. Test with DAAS project conversation\n\n**For Users:**\n\n- No changes to CLI interface\n- RAG retrieval happens automatically for DAAS project\n- No \"Thinking\" messages during processing\n\n## Phase 2: Implementation Tasks\n\n_(Tasks will be generated by &#96;/speckit.tasks&#96; command)_\n\n## Success Metrics\n\n1. ✅ &#96;daas_retrieval.py&#96; file deleted\n2. ✅ Old DAAS code removed from &#96;context_builder.py&#96;\n3. ✅ New &#96;build_daas_rag_context()&#96; function implemented\n4. ✅ RAG retrieves 3-5 relevant dreams by themes/symbols/events\n5. ✅ Dreams formatted with clear separation\n6. ✅ No conversation history in RAG context\n7. ✅ \"Thinking\" messages removed from chat interface\n8. ✅ RAG generation completes in &lt;500ms\n9. ✅ RAG context stays under 1000 tokens\n",
+  "totalLinesInFile": 173
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reading additional documents and generating tasks:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/contracts/api.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/contracts/api.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# API Contract: Revamp DAAS RAG System\n\n## Function: &#96;build_daas_rag_context&#96;\n\n**Location**: &#96;brain_core/context_builder.py&#96;\n\n**Purpose**: Build RAG context for DAAS project by retrieving related dreams using vector similarity search.\n\n### Signature\n\n&#96;&#96;&#96;python\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n\n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n\n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n\n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n\n    Raises:\n        None - always returns a dict (empty context if retrieval fails)\n    \"\"\"\n&#96;&#96;&#96;\n\n### Behavior\n\n1. **Input Validation**\n\n   - If &#96;user_message&#96; is empty or None, return empty context\n   - If &#96;top_k&#96; &gt; 5, cap at 5\n   - If &#96;top_k&#96; &lt; 1, default to 3\n\n2. **Embedding Generation**\n\n   - Call &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n   - Handle embedding generation errors gracefully\n\n3. **Vector Similarity Search**\n\n   - Query &#96;conversation_index&#96; table:\n     - Filter: &#96;project = 'DAAS'&#96; AND &#96;embedding IS NOT NULL&#96;\n     - Order by: &#96;embedding &lt;=&gt; query_embedding&#96; (cosine distance)\n     - Limit: &#96;top_k&#96;\n   - Return: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;\n\n4. **Formatting**\n\n   - For each retrieved dream:\n     - Title: Use full title\n     - Summary: Truncate &#96;summary_short&#96; to 300 chars (add \"...\" if truncated)\n     - Memory: Truncate &#96;memory_snippet&#96; to 200 chars (add \"...\" if truncated)\n   - Format with markdown headers and separators\n   - Add header: \"### Related Dreams for Analysis\"\n\n5. **Output**\n   - If dreams found: Return formatted context string\n   - If no dreams found: Return empty context string\n   - Always include notes about retrieval\n\n### Example Output\n\n&#96;&#96;&#96;python\n{\n    \"context\": \"\"\"### Related Dreams for Analysis\n\n**Dream: Flying Over Ocean**\n- **Summary**: Dreamed of flying over a vast ocean, feeling free and unburdened...\n- **Key Details**: Ocean represented emotional depth, flying symbolized liberation from...\n\n---\n\n**Dream: Underwater City**\n- **Summary**: Explored an underwater city with ancient architecture, felt peaceful...\n- **Key Details**: Water represented subconscious, city symbolized structured thoughts...\n\n---\n\n**Dream: Desert Journey**\n- **Summary**: Walked through desert, found oasis with clear water, felt relief...\n- **Key Details**: Desert represented emotional dryness, oasis symbolized hope...\"\"\",\n\n    \"notes\": [\"Retrieved 3 dreams via vector similarity search\"]\n}\n&#96;&#96;&#96;\n\n### Error Handling\n\n- **Embedding generation fails**: Log error, return empty context\n- **Database query fails**: Log error, return empty context\n- **No dreams found**: Return empty context (not an error)\n- **Invalid input**: Return empty context with appropriate logging\n\n### Performance Requirements\n\n- **Target**: &lt;500ms total execution time\n- **Breakdown**:\n  - Embedding generation: &lt;200ms\n  - Database query: &lt;200ms\n  - Formatting: &lt;100ms\n\n### Token Limits\n\n- **Target**: &lt;1000 tokens for RAG context\n- **Per dream**: ~250 tokens (title + summary + memory + formatting)\n- **3 dreams**: ~750 tokens\n- **5 dreams**: ~1250 tokens (acceptable if highly relevant)\n\n## Integration Point: &#96;build_project_context()&#96;\n\n**Location**: &#96;brain_core/context_builder.py&#96; (lines ~704-786)\n\n**Changes**:\n\n- Remove existing DAAS retrieval logic (lines 704-786)\n- Add new DAAS handling:\n\n&#96;&#96;&#96;python\n# DAAS-specific retrieval: new RAG format\nif project == 'DAAS':\n    try:\n        return build_daas_rag_context(user_message, top_k=3)\n    except Exception as e:\n        logger.error(f\"DAAS RAG generation failed: {e}\")\n        # Fall through to default behavior (keyword-based search)\n&#96;&#96;&#96;\n\n## Dependencies\n\n- &#96;embedding_service.generate_embedding()&#96;: Generate query embeddings\n- &#96;db.get_conn()&#96;: Database connection\n- &#96;conversation_index&#96; table: Source of dream data\n- PostgreSQL pgvector extension: Vector similarity search\n",
+  "totalLinesInFile": 142
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/quickstart.md",
+  "offset": 1,
+  "limit": 80,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/quickstart.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Quickstart: Revamp DAAS RAG System\n\n**Feature**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27\n\n## Overview\n\nThis feature revamps the DAAS RAG system to provide focused, cost-effective dream analysis retrieval without confusing conversation history.\n\n## What Changes\n\n### For Users\n\n- **No visible changes** to CLI interface\n- RAG retrieval happens automatically for DAAS project conversations\n- **Removed**: \"Thinking for DAAS\" spinner messages (cleaner interface)\n- **Improved**: More focused dream retrieval by themes/symbols/events\n\n### For Developers\n\n1. **File Deletions**:\n\n   - &#96;brain_core/daas_retrieval.py&#96; - Entire file removed\n\n2. **File Modifications**:\n\n   - &#96;brain_core/context_builder.py&#96;:\n     - Remove old DAAS retrieval code (lines 704-786)\n     - Add new &#96;build_daas_rag_context()&#96; function\n   - &#96;chat_cli.py&#96;:\n     - Remove \"Thinking for [PROJECT]\" spinner (3 locations)\n\n3. **New Function**:\n   - &#96;build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]&#96;\n\n## Implementation Steps\n\n### Step 1: Remove Old DAAS RAG Code\n\n&#96;&#96;&#96;bash\n# Delete the old retrieval file\nrm brain_core/daas_retrieval.py\n&#96;&#96;&#96;\n\n### Step 2: Remove Old Code from context_builder.py\n\nRemove lines 704-786 in &#96;brain_core/context_builder.py&#96; (the entire DAAS-specific retrieval block).\n\n### Step 3: Implement New DAAS RAG Function\n\nAdd &#96;build_daas_rag_context()&#96; function to &#96;brain_core/context_builder.py&#96;:\n\n&#96;&#96;&#96;python\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n\n    Retrieves top-k relevant dreams using vector similarity search.\n    \"\"\"\n    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n\n    # Cap top_k at 5\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3\n\n    try:\n        # Generate embedding for user message\n        query_embedding = generate_embedding(user_message)\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n\n        # Vector similarity search\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS'\n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector",
+  "totalLinesInFile": 224
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 704,
+  "limit": 85,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get project-scoped meditation notes for DAAS\n            mcp_notes_context = None\n            try:\n                from src.mcp.api import get_mcp_api\n                api = get_mcp_api()\n                project_notes = api.get_project_notes(project, user_message, limit=5)\n                if project_notes:\n                    notes_parts = []\n                    for note in project_notes:\n                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n                    if notes_parts:\n                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n            except Exception as e:\n                logger.debug(f\"MCP notes not available for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if daas_result.get('dreams'):\n                # Build context from DAAS retrieval result\n                context_parts = []\n                notes = []\n                \n                # Add MCP meditation notes if available\n                if mcp_notes_context:\n                    context_parts.append(f\"Here are relevant meditation notes from this project:\\n\\n{mcp_notes_context}\")\n                    notes.append(\"MCP notes: Retrieved relevant project-scoped meditation notes\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the DAAS project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add DAAS retrieval context\n                if daas_result.get('context'):\n                    if daas_result['mode'] == 'single':\n                        context_parts.append(f\"Here is the specific dream you asked about:\\n\\n{daas_result['context']}\")\n                        notes.append(f\"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}\")\n                    else:\n                        context_parts.append(f\"Here are relevant dreams from your dream history:\\n\\n{daas_result['context']}\")\n                        notes.extend([f\"Dream: {d.get('title', 'Unknown')}\" for d in daas_result['dreams'][:5]])\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"\n                    context += \"relevant details from these notes and dreams as we discuss topics.\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format",
+  "totalLinesInFile": 939
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1350,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n\n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    \n                    # Spinner runs while we wait for API response",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Finding all spinner locations, then generating tasks.md:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "thinking_label.*Thinking for",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "thinking_label.*Thinking for",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 1356,
+                  "content": "                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                },
+                {
+                  "lineNumber": 1502,
+                  "content": "                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                },
+                {
+                  "lineNumber": 1625,
+                  "content": "        thinking_label = f\"{style['emoji']} Thinking for {style['label']}\""
+                }
+              ]
+            }
+          ],
+          "totalLines": 3,
+          "totalMatchedLines": 3
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/research.md",
+  "offset": 1,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/research.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# Research: Revamp DAAS RAG System\n\n**Feature**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27\n\n## Research Decisions\n\n### 1. Vector Similarity Search Strategy\n\n**Question**: How should we extract themes/symbols/events from user query for vector search?\n\n**Decision**: Use the full user message for embedding generation, similar to THN code search implementation.\n\n**Rationale**:\n\n- Simpler implementation - no need to parse or extract specific themes/symbols\n- Leverages existing embedding infrastructure (&#96;embedding_service.py&#96;)\n- User's natural language query already contains relevant themes/symbols/events\n- Consistent with THN RAG approach (uses full user message)\n\n**Alternatives Considered**:\n\n- Parse query for specific keywords (themes, symbols, events) - **Rejected**: Too complex, may miss context\n- Use separate embeddings for title, summary, memory - **Rejected**: More complex, not needed for initial implementation\n- Hybrid approach (keywords + full query) - **Rejected**: Over-engineering for current needs\n\n**Implementation**: Use &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;, then query &#96;conversation_index&#96; with vector similarity search.\n\n---\n\n### 2. Dream Formatting and Separation\n\n**Question**: What's the best format for presenting multiple dreams with clear boundaries?\n\n**Decision**: Use markdown-style formatting with clear headers and horizontal separators between dreams.\n\n**Format**:\n\n&#96;&#96;&#96;\n### Related Dreams for Analysis\n\n**Dream: [Title]**\n- **Themes**: [extracted or from summary]\n- **Summary**: [truncated to 300 chars]\n- **Key Details**: [memory_snippet truncated to 200 chars]\n\n---\n\n**Dream: [Title]**\n...",
+  "totalLinesInFile": 173
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **1** result in **1** directory</summary>
+
+Directory: **undefined** (1 file)
+
+| File |
+|------|
+| `./.specify/templates/tasks-template.md` |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reading the tasks template and generating tasks.md:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/templates/tasks-template.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/.specify/templates/tasks-template.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "---\n\ndescription: \"Task list template for feature implementation\"\n---\n\n# Tasks: [FEATURE NAME]\n\n**Input**: Design documents from &#96;/specs/[###-feature-name]/&#96;\n**Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/\n\n**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.\n\n**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.\n\n## Format: &#96;[ID] [P?] [Story] Description&#96;\n\n- **[P]**: Can run in parallel (different files, no dependencies)\n- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)\n- Include exact file paths in descriptions\n\n## Path Conventions\n\n- **Single project**: &#96;src/&#96;, &#96;tests/&#96; at repository root\n- **Web app**: &#96;backend/src/&#96;, &#96;frontend/src/&#96;\n- **Mobile**: &#96;api/src/&#96;, &#96;ios/src/&#96; or &#96;android/src/&#96;\n- Paths shown below assume single project - adjust based on plan.md structure\n\n&lt;!-- \n  ============================================================================\n  IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.\n  \n  The /speckit.tasks command MUST replace these with actual tasks based on:\n  - User stories from spec.md (with their priorities P1, P2, P3...)\n  - Feature requirements from plan.md\n  - Entities from data-model.md\n  - Endpoints from contracts/\n  \n  Tasks MUST be organized by user story so each story can be:\n  - Implemented independently\n  - Tested independently\n  - Delivered as an MVP increment\n  \n  DO NOT keep these sample tasks in the generated tasks.md file.\n  ============================================================================\n--&gt;\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Project initialization and basic structure\n\n- [ ] T001 Create project structure per implementation plan\n- [ ] T002 Initialize [language] project with [framework] dependencies\n- [ ] T003 [P] Configure linting and formatting tools\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented\n\n**⚠️ CRITICAL**: No user story work can begin until this phase is complete\n\nExamples of foundational tasks (adjust based on your project):\n\n- [ ] T004 Setup database schema and migrations framework\n- [ ] T005 [P] Implement authentication/authorization framework\n- [ ] T006 [P] Setup API routing and middleware structure\n- [ ] T007 Create base models/entities that all stories depend on\n- [ ] T008 Configure error handling and logging infrastructure\n- [ ] T009 Setup environment configuration management\n\n**Checkpoint**: Foundation ready - user story implementation can now begin in parallel\n\n---\n\n## Phase 3: User Story 1 - [Title] (Priority: P1) 🎯 MVP\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️\n\n&gt; **NOTE: Write these tests FIRST, ensure they FAIL before implementation**\n\n- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 1\n\n- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py\n- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py\n- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)\n- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py\n- [ ] T016 [US1] Add validation and error handling\n- [ ] T017 [US1] Add logging for user story 1 operations\n\n**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently\n\n---\n\n## Phase 4: User Story 2 - [Title] (Priority: P2)\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️\n\n- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 2\n\n- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py\n- [ ] T021 [US2] Implement [Service] in src/services/[service].py\n- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py\n- [ ] T023 [US2] Integrate with User Story 1 components (if needed)\n\n**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently\n\n---\n\n## Phase 5: User Story 3 - [Title] (Priority: P3)\n\n**Goal**: [Brief description of what this story delivers]\n\n**Independent Test**: [How to verify this story works on its own]\n\n### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️\n\n- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py\n- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py\n\n### Implementation for User Story 3\n\n- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py\n- [ ] T027 [US3] Implement [Service] in src/services/[service].py\n- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py\n\n**Checkpoint**: All user stories should now be independently functional\n\n---\n\n[Add more user story phases as needed, following the same pattern]\n\n---\n\n## Phase N: Polish &amp; Cross-Cutting Concerns\n\n**Purpose**: Improvements that affect multiple user stories\n\n- [ ] TXXX [P] Documentation updates in docs/\n- [ ] TXXX Code cleanup and refactoring\n- [ ] TXXX Performance optimization across all stories\n- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/\n- [ ] TXXX Security hardening\n- [ ] TXXX Run quickstart.md validation\n\n---\n\n## Dependencies &amp; Execution Order\n\n### Phase Dependencies\n\n- **Setup (Phase 1)**: No dependencies - can start immediately\n- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories\n- **User Stories (Phase 3+)**: All depend on Foundational phase completion\n  - User stories can then proceed in parallel (if staffed)\n  - Or sequentially in priority order (P1 → P2 → P3)\n- **Polish (Final Phase)**: Depends on all desired user stories being complete\n\n### User Story Dependencies\n\n- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories\n- **User Story 2 (P2)**: Can start after Foundational (Phase 2) - May integrate with US1 but should be independently testable\n- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - May integrate with US1/US2 but should be independently testable\n\n### Within Each User Story\n\n- Tests (if included) MUST be written and FAIL before implementation\n- Models before services\n- Services before endpoints\n- Core implementation before integration\n- Story complete before moving to next priority\n\n### Parallel Opportunities\n\n- All Setup tasks marked [P] can run in parallel\n- All Foundational tasks marked [P] can run in parallel (within Phase 2)\n- Once Foundational phase completes, all user stories can start in parallel (if team capacity allows)\n- All tests for a user story marked [P] can run in parallel\n- Models within a story marked [P] can run in parallel\n- Different user stories can be worked on in parallel by different team members\n\n---\n\n## Parallel Example: User Story 1\n\n&#96;&#96;&#96;bash\n# Launch all tests for User Story 1 together (if tests requested):\nTask: \"Contract test for [endpoint] in tests/contract/test_[name].py\"\nTask: \"Integration test for [user journey] in tests/integration/test_[name].py\"\n\n# Launch all models for User Story 1 together:\nTask: \"Create [Entity1] model in src/models/[entity1].py\"\nTask: \"Create [Entity2] model in src/models/[entity2].py\"\n&#96;&#96;&#96;\n\n---\n\n## Implementation Strategy\n\n### MVP First (User Story 1 Only)\n\n1. Complete Phase 1: Setup\n2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)\n3. Complete Phase 3: User Story 1\n4. **STOP and VALIDATE**: Test User Story 1 independently\n5. Deploy/demo if ready\n\n### Incremental Delivery\n\n1. Complete Setup + Foundational → Foundation ready\n2. Add User Story 1 → Test independently → Deploy/Demo (MVP!)\n3. Add User Story 2 → Test independently → Deploy/Demo\n4. Add User Story 3 → Test independently → Deploy/Demo\n5. Each story adds value without breaking previous stories\n\n### Parallel Team Strategy\n\nWith multiple developers:\n\n1. Team completes Setup + Foundational together\n2. Once Foundational is done:\n   - Developer A: User Story 1\n   - Developer B: User Story 2\n   - Developer C: User Story 3\n3. Stories complete and integrate independently\n\n---\n\n## Notes\n\n- [P] tasks = different files, no dependencies\n- [Story] label maps task to specific user story for traceability\n- Each user story should be independently completable and testable\n- Verify tests fail before implementing\n- Commit after each task or logical group\n- Stop at any checkpoint to validate story independently\n- Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence\n",
+  "totalLinesInFile": 252
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 575,
+  "limit": 80,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    \n    # Fallback to file path if no metadata description\n    if not description and file_path:\n        # Extract meaningful part from file path (filename or last directory)\n        import os\n        description = os.path.basename(file_path)\n        if description.endswith('.py'):\n            description = description[:-3]  # Remove .py extension\n    \n    if description:\n        parts.append(f\"**Description:** {description}\")\n    \n    # Add code chunk (truncate to 1000 chars)\n    if chunk_text:\n        code_text = chunk_text\n        if len(code_text) &gt; 1000:\n            code_text = code_text[:1000] + \"...\"\n        parts.append(f\"&#96;&#96;&#96;{language}\\n{code_text}\\n&#96;&#96;&#96;\")\n    \n    return \"\\n\".join(parts)\n\n\ndef build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.\n    \n    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks\n    from code_index using vector similarity search. Formats them into a structured RAG context\n    that appears after the project_knowledge section (overview + rules) in system messages.\n    \n    Args:\n        user_message: Current user message for code similarity search\n    \n    Returns:\n        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)\n        \n    Performance:\n        Target: &lt;500ms total generation time\n        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)\n        - Code similarity search: &lt;200ms (uses vector index)\n        - Formatting: &lt;50ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    notes = []\n    context_parts = []\n    \n    # Retrieve and format conversations\n    conv_start = time.time()\n    conversations = _retrieve_thn_conversations(limit=5)\n    conv_time = (time.time() - conv_start) * 1000  # Convert to ms\n    \n    if conversations:\n        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]\n        for row in conversations:\n            formatted = _format_conversation_entry(row)\n            if formatted:\n                history_parts.append(formatted)\n                history_parts.append(\"\")  # Empty line between entries\n        \n        if len(history_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(history_parts))\n            notes.append(\"Retrieved 5 conversations from conversation_index\")\n    \n    # Retrieve and format code snippets\n    code_start = time.time()\n    code_chunks = _retrieve_thn_code(user_message, top_k=5)\n    code_time = (time.time() - code_start) * 1000  # Convert to ms\n    \n    if code_chunks:\n        code_parts = [\"### Relevant Code Snippets\\n\"]\n        for chunk in code_chunks:\n            formatted = _format_code_snippet(chunk)\n            if formatted:\n                code_parts.append(formatted)\n                code_parts.append(\"\")  # Empty line between snippets\n        \n        if len(code_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(code_parts))",
+  "totalLinesInFile": 939
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Generating tasks.md:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "dc61c7d1-cbe0-4093-8ab8-47d8a54b9c8d"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; wc -l specs/014-revamp-daas-rag/tasks.md",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "wc",
+        "args": [
+          {
+            "type": "word",
+            "value": "-l"
+          },
+          {
+            "type": "word",
+            "value": "specs/014-revamp-daas-rag/tasks.md"
+          }
+        ],
+        "fullText": "wc -l specs/014-revamp-daas-rag/tasks.md"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "     219 specs/014-revamp-daas-rag/tasks.md\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Tasks.md Generated
+
+**Location**: `/specs/014-revamp-daas-rag/tasks.md`
+
+### Summary
+
+- **Total Tasks**: 42 tasks (T001-T042)
+- **Phases**: 6 phases
+  - Phase 1: Setup (3 tasks)
+  - Phase 2: Foundational (0 tasks - infrastructure exists)
+  - Phase 3: User Story 1 - Remove Old Code (6 tasks)
+  - Phase 4: User Story 2 - Implement New RAG (14 tasks)
+  - Phase 5: User Story 3 - Remove Debugging (11 tasks)
+  - Phase 6: Polish (8 tasks)
+
+### Task Organization
+
+**User Story 1 (P1) - Remove Old DAAS RAG Code**: 6 tasks
+- Delete `daas_retrieval.py`
+- Remove imports and code blocks
+- Verify removal
+
+**User Story 2 (P1) - Implement New DAAS RAG**: 14 tasks
+- Implement `build_daas_rag_context()` function
+- Add validation, embedding generation, vector search
+- Format dreams with truncation
+- Integrate into `build_project_context()`
+- Test and verify performance
+
+**User Story 3 (P2) - Remove Debugging Messages**: 11 tasks
+- Remove spinner code from 3 locations in `chat_cli.py`
+- Verify removal
+
+### Parallel Opportunities
+
+- Setup review tasks can run in parallel
+- Some US2 tasks can run in parallel (validation, embedding, search)
+- Polish tasks marked [P] can run in parallel
+- US3 can run in parallel with US2 (independent)
+
+### MVP Scope
+
+**Minimum Viable Product**: User Stories 1 & 2
+1. Remove old DAAS RAG code
+2. Implement new DAAS RAG system
+3. Test and validate
+
+User Story 3 (remove debugging) can be added after MVP.
+
+### Independent Test Criteria
+
+- **US1**: Verify `daas_retrieval.py` deleted and no imports reference it
+- **US2**: Verify related dreams retrieved and formatted correctly in DAAS conversations
+- **US3**: Verify no "Thinking" spinner appears during any project conversation
+
+All tasks follow the checklist format with file paths and clear dependencies. Ready for implementation.
+
+---
+
+_**User (2025-12-09 23:02Z)**_
+
+/speckit.implement 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking prerequisites and loading implementation context.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": ".specify/scripts/bash/check-prerequisites.sh",
+        "args": [
+          {
+            "type": "word",
+            "value": "--json"
+          },
+          {
+            "type": "word",
+            "value": "--require-tasks"
+          },
+          {
+            "type": "word",
+            "value": "--include-tasks"
+          }
+        ],
+        "fullText": ".specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "{\"FEATURE_DIR\":\"/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/013-enhance-thn-rag\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/contracts",
+        "childrenFiles": [
+          {
+            "name": "api.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenFiles": [
+      {
+        "name": "data-model.md"
+      },
+      {
+        "name": "plan.md"
+      },
+      {
+        "name": "quickstart.md"
+      },
+      {
+        "name": "research.md"
+      },
+      {
+        "name": "spec.md"
+      },
+      {
+        "name": "tasks.md"
+      }
+    ],
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md",
+  "offset": 1,
+  "limit": 100,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "---\ndescription: \"Task list for Revamp DAAS RAG System feature\"\n---\n\n# Tasks: Revamp DAAS RAG System\n\n**Input**: Design documents from &#96;/specs/014-revamp-daas-rag/&#96;\n**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/\n\n**Tests**: Manual testing (consistent with project standards) - no automated test tasks included\n\n**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.\n\n## Format: &#96;[ID] [P?] [Story] Description&#96;\n\n- **[P]**: Can run in parallel (different files, no dependencies)\n- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)\n- Include exact file paths in descriptions\n\n## Path Conventions\n\n- **Single project**: &#96;brain_core/&#96; at repository root\n- Paths shown below assume single project structure per plan.md\n\n---\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Project preparation and code review\n\n- [ ] T001 Review existing DAAS RAG implementation in &#96;brain_core/daas_retrieval.py&#96; to understand current code structure\n- [ ] T002 Review DAAS retrieval integration in &#96;brain_core/context_builder.py&#96; (lines 704-786) to identify removal scope\n- [ ] T003 Review \"Thinking\" spinner implementation in &#96;chat_cli.py&#96; (lines 1356, 1502, 1625) to identify removal scope\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: No foundational tasks required - using existing infrastructure\n\n**Status**: No blocking prerequisites. All required infrastructure (database, embeddings, vector search) already exists.\n\n**Checkpoint**: Foundation ready - user story implementation can now begin\n\n---\n\n## Phase 3: User Story 1 - Remove Old DAAS RAG Code (Priority: P1) 🎯 MVP\n\n**Goal**: Completely remove the existing DAAS RAG implementation that uses conversation history, including the &#96;daas_retrieval.py&#96; file and all related code from &#96;context_builder.py&#96;.\n\n**Independent Test**: Verify that DAAS project conversations no longer use old retrieval logic by checking that &#96;daas_retrieval.py&#96; is deleted and no imports reference it.\n\n### Implementation for User Story 1\n\n- [ ] T004 [US1] Delete &#96;brain_core/daas_retrieval.py&#96; file completely\n- [ ] T005 [US1] Remove import statement &#96;from .daas_retrieval import retrieve_daas_context&#96; from &#96;brain_core/context_builder.py&#96; (line 707)\n- [ ] T006 [US1] Remove import statement &#96;from .config import DAAS_VECTOR_TOP_K&#96; from &#96;brain_core/context_builder.py&#96; (line 708) if only used for DAAS\n- [ ] T007 [US1] Remove entire DAAS-specific retrieval block (lines 704-786) from &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96;\n- [ ] T008 [US1] Verify no other files import or reference &#96;daas_retrieval&#96; module\n- [ ] T009 [US1] Test that DAAS project conversations still work (should fall back to default behavior temporarily)\n\n**Checkpoint**: At this point, old DAAS RAG code should be completely removed. DAAS conversations will temporarily use default keyword-based search until new RAG is implemented.\n\n---\n\n## Phase 4: User Story 2 - Implement New DAAS RAG System (Priority: P1) 🎯 MVP\n\n**Goal**: Implement new DAAS RAG system that retrieves related dreams by themes, symbols, or events using vector similarity search, with clear separation between dreams and optimized token usage.\n\n**Independent Test**: Start a DAAS conversation and verify that related dreams are retrieved and formatted correctly when querying about themes/symbols/events. Verify RAG context appears in system messages.\n\n### Implementation for User Story 2\n\n- [ ] T010 [US2] Implement &#96;build_daas_rag_context()&#96; function in &#96;brain_core/context_builder.py&#96; with signature &#96;(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]&#96;\n- [ ] T011 [US2] Add input validation in &#96;build_daas_rag_context()&#96; to handle empty user_message and validate top_k (cap at 5, default to 3)\n- [ ] T012 [US2] Implement embedding generation in &#96;build_daas_rag_context()&#96; using &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n- [ ] T013 [US2] Implement vector similarity search query in &#96;build_daas_rag_context()&#96; to retrieve dreams from &#96;conversation_index&#96; table filtered by &#96;project = 'DAAS'&#96; and &#96;embedding IS NOT NULL&#96;\n- [ ] T014 [US2] Implement dream formatting in &#96;build_daas_rag_context()&#96; with markdown headers, truncating &#96;summary_short&#96; to 300 chars and &#96;memory_snippet&#96; to 200 chars\n- [ ] T015 [US2] Add clear separators between dreams in formatted output (use &#96;---&#96; markdown separator)\n- [ ] T016 [US2] Add header \"### Related Dreams for Analysis\" to formatted context\n- [ ] T017 [US2] Implement error handling in &#96;build_daas_rag_context()&#96; to return empty context on embedding or database errors\n- [ ] T018 [US2] Add logging for DAAS RAG operations in &#96;build_daas_rag_context()&#96; (debug level for normal operations, error level for failures)\n- [ ] T019 [US2] Integrate &#96;build_daas_rag_context()&#96; into &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check after THN check (around line 788)\n- [ ] T020 [US2] Add call to &#96;build_daas_rag_context(user_message, top_k=3)&#96; in &#96;build_project_context()&#96; for DAAS project with error handling fallback\n- [ ] T021 [US2] Test new DAAS RAG with various queries (themes, symbols, events) to verify retrieval and formatting\n- [ ] T022 [US2] Verify RAG context stays under 1000 tokens (test with 3-5 dreams)\n- [ ] T023 [US2] Verify RAG generation completes in &lt;500ms (measure performance)\n\n**Checkpoint**: At this point, new DAAS RAG system should be fully functional, retrieving and formatting related dreams correctly with proper separation and token optimization.\n\n---\n\n## Phase 5: User Story 3 - Remove Debugging Messages (Priority: P2)\n\n**Goal**: Remove \"Thinking for [PROJECT]\" spinner messages from chat interface to provide cleaner user experience.\n\n**Independent Test**: Start any project conversation and verify that no \"Thinking for [PROJECT]\" spinner appears during message processing.\n\n### Implementation for User Story 3\n",
+  "totalLinesInFile": 220
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking for checklists, then proceeding with implementation:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/contracts",
+        "childrenFiles": [
+          {
+            "name": "api.md"
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenFiles": [
+      {
+        "name": "data-model.md"
+      },
+      {
+        "name": "plan.md"
+      },
+      {
+        "name": "quickstart.md"
+      },
+      {
+        "name": "research.md"
+      },
+      {
+        "name": "spec.md"
+      },
+      {
+        "name": "tasks.md"
+      }
+    ],
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Result:
+
+```json
+{
+  "contents": "---\ndescription: \"Task list for Revamp DAAS RAG System feature\"\n---\n\n# Tasks: Revamp DAAS RAG System\n\n**Input**: Design documents from &#96;/specs/014-revamp-daas-rag/&#96;\n**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/\n\n**Tests**: Manual testing (consistent with project standards) - no automated test tasks included\n\n**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.\n\n## Format: &#96;[ID] [P?] [Story] Description&#96;\n\n- **[P]**: Can run in parallel (different files, no dependencies)\n- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)\n- Include exact file paths in descriptions\n\n## Path Conventions\n\n- **Single project**: &#96;brain_core/&#96; at repository root\n- Paths shown below assume single project structure per plan.md\n\n---\n\n## Phase 1: Setup (Shared Infrastructure)\n\n**Purpose**: Project preparation and code review\n\n- [ ] T001 Review existing DAAS RAG implementation in &#96;brain_core/daas_retrieval.py&#96; to understand current code structure\n- [ ] T002 Review DAAS retrieval integration in &#96;brain_core/context_builder.py&#96; (lines 704-786) to identify removal scope\n- [ ] T003 Review \"Thinking\" spinner implementation in &#96;chat_cli.py&#96; (lines 1356, 1502, 1625) to identify removal scope\n\n---\n\n## Phase 2: Foundational (Blocking Prerequisites)\n\n**Purpose**: No foundational tasks required - using existing infrastructure\n\n**Status**: No blocking prerequisites. All required infrastructure (database, embeddings, vector search) already exists.\n\n**Checkpoint**: Foundation ready - user story implementation can now begin\n\n---\n\n## Phase 3: User Story 1 - Remove Old DAAS RAG Code (Priority: P1) 🎯 MVP\n\n**Goal**: Completely remove the existing DAAS RAG implementation that uses conversation history, including the &#96;daas_retrieval.py&#96; file and all related code from &#96;context_builder.py&#96;.\n\n**Independent Test**: Verify that DAAS project conversations no longer use old retrieval logic by checking that &#96;daas_retrieval.py&#96; is deleted and no imports reference it.\n\n### Implementation for User Story 1\n\n- [ ] T004 [US1] Delete &#96;brain_core/daas_retrieval.py&#96; file completely\n- [ ] T005 [US1] Remove import statement &#96;from .daas_retrieval import retrieve_daas_context&#96; from &#96;brain_core/context_builder.py&#96; (line 707)\n- [ ] T006 [US1] Remove import statement &#96;from .config import DAAS_VECTOR_TOP_K&#96; from &#96;brain_core/context_builder.py&#96; (line 708) if only used for DAAS\n- [ ] T007 [US1] Remove entire DAAS-specific retrieval block (lines 704-786) from &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96;\n- [ ] T008 [US1] Verify no other files import or reference &#96;daas_retrieval&#96; module\n- [ ] T009 [US1] Test that DAAS project conversations still work (should fall back to default behavior temporarily)\n\n**Checkpoint**: At this point, old DAAS RAG code should be completely removed. DAAS conversations will temporarily use default keyword-based search until new RAG is implemented.\n\n---\n\n## Phase 4: User Story 2 - Implement New DAAS RAG System (Priority: P1) 🎯 MVP\n\n**Goal**: Implement new DAAS RAG system that retrieves related dreams by themes, symbols, or events using vector similarity search, with clear separation between dreams and optimized token usage.\n\n**Independent Test**: Start a DAAS conversation and verify that related dreams are retrieved and formatted correctly when querying about themes/symbols/events. Verify RAG context appears in system messages.\n\n### Implementation for User Story 2\n\n- [ ] T010 [US2] Implement &#96;build_daas_rag_context()&#96; function in &#96;brain_core/context_builder.py&#96; with signature &#96;(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]&#96;\n- [ ] T011 [US2] Add input validation in &#96;build_daas_rag_context()&#96; to handle empty user_message and validate top_k (cap at 5, default to 3)\n- [ ] T012 [US2] Implement embedding generation in &#96;build_daas_rag_context()&#96; using &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n- [ ] T013 [US2] Implement vector similarity search query in &#96;build_daas_rag_context()&#96; to retrieve dreams from &#96;conversation_index&#96; table filtered by &#96;project = 'DAAS'&#96; and &#96;embedding IS NOT NULL&#96;\n- [ ] T014 [US2] Implement dream formatting in &#96;build_daas_rag_context()&#96; with markdown headers, truncating &#96;summary_short&#96; to 300 chars and &#96;memory_snippet&#96; to 200 chars\n- [ ] T015 [US2] Add clear separators between dreams in formatted output (use &#96;---&#96; markdown separator)\n- [ ] T016 [US2] Add header \"### Related Dreams for Analysis\" to formatted context\n- [ ] T017 [US2] Implement error handling in &#96;build_daas_rag_context()&#96; to return empty context on embedding or database errors\n- [ ] T018 [US2] Add logging for DAAS RAG operations in &#96;build_daas_rag_context()&#96; (debug level for normal operations, error level for failures)\n- [ ] T019 [US2] Integrate &#96;build_daas_rag_context()&#96; into &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check after THN check (around line 788)\n- [ ] T020 [US2] Add call to &#96;build_daas_rag_context(user_message, top_k=3)&#96; in &#96;build_project_context()&#96; for DAAS project with error handling fallback\n- [ ] T021 [US2] Test new DAAS RAG with various queries (themes, symbols, events) to verify retrieval and formatting\n- [ ] T022 [US2] Verify RAG context stays under 1000 tokens (test with 3-5 dreams)\n- [ ] T023 [US2] Verify RAG generation completes in &lt;500ms (measure performance)\n\n**Checkpoint**: At this point, new DAAS RAG system should be fully functional, retrieving and formatting related dreams correctly with proper separation and token optimization.\n\n---\n\n## Phase 5: User Story 3 - Remove Debugging Messages (Priority: P2)\n\n**Goal**: Remove \"Thinking for [PROJECT]\" spinner messages from chat interface to provide cleaner user experience.\n\n**Independent Test**: Start any project conversation and verify that no \"Thinking for [PROJECT]\" spinner appears during message processing.\n\n### Implementation for User Story 3\n\n- [ ] T024 [US3] Remove &#96;thinking_label&#96; variable assignment at line 1356 in &#96;chat_cli.py&#96;\n- [ ] T025 [US3] Remove spinner thread creation and start code (lines 1357-1364) in &#96;chat_cli.py&#96; for first location\n- [ ] T026 [US3] Remove &#96;stop_event.set()&#96; call that stops spinner in &#96;chat_cli.py&#96; for first location (find corresponding stop call)\n- [ ] T027 [US3] Remove &#96;thinking_label&#96; variable assignment at line 1502 in &#96;chat_cli.py&#96;\n- [ ] T028 [US3] Remove spinner thread creation and start code for second location in &#96;chat_cli.py&#96; (around line 1502)\n- [ ] T029 [US3] Remove &#96;stop_event.set()&#96; call for second location in &#96;chat_cli.py&#96;\n- [ ] T030 [US3] Remove &#96;thinking_label&#96; variable assignment at line 1625 in &#96;chat_cli.py&#96;\n- [ ] T031 [US3] Remove spinner thread creation and start code for third location in &#96;chat_cli.py&#96; (around line 1625)\n- [ ] T032 [US3] Remove &#96;stop_event.set()&#96; call for third location in &#96;chat_cli.py&#96;\n- [ ] T033 [US3] Verify no \"Thinking for [PROJECT]\" messages appear in chat interface during any project conversation\n- [ ] T034 [US3] Verify chat functionality still works correctly without spinner (messages process and display normally)\n\n**Checkpoint**: At this point, all debugging \"Thinking\" messages should be removed and chat interface should work smoothly without visual noise.\n\n---\n\n## Phase 6: Polish &amp; Cross-Cutting Concerns\n\n**Purpose**: Final validation and cleanup\n\n- [ ] T035 [P] Verify all old DAAS RAG code is removed (no references to &#96;daas_retrieval&#96; anywhere)\n- [ ] T036 [P] Verify new DAAS RAG follows same pattern as THN RAG for consistency\n- [ ] T037 [P] Review and optimize token usage in &#96;build_daas_rag_context()&#96; if needed\n- [ ] T038 [P] Add performance logging for DAAS RAG generation (similar to THN RAG timing logs)\n- [ ] T039 [P] Test DAAS RAG with edge cases (no dreams found, empty database, malformed data)\n- [ ] T040 [P] Verify error handling gracefully falls back to default behavior when RAG fails\n- [ ] T041 [P] Run quickstart.md validation steps to ensure all requirements met\n- [ ] T042 [P] Update any documentation that references old DAAS retrieval system\n\n---\n\n## Dependencies &amp; Execution Order\n\n### Phase Dependencies\n\n- **Setup (Phase 1)**: No dependencies - can start immediately\n- **Foundational (Phase 2)**: No tasks - infrastructure already exists\n- **User Stories (Phase 3+)**: Can proceed sequentially or in parallel after setup\n  - User Story 1 (Remove old code) should complete before User Story 2 (Implement new)\n  - User Story 3 (Remove debugging) can be done in parallel with User Story 2\n- **Polish (Phase 6)**: Depends on all user stories being complete\n\n### User Story Dependencies\n\n- **User Story 1 (P1)**: Can start immediately after Setup - Removes old code\n- **User Story 2 (P1)**: Must start after User Story 1 completes - Implements new RAG system\n- **User Story 3 (P2)**: Can start after Setup - Independent of RAG implementation, can run in parallel with US2\n\n### Within Each User Story\n\n- User Story 1: Delete file → Remove imports → Remove code block → Verify\n- User Story 2: Implement function → Add validation → Add search → Add formatting → Integrate → Test\n- User Story 3: Remove spinner code from all 3 locations → Verify\n\n### Parallel Opportunities\n\n- Setup tasks (T001-T003) can be done in parallel (different files to review)\n- User Story 3 tasks (T024-T032) can be done in parallel (different locations in same file, but sequential is safer)\n- Polish tasks marked [P] can run in parallel\n\n---\n\n## Parallel Example: User Story 2\n\n&#96;&#96;&#96;bash\n# These can be done in parallel (different aspects of same function):\nTask: \"Add input validation in build_daas_rag_context()\"\nTask: \"Implement embedding generation in build_daas_rag_context()\"\nTask: \"Implement vector similarity search query in build_daas_rag_context()\"\n\n# These must be sequential (depend on previous):\nTask: \"Implement dream formatting\" (needs search results)\nTask: \"Integrate into build_project_context()\" (needs complete function)\n&#96;&#96;&#96;\n\n---\n\n## Implementation Strategy\n\n### MVP First (User Stories 1 &amp; 2)\n\n1. Complete Phase 1: Setup (review existing code)\n2. Complete Phase 3: User Story 1 (remove old code)\n3. Complete Phase 4: User Story 2 (implement new RAG)\n4. **STOP and VALIDATE**: Test new DAAS RAG independently\n5. Deploy/demo if ready\n\n### Incremental Delivery\n\n1. Complete Setup → Code reviewed\n2. Add User Story 1 → Old code removed → Verify fallback works\n3. Add User Story 2 → New RAG implemented → Test independently → Deploy/Demo (MVP!)\n4. Add User Story 3 → Debugging removed → Polish → Deploy/Demo\n5. Each story adds value without breaking previous stories\n\n### Parallel Team Strategy\n\nWith multiple developers:\n\n1. Team completes Setup together (code review)\n2. Developer A: User Story 1 (remove old code)\n3. Once US1 complete:\n   - Developer A: User Story 2 (implement new RAG)\n   - Developer B: User Story 3 (remove debugging) - can start in parallel\n4. Stories complete and integrate\n\n---\n\n## Notes\n\n- [P] tasks = different files or independent operations, no dependencies\n- [Story] label maps task to specific user story for traceability\n- Each user story should be independently completable and testable\n- Manual testing only (no automated tests per project standards)\n- Commit after each task or logical group\n- Stop at any checkpoint to validate story independently\n- Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence\n- User Story 1 must complete before User Story 2 (new code replaces old)\n- User Story 3 is independent and can be done anytime after Setup\n",
+  "totalLinesInFile": 220
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py",
+  "offset": 1,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nDAAS-specific retrieval logic for single-dream and pattern-based queries.\n\nProvides custom retrieval rules for DAAS project:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport re\nfrom typing import Dict, List, Optional\n\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n\ndef detect_quoted_title(message: str) -&gt; Optional[str]:\n    \"\"\"\n    Detect quoted title in user message using regex pattern.\n    \n    Looks for text within double quotes like \"Title\".\n    Handles edge cases: malformed quotes, partial titles, very long titles.\n    \n    Args:\n        message: User message text\n        \n    Returns:\n        Extracted title if found, None otherwise\n    \"\"\"",
+  "totalLinesInFile": 255
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+No checklists found. Starting implementation. Beginning with Phase 1 (Setup) — reviewing existing code:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/daas_retrieval.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nDAAS-specific retrieval logic for single-dream and pattern-based queries.\n\nProvides custom retrieval rules for DAAS project:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport re\nfrom typing import Dict, List, Optional\n\nfrom .db import get_conn\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n\ndef detect_quoted_title(message: str) -&gt; Optional[str]:\n    \"\"\"\n    Detect quoted title in user message using regex pattern.\n    \n    Looks for text within double quotes like \"Title\".\n    Handles edge cases: malformed quotes, partial titles, very long titles.\n    \n    Args:\n        message: User message text\n        \n    Returns:\n        Extracted title if found, None otherwise\n    \"\"\"\n    if not message:\n        return None\n    \n    # Pattern to match text within double quotes\n    pattern = r'\"([^\"]+)\"'\n    matches = re.findall(pattern, message)\n    \n    if matches:\n        # Take the first match and strip whitespace\n        title = matches[0].strip()\n        # Validate: not empty and reasonable length\n        # Handle very long titles by truncating (still try to match)\n        if title:\n            if len(title) &gt; 500:\n                logger.debug(f\"Quoted title very long ({len(title)} chars), truncating for matching\")\n                title = title[:500]\n            logger.info(f\"DAAS single-dream mode: detected quoted title '{title[:50]}...'\")\n            return title\n    \n    return None\n\n\ndef retrieve_single_dream(title: str) -&gt; Optional[Dict]:\n    \"\"\"\n    Retrieve single dream by title match using pattern matching.\n    \n    Handles edge cases: no matches, multiple matches (uses most recent).\n    \n    Args:\n        title: Dream title to search for (from quoted title detection)\n        \n    Returns:\n        Dict with dream data (session_id, title, summary_short, memory_snippet)\n        or None if no match found\n    \"\"\"\n    if not title:\n        return None\n    \n    try:\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                # First try exact match\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS' \n                      AND title ILIKE %s\n                    ORDER BY indexed_at DESC\n                    LIMIT 1\n                    \"\"\",\n                    (f'%{title}%',),\n                )\n                row = cur.fetchone()\n                \n                if row:\n                    result = {\n                        'session_id': str(row[0]),\n                        'title': row[1],\n                        'summary_short': row[2],\n                        'memory_snippet': row[3]\n                    }\n                    logger.info(f\"Retrieved single dream: {result['title']}\")\n                    return result\n                \n                logger.info(f\"No dream found matching title: {title}\")\n                return None\n                \n    except Exception as e:\n        logger.error(f\"Error retrieving single dream: {e}\")\n        # Don't raise - return None so caller can handle gracefully\n        return None\n\n\ndef retrieve_pattern_dreams(query: str, top_k: int = 5) -&gt; List[Dict]:\n    \"\"\"\n    Retrieve top-k dreams using vector similarity search.\n    \n    Generates embedding for the query and performs cosine similarity search\n    over stored embeddings for DAAS entries.\n    \n    Args:\n        query: User query text to find similar dreams\n        top_k: Number of top results to return (default: 5)\n        \n    Returns:\n        List of dicts with dream data and similarity scores\n        Empty list if no matches or embeddings unavailable\n    \"\"\"\n    if not query or not query.strip():\n        return []\n    \n    try:\n        # Generate query embedding\n        logger.info(f\"DAAS pattern-based retrieval: generating embedding for query (top_k={top_k})\")\n        query_embedding = generate_embedding(query)\n        \n        # Convert embedding list to string format for PostgreSQL\n        # pgvector expects format: '[0.1,0.2,0.3,...]'\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n        \n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                # Vector similarity search using cosine distance operator (&lt;=&gt;)\n                # 1 - distance gives similarity score (higher = more similar)\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet,\n                           1 - (embedding &lt;=&gt; %s::vector) as similarity\n                    FROM conversation_index\n                    WHERE project = 'DAAS' \n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector\n                    LIMIT %s\n                    \"\"\",\n                    (embedding_str, embedding_str, top_k),\n                )\n                rows = cur.fetchall()\n        \n        if not rows:\n            logger.debug(\"No dreams found via vector similarity search\")\n            return []\n        \n        results = []\n        for row in rows:\n            results.append({\n                'session_id': str(row[0]),\n                'title': row[1],\n                'summary_short': row[2],\n                'memory_snippet': row[3],\n                'similarity': float(row[4]) if row[4] is not None else 0.0\n            })\n        \n        logger.info(f\"Retrieved {len(results)} dreams via vector similarity search\")\n        return results\n        \n    except Exception as e:\n        # Handle specific error types\n        error_msg = str(e).lower()\n        if \"vector\" in error_msg or \"pgvector\" in error_msg or \"extension\" in error_msg:\n            logger.error(f\"pgvector extension error: {e}. Ensure pgvector is installed and extension is created.\")\n        elif \"embedding\" in error_msg and \"null\" in error_msg:\n            logger.warning(\"No embeddings available for vector search. Run backfill_embeddings.py to generate embeddings.\")\n        else:\n            logger.error(f\"Error retrieving pattern dreams: {e}\")\n        # Return empty list on error (caller can handle fallback)\n        return []\n\n\ndef retrieve_daas_context(user_message: str, top_k: int = 5) -&gt; Dict:\n    \"\"\"\n    Main retrieval function: routes to single-dream or pattern-based mode.\n    \n    Never mixes modes - single-dream queries only use that dream's memory.\n    \n    Args:\n        user_message: User's query message\n        top_k: Number of top results for pattern-based mode (default: 5)\n        \n    Returns:\n        Dict with:\n        - 'mode': 'single' or 'pattern'\n        - 'dreams': List of dream dicts\n        - 'context': Formatted context string for prompt\n    \"\"\"\n    quoted_title = detect_quoted_title(user_message)\n    \n    if quoted_title:\n        # Single-dream mode\n        logger.info(f\"DAAS single-dream mode: searching for '{quoted_title}'\")\n        dream = retrieve_single_dream(quoted_title)\n        \n        if dream:\n            context = (\n                f\"Dream: {dream['title']}\\n\"\n                f\"{dream.get('summary_short', '')}\\n\"\n                f\"{dream.get('memory_snippet', '')}\"\n            )\n            return {\n                'mode': 'single',\n                'dreams': [dream],\n                'context': context\n            }\n        else:\n            # No match found\n            return {\n                'mode': 'single',\n                'dreams': [],\n                'context': f\"No dream found matching '{quoted_title}'. Did you mean one of these? (Try searching without quotes for pattern matching.)\"\n            }\n    else:\n        # Pattern-based mode\n        logger.info(f\"DAAS pattern-based mode: vector similarity search (top_k={top_k})\")\n        dreams = retrieve_pattern_dreams(user_message, top_k)\n        \n        if dreams:\n            context_parts = []\n            for dream in dreams:\n                parts = []\n                if dream.get('title'):\n                    parts.append(f\"Dream: {dream['title']}\")\n                if dream.get('summary_short'):\n                    parts.append(f\"Summary: {dream['summary_short']}\")\n                if dream.get('memory_snippet'):\n                    parts.append(f\"Memory: {dream['memory_snippet']}\")\n                \n                if parts:\n                    context_parts.append(\"\\n\".join(parts))\n            \n            if context_parts:\n                context = \"\\n\\n---\\n\\n\".join(context_parts)\n                return {\n                    'mode': 'pattern',\n                    'dreams': dreams,\n                    'context': context\n                }\n        \n        # No relevant dreams found\n        return {\n            'mode': 'pattern',\n            'dreams': [],\n            'context': \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"\n        }\n\n",
+  "totalLinesInFile": 255
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 704,
+  "limit": 85,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get project-scoped meditation notes for DAAS\n            mcp_notes_context = None\n            try:\n                from src.mcp.api import get_mcp_api\n                api = get_mcp_api()\n                project_notes = api.get_project_notes(project, user_message, limit=5)\n                if project_notes:\n                    notes_parts = []\n                    for note in project_notes:\n                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n                    if notes_parts:\n                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n            except Exception as e:\n                logger.debug(f\"MCP notes not available for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if daas_result.get('dreams'):\n                # Build context from DAAS retrieval result\n                context_parts = []\n                notes = []\n                \n                # Add MCP meditation notes if available\n                if mcp_notes_context:\n                    context_parts.append(f\"Here are relevant meditation notes from this project:\\n\\n{mcp_notes_context}\")\n                    notes.append(\"MCP notes: Retrieved relevant project-scoped meditation notes\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the DAAS project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add DAAS retrieval context\n                if daas_result.get('context'):\n                    if daas_result['mode'] == 'single':\n                        context_parts.append(f\"Here is the specific dream you asked about:\\n\\n{daas_result['context']}\")\n                        notes.append(f\"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}\")\n                    else:\n                        context_parts.append(f\"Here are relevant dreams from your dream history:\\n\\n{daas_result['context']}\")\n                        notes.extend([f\"Dream: {d.get('title', 'Unknown')}\" for d in daas_result['dreams'][:5]])\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"\n                    context += \"relevant details from these notes and dreams as we discuss topics.\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format",
+  "totalLinesInFile": 939
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1350,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n\n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False\n                    reply = \"\"\n                    try:\n                        _interrupt_streaming = False  # Reset interrupt flag\n                        import time\n                        # More aggressive throttling: slower display for readability",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "daas_retrieval|DAAS_VECTOR_TOP_K",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "daas_retrieval|DAAS_VECTOR_TOP_K",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "specs/014-revamp-daas-rag/plan.md",
+              "matches": [
+                {
+                  "lineNumber": 60,
+                  "content": "├── daas_retrieval.py    # DELETE: Remove entire file"
+                },
+                {
+                  "lineNumber": 146,
+                  "content": "1. Remove &#96;brain_core/daas_retrieval.py&#96; file"
+                },
+                {
+                  "lineNumber": 164,
+                  "content": "1. ✅ &#96;daas_retrieval.py&#96; file deleted"
+                }
+              ]
+            },
+            {
+              "file": "specs/014-revamp-daas-rag/quickstart.md",
+              "matches": [
+                {
+                  "lineNumber": 23,
+                  "content": "   - &#96;brain_core/daas_retrieval.py&#96; - Entire file removed"
+                },
+                {
+                  "lineNumber": 42,
+                  "content": "rm brain_core/daas_retrieval.py"
+                },
+                {
+                  "lineNumber": 179,
+                  "content": "- [ ] &#96;daas_retrieval.py&#96; file deleted"
+                },
+                {
+                  "lineNumber": 196,
+                  "content": "   - Restore &#96;daas_retrieval.py&#96; from git history"
+                },
+                {
+                  "lineNumber": 202,
+                  "content": "   git checkout HEAD -- brain_core/daas_retrieval.py"
+                }
+              ]
+            },
+            {
+              "file": "README.md",
+              "matches": [
+                {
+                  "lineNumber": 371,
+                  "content": "- **DAAS**: &#96;DAAS_VECTOR_TOP_K&#96; (default: &#96;5&#96;) - Number of dreams to retrieve for pattern queries"
+                }
+              ]
+            },
+            {
+              "file": "specs/002-daas-semantic-retrieval/research.md",
+              "matches": [
+                {
+                  "lineNumber": 114,
+                  "content": "### Decision: Default top-k = 5, configurable via environment variable (DAAS_VECTOR_TOP_K)"
+                },
+                {
+                  "lineNumber": 136,
+                  "content": "- Route to &#96;daas_retrieval.py&#96; functions based on quoted title detection"
+                }
+              ]
+            },
+            {
+              "file": ".specstory/history/2025-12-07_22-54Z-git-push-403-error.md",
+              "matches": [
+                {
+                  "lineNumber": 2450,
+                  "content": "        \"contents\": \"_raw_env_mode = os.getenv(\\\"ENV_MODE\\\", \\\"production\\\")\\nENV_MODE = _normalize_env_mode(_raw_env_mode)\\n\\n# Mock mode: automatically enabled in development mode\\n# In production, always use real OpenAI SDK\\nMOCK_MODE = ENV_MODE == \\\"development\\\"\\n\\n# Database configuration\\n# In development mode, use separate dev database\\nif ENV_MODE == \\\"development\\\":\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DEV_DB_HOST\\\", os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\")),\\n        \\\"port\\\": int(os.getenv(\\\"DEV_DB_PORT\\\", os.getenv(\\\"DB_PORT\\\", \\\"5432\\\"))),\\n        \\\"dbname\\\": os.getenv(\\\"DEV_DB_NAME\\\", \\\"ongoing_projects_dev\\\"),\\n        \\\"user\\\": os.getenv(\\\"DEV_DB_USER\\\", os.getenv(\\\"DB_USER\\\", \\\"thn_user\\\")),\\n        \\\"password\\\": os.getenv(\\\"DEV_DB_PASSWORD\\\", os.getenv(\\\"DB_PASSWORD\\\", \\\"\\\")),\\n    }\\nelse:\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\"),\\n        \\\"port\\\": int(os.getenv(\\\"DB_PORT\\\", \\\"5432\\\")),\\n        \\\"dbname\\\": os.getenv(\\"
+                },
+                {
+                  "lineNumber": 2605,
+                  "content": "            \"text\": \"DAAS_VECTOR_TOP_K = int(os.getenv(\\\"DAAS_VECTOR_TOP_K\\\", \\\"5\\\"))\","
+                },
+                {
+                  "lineNumber": 2870,
+                  "content": "        \"contents\": \"You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?\\n🔵 Thinking for GENERAL...\\nAI (GENERAL) 🔵: [Streaming response...]\\n\\nYou (GENERAL) 🔵: /exit\\n✓ Indexed: The Hobbit Discussion [general]\\n[Usage summary]\\nBye.\\n&amp;#96;&amp;#96;&amp;#96;\\n\\n### Streaming Responses\\n\\nResponses appear progressively, word-by-word, mimicking ChatGPT's experience. The text cascades down the screen as it's generated, providing immediate feedback.\\n\\n---\\n\\n## Integrations\\n\\n- **Web API/PWA**: Tiny Flask/FastAPI endpoint can be enabled for web journal apps\\n- **Shell**: Add an alias to your &amp;#96;.zshrc&amp;#96;/&amp;#96;.bash_profile&amp;#96; for easier launch\\n\\n---\\n\\n## Configuration\\n\\n### Environment Variables\\n\\nCreate a &amp;#96;.env&amp;#96; or &amp;#96;.env.local&amp;#96; file (see &amp;#96;.env.example&amp;#96; for template):\\n\\n- **Database**: &amp;#96;DB_HOST&amp;#96;, &amp;#96;DB_PORT&amp;#96;, &amp;#96;DB_NAME&amp;#96;, &amp;#96;DB_USER&amp;#96;, &amp;#96;DB_PASSWORD&amp;#96;\\n- **OpenAI**: &amp;#96;OPENAI_API_KEY&amp;#96;, &amp;#96;O"
+                },
+                {
+                  "lineNumber": 2991,
+                  "content": "            \"text\": \"- **DAAS**: &amp;#96;DAAS_VECTOR_TOP_K&amp;#96; (default: &amp;#96;5&amp;#96;) - Number of dreams to retrieve for pattern queries\","
+                },
+                {
+                  "lineNumber": 22669,
+                  "content": "  \"contents\": \"\\\"\\\"\\\"\\nProject context builder for injecting conversation memory into chat prompts.\\nBuilds context directly from project_knowledge and conversation_index entries.\\n\\nFor DAAS project, uses custom retrieval rules:\\n- Single-dream mode: Quoted title detection and title-based matching\\n- Pattern-based mode: Vector similarity search using embeddings\\n\\\"\\\"\\\"\\nimport logging\\nimport os\\nfrom typing import Dict, List, Optional, Any\\n\\nfrom .db import get_conn\\nfrom .memory import fetch_project_knowledge\\n\\nlogger = logging.getLogger(__name__)\\n\\n\\n\\ndef extract_json_from_text(text: str) -&amp;gt; str:\\n    \\\"\\\"\\\"\\n    Extract JSON object from text that may contain explanatory text.\\n    \\n    Looks for the first '{' and finds the matching closing '}' to extract\\n    the JSON object, handling nested objects properly.\\n    \\n    Args:\\n        text: Text that may contain JSON mixed with other text\\n    \\n    Returns:\\n        Extracted JSON string\\n    \\n    Raises:\\n        ValueE"
+                },
+                {
+                  "lineNumber": 26883,
+                  "content": "        \"contents\": \"You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?\\n🔵 Thinking for GENERAL...\\nAI (GENERAL) 🔵: [Streaming response...]\\n\\nYou (GENERAL) 🔵: /exit\\n✓ Indexed: The Hobbit Discussion [general]\\n[Usage summary]\\nBye.\\n&amp;#96;&amp;#96;&amp;#96;\\n\\n### Streaming Responses\\n\\nResponses appear progressively, word-by-word, mimicking ChatGPT's experience. The text cascades down the screen as it's generated, providing immediate feedback.\\n\\n---\\n\\n## Integrations\\n\\n- **Web API/PWA**: Tiny Flask/FastAPI endpoint can be enabled for web journal apps\\n- **Shell**: Add an alias to your &amp;#96;.zshrc&amp;#96;/&amp;#96;.bash_profile&amp;#96; for easier launch\\n\\n---\\n\\n## Configuration\\n\\n### Environment Variables\\n\\nCreate a &amp;#96;.env&amp;#96; or &amp;#96;.env.local&amp;#96; file (see &amp;#96;.env.example&amp;#96; for template):\\n\\n- **Database**: &amp;#96;DB_HOST&amp;#96;, &amp;#96;DB_PORT&amp;#96;, &amp;#96;DB_NAME&amp;#96;, &amp;#96;DB_USER&amp;#96;, &amp;#96;DB_PASSWORD&amp;#96;\\n- **OpenAI**: &amp;#96;OPENAI_API_KEY&amp;#96;, &amp;#96;O"
+                },
+                {
+                  "lineNumber": 27004,
+                  "content": "            \"text\": \"- **DAAS**: &amp;#96;DAAS_VECTOR_TOP_K&amp;#96; (default: &amp;#96;5&amp;#96;) - Number of dreams to retrieve for pattern queries\","
+                },
+                {
+                  "lineNumber": 29459,
+                  "content": "  \"contents\": \"            \\n            if char == \\\"\\\\\\\\\\\":\\n                cleaned_line.append(char)\\n                escape_next = True\\n                i += 1\\n                continue\\n            \\n            if char == '\\\"':\\n                in_string = not in_string\\n                cleaned_line.append(char)\\n                i += 1\\n                continue\\n            \\n            # If we're inside a string, keep everything\\n            if in_string:\\n                cleaned_line.append(char)\\n                i += 1\\n                continue\\n            \\n            # Outside strings, check for comments\\n            # Single-line comment //\\n            if char == \\\"/\\\" and i + 1 &amp;lt; len(line) and line[i + 1] == \\\"/\\\":\\n                # Found // comment, skip rest of line\\n                break\\n            \\n            # Multi-line comment /*\\n            if char == \\\"/\\\" and i + 1 &amp;lt; len(line) and line[i + 1] == \\\"*\\\":\\n                # Skip until */\\n          "
+                },
+                {
+                  "lineNumber": 32351,
+                  "content": "        \"contents\": \"_raw_env_mode = os.getenv(\\\"ENV_MODE\\\", \\\"production\\\")\\nENV_MODE = _normalize_env_mode(_raw_env_mode)\\n\\n# Mock mode: automatically enabled in development mode\\n# In production, always use real OpenAI SDK\\nMOCK_MODE = ENV_MODE == \\\"development\\\"\\n\\n# Database configuration\\n# In development mode, use separate dev database\\nif ENV_MODE == \\\"development\\\":\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DEV_DB_HOST\\\", os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\")),\\n        \\\"port\\\": int(os.getenv(\\\"DEV_DB_PORT\\\", os.getenv(\\\"DB_PORT\\\", \\\"5432\\\"))),\\n        \\\"dbname\\\": os.getenv(\\\"DEV_DB_NAME\\\", \\\"ongoing_projects_dev\\\"),\\n        \\\"user\\\": os.getenv(\\\"DEV_DB_USER\\\", os.getenv(\\\"DB_USER\\\", \\\"thn_user\\\")),\\n        \\\"password\\\": os.getenv(\\\"DEV_DB_PASSWORD\\\", os.getenv(\\\"DB_PASSWORD\\\", \\\"\\\")),\\n    }\\nelse:\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\"),\\n        \\\"port\\\": int(os.getenv(\\\"DB_PORT\\\", \\\"5432\\\")),\\n        \\\"dbname\\\": os.getenv(\\"
+                },
+                {
+                  "lineNumber": 32506,
+                  "content": "            \"text\": \"DAAS_VECTOR_TOP_K = int(os.getenv(\\\"DAAS_VECTOR_TOP_K\\\", \\\"5\\\"))\","
+                },
+                {
+                  "lineNumber": 41140,
+                  "content": "        \"contents\": \"def build_project_context(\\n    project: str,\\n    user_message: str,\\n    limit_memories: int = 200,\\n    top_n: int = 5,\\n) -&amp;gt; Dict[str, Any]:\\n\\\"\\\"\\\"\\n    \\n    # DAAS-specific retrieval: custom rules for dream analysis\\n    if project == 'DAAS':\\n        try:\\n            from .daas_retrieval import retrieve_daas_context\\n            from .config import DAAS_VECTOR_TOP_K\\n            \\n            # Use configured top_k\\n            top_k = DAAS_VECTOR_TOP_K\\n            \\n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\\n            \\n            # Get project-scoped meditation notes for DAAS\\n            mcp_notes_context = None\\n            try:\\n                from src.mcp.api import get_mcp_api\\n                api = get_mcp_api()\\n                project_notes = api.get_project_notes(project, user_message, limit=5)\\n                if project_notes:\\n                    notes_parts = []\\n                    for note in projec"
+                },
+                {
+                  "lineNumber": 41207,
+                  "content": "            \"text\": \"            from .daas_retrieval import retrieve_daas_context\","
+                },
+                {
+                  "lineNumber": 41211,
+                  "content": "            \"text\": \"            from .config import DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 41223,
+                  "content": "            \"text\": \"            top_k = DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 53643,
+                  "content": "        \"contents\": \"def build_project_context(\\n    project: str,\\n    user_message: str,\\n    limit_memories: int = 200,\\n    top_n: int = 5,\\n) -&amp;gt; Dict[str, Any]:\\n\\\"\\\"\\\"\\n    \\n    # DAAS-specific retrieval: custom rules for dream analysis\\n    if project == 'DAAS':\\n        try:\\n            from .daas_retrieval import retrieve_daas_context\\n            from .config import DAAS_VECTOR_TOP_K\\n            \\n            # Use configured top_k\\n            top_k = DAAS_VECTOR_TOP_K\\n            \\n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\\n            \\n            # Get project-scoped meditation notes for DAAS\\n            mcp_notes_context = None\\n            try:\\n                from src.mcp.api import get_mcp_api\\n                api = get_mcp_api()\\n                project_notes = api.get_project_notes(project, user_message, limit=5)\\n                if project_notes:\\n                    notes_parts = []\\n                    for note in projec"
+                },
+                {
+                  "lineNumber": 53710,
+                  "content": "            \"text\": \"            from .daas_retrieval import retrieve_daas_context\","
+                },
+                {
+                  "lineNumber": 53714,
+                  "content": "            \"text\": \"            from .config import DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 53726,
+                  "content": "            \"text\": \"            top_k = DAAS_VECTOR_TOP_K\","
+                }
+              ]
+            },
+            {
+              "file": ".specstory/history/2025-12-07_00-29Z-meditation-notes-server-timeout-issue.md",
+              "matches": [
+                {
+                  "lineNumber": 12965,
+                  "content": "  \"contents\": \"\\\"\\\"\\\"\\nProject context builder for injecting conversation memory into chat prompts.\\nBuilds context directly from project_knowledge and conversation_index entries.\\n\\nFor DAAS project, uses custom retrieval rules:\\n- Single-dream mode: Quoted title detection and title-based matching\\n- Pattern-based mode: Vector similarity search using embeddings\\n\\\"\\\"\\\"\\nimport logging\\nimport os\\nimport threading\\nfrom typing import Dict, List, Optional, Any\\n\\nfrom .db import get_conn\\nfrom .memory import fetch_project_knowledge\\n\\nlogger = logging.getLogger(__name__)\\n\\n# MCP client manager (lazy initialization)\\n_mcp_clients: Dict[str, Any] = {}\\n_mcp_clients_lock = threading.Lock()\\n\\n\\ndef extract_json_from_text(text: str) -&amp;gt; str:\\n    \\\"\\\"\\\"\\n    Extract JSON object from text that may contain explanatory text.\\n    \\n    Looks for the first '{' and finds the matching closing '}' to extract\\n    the JSON object, handling nested objects properly.\\n    \\n    Args:\\n        text:"
+                },
+                {
+                  "lineNumber": 13506,
+                  "content": "            \"name\": \"daas_retrieval.py\""
+                },
+                {
+                  "lineNumber": 18012,
+                  "content": "        \"contents\": \"def build_project_context(\\n    project: str,\\n    user_message: str,\\n    limit_memories: int = 200,\\n    top_n: int = 5,\\n) -&amp;gt; Dict[str, Any]:\\n\\\"\\\"\\\"\\n    \\n    # DAAS-specific retrieval: custom rules for dream analysis\\n    if project == 'DAAS':\\n        try:\\n            from .daas_retrieval import retrieve_daas_context\\n            from .config import DAAS_VECTOR_TOP_K\\n            \\n            # Use configured top_k\\n            top_k = DAAS_VECTOR_TOP_K\\n            \\n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\\n            \\n            # If we have dreams from DAAS retrieval, use them\\n            if daas_result.get('dreams'):\\n                # Build context from DAAS retrieval result\\n                context_parts = []\\n                notes = []\\n                \\n                # Add project knowledge if available\\n                knowledge_summaries = fetch_project_knowledge(project)\\n                if knowledge_s"
+                },
+                {
+                  "lineNumber": 18079,
+                  "content": "            \"text\": \"            from .daas_retrieval import retrieve_daas_context\","
+                },
+                {
+                  "lineNumber": 18083,
+                  "content": "            \"text\": \"            from .config import DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 18095,
+                  "content": "            \"text\": \"            top_k = DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 21824,
+                  "content": "        \"contents\": \"## Integration Points\\n\\n### Context Builder Integration\\n- Modify &amp;#96;context_builder.py&amp;#96; to use DAAS-specific retrieval when &amp;#96;project == 'DAAS'&amp;#96;\\n- Route to &amp;#96;daas_retrieval.py&amp;#96; functions based on quoted title detection\\n- Fall back to existing pattern matching for non-DAAS projects\\n\\n### Chat Integration\\n- Modify &amp;#96;chat.py&amp;#96; to support streaming responses\\n- Pass streaming flag to OpenAI API calls\\n- Handle streaming chunks in both CLI and API contexts\\n\\n### Database Schema\\n- Migration script to add &amp;#96;embedding vector(1536)&amp;#96; column to &amp;#96;conversation_index&amp;#96;\\n- Migration script to create pgvector index\\n- Backfill script to generate embeddings for existing DAAS entries\","
+                },
+                {
+                  "lineNumber": 21843,
+                  "content": "            \"text\": \"- Route to &amp;#96;daas_retrieval.py&amp;#96; functions based on quoted title detection\","
+                },
+                {
+                  "lineNumber": 25884,
+                  "content": "  \"contents\": \"def build_project_context(\\n    project: str,\\n    user_message: str,\\n    limit_memories: int = 200,\\n    top_n: int = 5,\\n) -&amp;gt; Dict[str, Any]:\\n    \\\"\\\"\\\"\\n    Build project-aware context from project_knowledge and conversation_index entries.\\n    \\n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\\n    For other projects: Uses keyword-based relevance scoring.\\n    \\n    Fetches stable project overview from project_knowledge table, queries indexed\\n    memories from conversation_index for the project, applies simple relevance scoring,\\n    selects top N relevant entries, and formats them directly into context.\\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\\n    then conversation_index memories (specific conversation details) SECOND.\\n    \\n    Args:\\n        project: Project tag (THN, DAAS, FF, 700B, general)\\n        user_message: Current user message to match against (used for relevance scorin"
+                },
+                {
+                  "lineNumber": 26029,
+                  "content": "  \"contents\": \"        user_message: Current user message to match against (used for relevance scoring)\\n        limit_memories: Max number of indexed entries to consider (default: 200)\\n        top_n: Number of top relevant entries to use (default: 5)\\n    \\n    Returns:\\n        Dict with 'context' (string) and 'notes' (list of strings)\\n        Returns empty dict if no relevant data found\\n    \\\"\\\"\\\"\\n    \\n    # DAAS-specific retrieval: custom rules for dream analysis\\n    if project == 'DAAS':\\n        try:\\n            from .daas_retrieval import retrieve_daas_context\\n            from .config import DAAS_VECTOR_TOP_K\\n            \\n            # Use configured top_k\\n            top_k = DAAS_VECTOR_TOP_K\\n            \\n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\\n            \\n            # If we have dreams from DAAS retrieval, use them\\n            if daas_result.get('dreams'):\\n                # Build context from DAAS retrieval result\\n        "
+                },
+                {
+                  "lineNumber": 31419,
+                  "content": "        \"contents\": \"def build_project_context(\\n    project: str,\\n    user_message: str,\\n    limit_memories: int = 200,\\n    top_n: int = 5,\\n) -&amp;gt; Dict[str, Any]:\\n\\\"\\\"\\\"\\n    \\n    # DAAS-specific retrieval: custom rules for dream analysis\\n    if project == 'DAAS':\\n        try:\\n            from .daas_retrieval import retrieve_daas_context\\n            from .config import DAAS_VECTOR_TOP_K\\n            \\n            # Use configured top_k\\n            top_k = DAAS_VECTOR_TOP_K\\n            \\n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\\n            \\n            # Get project-scoped meditation notes for DAAS\\n            mcp_notes_context = None\\n            try:\\n                from src.mcp.api import get_mcp_api\\n                api = get_mcp_api()\\n                project_notes = api.get_project_notes(project, user_message, limit=5)\\n                if project_notes:\\n                    notes_parts = []\\n                    for note in projec"
+                },
+                {
+                  "lineNumber": 31486,
+                  "content": "            \"text\": \"            from .daas_retrieval import retrieve_daas_context\","
+                },
+                {
+                  "lineNumber": 31490,
+                  "content": "            \"text\": \"            from .config import DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 31502,
+                  "content": "            \"text\": \"            top_k = DAAS_VECTOR_TOP_K\","
+                },
+                {
+                  "lineNumber": 35625,
+                  "content": "        \"contents\": \"_raw_env_mode = os.getenv(\\\"ENV_MODE\\\", \\\"production\\\")\\nENV_MODE = _normalize_env_mode(_raw_env_mode)\\n\\n# Mock mode: automatically enabled in development mode\\n# In production, always use real OpenAI SDK\\nMOCK_MODE = ENV_MODE == \\\"development\\\"\\n\\n# Database configuration\\n# In development mode, use separate dev database\\nif ENV_MODE == \\\"development\\\":\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DEV_DB_HOST\\\", os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\")),\\n        \\\"port\\\": int(os.getenv(\\\"DEV_DB_PORT\\\", os.getenv(\\\"DB_PORT\\\", \\\"5432\\\"))),\\n        \\\"dbname\\\": os.getenv(\\\"DEV_DB_NAME\\\", \\\"ongoing_projects_dev\\\"),\\n        \\\"user\\\": os.getenv(\\\"DEV_DB_USER\\\", os.getenv(\\\"DB_USER\\\", \\\"thn_user\\\")),\\n        \\\"password\\\": os.getenv(\\\"DEV_DB_PASSWORD\\\", os.getenv(\\\"DB_PASSWORD\\\", \\\"\\\")),\\n    }\\nelse:\\n    DB_CONFIG = {\\n        \\\"host\\\": os.getenv(\\\"DB_HOST\\\", \\\"127.0.0.1\\\"),\\n        \\\"port\\\": int(os.getenv(\\\"DB_PORT\\\", \\\"5432\\\")),\\n        \\\"dbname\\\": os.getenv(\\"
+                },
+                {
+                  "lineNumber": 35780,
+                  "content": "            \"text\": \"DAAS_VECTOR_TOP_K = int(os.getenv(\\\"DAAS_VECTOR_TOP_K\\\", \\\"5\\\"))\","
+                },
+                {
+                  "lineNumber": 36608,
+                  "content": "        \"contents\": \"You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?\\n🔵 Thinking for GENERAL...\\nAI (GENERAL) 🔵: [Streaming response...]\\n\\nYou (GENERAL) 🔵: /exit\\n✓ Indexed: The Hobbit Discussion [general]\\n[Usage summary]\\nBye.\\n&amp;#96;&amp;#96;&amp;#96;\\n\\n### Streaming Responses\\n\\nResponses appear progressively, word-by-word, mimicking ChatGPT's experience. The text cascades down the screen as it's generated, providing immediate feedback.\\n\\n---\\n\\n## Integrations\\n\\n- **Web API/PWA**: Tiny Flask/FastAPI endpoint can be enabled for web journal apps\\n- **Shell**: Add an alias to your &amp;#96;.zshrc&amp;#96;/&amp;#96;.bash_profile&amp;#96; for easier launch\\n\\n---\\n\\n## Configuration\\n\\n### Environment Variables\\n\\nCreate a &amp;#96;.env&amp;#96; or &amp;#96;.env.local&amp;#96; file (see &amp;#96;.env.example&amp;#96; for template):\\n\\n- **Database**: &amp;#96;DB_HOST&amp;#96;, &amp;#96;DB_PORT&amp;#96;, &amp;#96;DB_NAME&amp;#96;, &amp;#96;DB_USER&amp;#96;, &amp;#96;DB_PASSWORD&amp;#96;\\n- **OpenAI**: &amp;#96;OPENAI_API_KEY&amp;#96;, &amp;#96;O"
+                },
+                {
+                  "lineNumber": 36729,
+                  "content": "            \"text\": \"- **DAAS**: &amp;#96;DAAS_VECTOR_TOP_K&amp;#96; (default: &amp;#96;5&amp;#96;) - Number of dreams to retrieve for pattern queries\","
+                }
+              ]
+            },
+            {
+              "file": "specs/002-daas-semantic-retrieval/plan.md",
+              "matches": [
+                {
+                  "lineNumber": 61,
+                  "content": "├── daas_retrieval.py        # NEW: DAAS-specific retrieval logic (quoted title + vector search)"
+                }
+              ]
+            },
+            {
+              "file": "specs/002-daas-semantic-retrieval/quickstart.md",
+              "matches": [
+                {
+                  "lineNumber": 72,
+                  "content": "**File**: &#96;brain_core/daas_retrieval.py&#96;"
+                },
+                {
+                  "lineNumber": 204,
+                  "content": "        from .daas_retrieval import retrieve_daas_context"
+                },
+                {
+                  "lineNumber": 387,
+                  "content": "- &#96;DAAS_VECTOR_TOP_K&#96;: Top-k value for vector search (default: 5)"
+                }
+              ]
+            },
+            {
+              "file": "specs/014-revamp-daas-rag/spec.md",
+              "matches": [
+                {
+                  "lineNumber": 17,
+                  "content": "   - Remove &#96;daas_retrieval.py&#96; file and all its functions"
+                }
+              ]
+            },
+            {
+              "file": "specs/014-revamp-daas-rag/tasks.md",
+              "matches": [
+                {
+                  "lineNumber": 31,
+                  "content": "- [ ] T001 Review existing DAAS RAG implementation in &#96;brain_core/daas_retrieval.py&#96; to understand current code structure"
+                },
+                {
+                  "lineNumber": 49,
+                  "content": "**Goal**: Completely remove the existing DAAS RAG implementation that uses conversation history, including the &#96;daas_retrieval.py&#96; file and all related code from &#96;context_builder.py&#96;."
+                },
+                {
+                  "lineNumber": 51,
+                  "content": "**Independent Test**: Verify that DAAS project conversations no longer use old retrieval logic by checking that &#96;daas_retrieval.py&#96; is deleted and no imports reference it."
+                },
+                {
+                  "lineNumber": 55,
+                  "content": "- [ ] T004 [US1] Delete &#96;brain_core/daas_retrieval.py&#96; file completely"
+                },
+                {
+                  "lineNumber": 56,
+                  "content": "- [ ] T005 [US1] Remove import statement &#96;from .daas_retrieval import retrieve_daas_context&#96; from &#96;brain_core/context_builder.py&#96; (line 707)"
+                },
+                {
+                  "lineNumber": 57,
+                  "content": "- [ ] T006 [US1] Remove import statement &#96;from .config import DAAS_VECTOR_TOP_K&#96; from &#96;brain_core/context_builder.py&#96; (line 708) if only used for DAAS"
+                },
+                {
+                  "lineNumber": 59,
+                  "content": "- [ ] T008 [US1] Verify no other files import or reference &#96;daas_retrieval&#96; module"
+                },
+                {
+                  "lineNumber": 121,
+                  "content": "- [ ] T035 [P] Verify all old DAAS RAG code is removed (no references to &#96;daas_retrieval&#96; anywhere)"
+                }
+              ]
+            },
+            {
+              "file": "specs/002-daas-semantic-retrieval/tasks.md",
+              "matches": [
+                {
+                  "lineNumber": 11,
+                  "content": "- [x] T002 [P] Document &#96;DAAS_VECTOR_TOP_K&#96; environment variable in &#96;.env.example&#96; with default value (5)"
+                },
+                {
+                  "lineNumber": 24,
+                  "content": "- [x] T008 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;detect_quoted_title(message: str) -&gt; Optional[str]&#96; function using regex pattern &#96;\"([^\"]+)\"&#96;"
+                },
+                {
+                  "lineNumber": 25,
+                  "content": "- [x] T009 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_single_dream(title: str) -&gt; Optional[Dict]&#96; function for title-based matching"
+                },
+                {
+                  "lineNumber": 26,
+                  "content": "- [x] T010 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_pattern_dreams(query: str, top_k: int) -&gt; List[Dict]&#96; function for vector similarity search"
+                },
+                {
+                  "lineNumber": 27,
+                  "content": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function"
+                },
+                {
+                  "lineNumber": 80,
+                  "content": "- [x] T035 [P] Add error handling for vector search failures in &#96;brain_core/daas_retrieval.py&#96; (pgvector errors, missing embeddings, empty results)"
+                },
+                {
+                  "lineNumber": 82,
+                  "content": "- [x] T037 [P] Update &#96;brain_core/config.py&#96; to load &#96;DAAS_VECTOR_TOP_K&#96; environment variable with default value of 5"
+                },
+                {
+                  "lineNumber": 83,
+                  "content": "- [x] T038 [P] Add logging for DAAS retrieval mode selection (single-dream vs pattern-based) in &#96;brain_core/daas_retrieval.py&#96;"
+                },
+                {
+                  "lineNumber": 84,
+                  "content": "- [x] T039 [P] Add logging for embedding generation and vector search operations in &#96;brain_core/embedding_service.py&#96; and &#96;brain_core/daas_retrieval.py&#96;"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/context_builder.py",
+              "matches": [
+                {
+                  "lineNumber": 707,
+                  "content": "            from .daas_retrieval import retrieve_daas_context"
+                },
+                {
+                  "lineNumber": 708,
+                  "content": "            from .config import DAAS_VECTOR_TOP_K"
+                },
+                {
+                  "lineNumber": 711,
+                  "content": "            top_k = DAAS_VECTOR_TOP_K"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/config.py",
+              "matches": [
+                {
+                  "lineNumber": 72,
+                  "content": "DAAS_VECTOR_TOP_K = int(os.getenv(\"DAAS_VECTOR_TOP_K\", \"5\"))"
+                }
+              ]
+            }
+          ],
+          "totalLines": 73,
+          "totalMatchedLines": 73
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking DAAS_VECTOR_TOP_K usage, then starting implementation:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "DAAS_VECTOR_TOP_K",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "DAAS_VECTOR_TOP_K",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "brain_core/context_builder.py",
+              "matches": [
+                {
+                  "lineNumber": 708,
+                  "content": "            from .config import DAAS_VECTOR_TOP_K"
+                },
+                {
+                  "lineNumber": 711,
+                  "content": "            top_k = DAAS_VECTOR_TOP_K"
+                }
+              ]
+            },
+            {
+              "file": "brain_core/config.py",
+              "matches": [
+                {
+                  "lineNumber": 72,
+                  "content": "DAAS_VECTOR_TOP_K = int(os.getenv(\"DAAS_VECTOR_TOP_K\", \"5\"))"
+                }
+              ]
+            }
+          ],
+          "totalLines": 3,
+          "totalMatchedLines": 3
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/config.py",
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/config.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "# brain_core/config.py\nimport logging\nimport os\nfrom dotenv import load_dotenv\nfrom openai import OpenAI\n\nlogger = logging.getLogger(__name__)\n\n# Load .env.local first (development), then .env (production/default)\n# .env.local takes precedence if it exists\nif os.path.exists(\".env.local\"):\n    load_dotenv(\".env.local\")\nload_dotenv()\n\n# Environment mode: \"development\" or \"production\"\n# Validate and normalize the mode value\ndef _normalize_env_mode(raw_value: str) -&gt; str:\n    \"\"\"Normalize and validate environment mode value.\"\"\"\n    normalized = raw_value.lower()\n    if normalized in (\"development\", \"dev\"):\n        return \"development\"\n    elif normalized in (\"production\", \"prod\"):\n        return \"production\"\n    else:\n        # Invalid mode - default to production with error message\n        logger.error(\n            f\"Invalid ENV_MODE value: '{raw_value}'. \"\n            \"Must be 'development' or 'production'. Defaulting to 'production'.\"\n        )\n        return \"production\"\n\n\n_raw_env_mode = os.getenv(\"ENV_MODE\", \"production\")\nENV_MODE = _normalize_env_mode(_raw_env_mode)\n\n# Mock mode: automatically enabled in development mode\n# In production, always use real OpenAI SDK\nMOCK_MODE = ENV_MODE == \"development\"\n\n# Database configuration\n# In development mode, use separate dev database\nif ENV_MODE == \"development\":\n    DB_CONFIG = {\n        \"host\": os.getenv(\"DEV_DB_HOST\", os.getenv(\"DB_HOST\", \"127.0.0.1\")),\n        \"port\": int(os.getenv(\"DEV_DB_PORT\", os.getenv(\"DB_PORT\", \"5432\"))),\n        \"dbname\": os.getenv(\"DEV_DB_NAME\", \"ongoing_projects_dev\"),\n        \"user\": os.getenv(\"DEV_DB_USER\", os.getenv(\"DB_USER\", \"thn_user\")),\n        \"password\": os.getenv(\"DEV_DB_PASSWORD\", os.getenv(\"DB_PASSWORD\", \"\")),\n    }\nelse:\n    DB_CONFIG = {\n        \"host\": os.getenv(\"DB_HOST\", \"127.0.0.1\"),\n        \"port\": int(os.getenv(\"DB_PORT\", \"5432\")),\n        \"dbname\": os.getenv(\"DB_NAME\", \"ongoing_projects\"),\n        \"user\": os.getenv(\"DB_USER\", \"thn_user\"),\n        \"password\": os.getenv(\"DB_PASSWORD\", \"\"),\n    }\n\nOPENAI_MODEL = os.getenv(\"OPENAI_MODEL\", \"gpt-4.1\")\n\n# Ollama configuration\nOLLAMA_BASE_URL = os.getenv(\"OLLAMA_BASE_URL\", \"http://localhost:11434\")\n# Default Ollama model for conversation organization\nOLLAMA_MODEL = os.getenv(\"OLLAMA_MODEL\", \"llama3:8b\")\n# Current version of the conversation indexer prompt/schema\nCONVERSATION_INDEX_VERSION = int(os.getenv(\"CONVERSATION_INDEX_VERSION\", \"1\"))\n# Timeout for Ollama API calls (indexing operations may take longer)\nOLLAMA_TIMEOUT = int(os.getenv(\"OLLAMA_TIMEOUT\", \"300\"))  # 5 minutes default for indexing\n\n# DAAS semantic retrieval configuration\n# Number of top-k most relevant dreams to retrieve for pattern-based queries\nDAAS_VECTOR_TOP_K = int(os.getenv(\"DAAS_VECTOR_TOP_K\", \"5\"))\n\n# Log configuration on startup\nlogger.info(f\"Environment mode: {ENV_MODE}\")\nlogger.info(f\"Mock mode: {MOCK_MODE}\")\nlogger.info(f\"Database: {DB_CONFIG['dbname']} @ {DB_CONFIG['host']}:{DB_CONFIG['port']}\")\nif not MOCK_MODE:\n    logger.info(f\"OpenAI model: {OPENAI_MODEL}\")\nelse:\n    logger.info(\"Using mock OpenAI client (no API calls)\")\nlogger.info(f\"Ollama endpoint: {OLLAMA_BASE_URL} (model: {OLLAMA_MODEL})\")\n\n# Initialize client based on mode\nif MOCK_MODE:\n    from .mock_client import MockOpenAIClient\n    client = MockOpenAIClient()\nelse:\n    client = OpenAI()\n\n\ndef validate_database_connection() -&gt; bool:\n    \"\"\"\n    Validate that the database connection is available.\n    Returns True if connection succeeds, False otherwise.\n    \"\"\"\n    try:\n        import psycopg2\n        test_conn = psycopg2.connect(**DB_CONFIG)\n        test_conn.close()\n        return True\n    except Exception as e:\n        logger.error(f\"Database connection validation failed: {e}\")\n        return False\n\n\n# Validate database connection on startup\n# In production, fail fast. In development, warn but allow startup\n# (developer might be setting up the database)\nif not validate_database_connection():\n    error_msg = (\n        f\"Failed to connect to database '{DB_CONFIG['dbname']}' \"\n        f\"at {DB_CONFIG['host']}:{DB_CONFIG['port']}. \"\n        \"Please check your database configuration and ensure the database is running.\"\n    )\n    if ENV_MODE == \"production\":\n        logger.error(error_msg)\n        raise ConnectionError(error_msg)\n    else:\n        logger.warning(\n            error_msg + \" Continuing in development mode. \"\n            \"Run 'python setup_dev.py' to initialize the development database.\"\n        )\n",
+  "totalLinesInFile": 124
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1495,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        )\n                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n                \n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    _interrupt_streaming = False  # Reset interrupt flag",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1620,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    f\"Detected large input ({char_count:,} characters). Processing...\",\n                    \"grey\",\n                )\n            )\n\n        thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n        stop_event = threading.Event()\n        spinner_thread = threading.Thread(\n            target=spinner,\n            args=(stop_event, thinking_label, style[\"color\"]),\n            daemon=True,\n        )\n\n        spinner_thread.start()\n        try:\n            # Set streaming flag so signal handler knows we're streaming\n            _is_streaming = True\n            \n            # Spinner runs while we wait for API response\n            # Get the generator first (this starts the API call)",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Marking Phase 1 tasks complete and starting implementation. Beginning with Phase 3: removing old DAAS RAG code.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "28ef2ca8-a95f-4ed7-aed9-646a93746ef7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="delete_file">
+<details><summary>Tool use: **delete_file**</summary>
+
+Explanation: undefined
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 700,
+  "limit": 90,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: custom rules for dream analysis\n    if project == 'DAAS':\n        try:\n            from .daas_retrieval import retrieve_daas_context\n            from .config import DAAS_VECTOR_TOP_K\n            \n            # Use configured top_k\n            top_k = DAAS_VECTOR_TOP_K\n            \n            daas_result = retrieve_daas_context(user_message, top_k=top_k)\n            \n            # Get project-scoped meditation notes for DAAS\n            mcp_notes_context = None\n            try:\n                from src.mcp.api import get_mcp_api\n                api = get_mcp_api()\n                project_notes = api.get_project_notes(project, user_message, limit=5)\n                if project_notes:\n                    notes_parts = []\n                    for note in project_notes:\n                        notes_parts.append(f\"From {note['title']} ({note['uri']}):\\n{note['content_snippet']}\")\n                    if notes_parts:\n                        mcp_notes_context = \"\\n\\n---\\n\\n\".join(notes_parts)\n            except Exception as e:\n                logger.debug(f\"MCP notes not available for DAAS: {e}\")\n            \n            # If we have dreams from DAAS retrieval, use them\n            if daas_result.get('dreams'):\n                # Build context from DAAS retrieval result\n                context_parts = []\n                notes = []\n                \n                # Add MCP meditation notes if available\n                if mcp_notes_context:\n                    context_parts.append(f\"Here are relevant meditation notes from this project:\\n\\n{mcp_notes_context}\")\n                    notes.append(\"MCP notes: Retrieved relevant project-scoped meditation notes\")\n                \n                # Add project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context_parts.append(f\"Here is a general summary of the DAAS project:\\n{project_summary}\")\n                    notes.extend([f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries])\n                \n                # Add DAAS retrieval context\n                if daas_result.get('context'):\n                    if daas_result['mode'] == 'single':\n                        context_parts.append(f\"Here is the specific dream you asked about:\\n\\n{daas_result['context']}\")\n                        notes.append(f\"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}\")\n                    else:\n                        context_parts.append(f\"Here are relevant dreams from your dream history:\\n\\n{daas_result['context']}\")\n                        notes.extend([f\"Dream: {d.get('title', 'Unknown')}\" for d in daas_result['dreams'][:5]])\n                \n                if context_parts:\n                    context = \"\\n\\n\".join(context_parts)\n                    context += \"\\n\\nUse this information naturally in our conversation. Recall and reference \"\n                    context += \"relevant details from these notes and dreams as we discuss topics.\"\n                    \n                    logger.debug(f\"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams\")\n                    return {\n                        \"context\": context,\n                        \"notes\": notes[:10]\n                    }\n            else:\n                # No dreams found, but still include project knowledge if available\n                knowledge_summaries = fetch_project_knowledge(project)\n                if knowledge_summaries:\n                    project_summary = \"\\n\\n\".join(knowledge_summaries)\n                    context = f\"Here is a general summary of the DAAS project:\\n{project_summary}\\n\\n{daas_result.get('context', '')}\"\n                    return {\n                        \"context\": context,\n                        \"notes\": [f\"Project knowledge: {s[:100]}...\" if len(s) &gt; 100 else f\"Project knowledge: {s}\" for s in knowledge_summaries[:5]]\n                    }\n                else:\n                    # Return empty or error message\n                    return {\n                        \"context\": daas_result.get('context', ''),\n                        \"notes\": []\n                    }\n                    \n        except Exception as e:\n            logger.error(f\"DAAS retrieval failed, falling back to default keyword search: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':",
+  "totalLinesInFile": 939
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing the old DAAS retrieval code from context_builder.py:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "05c16f2a-74e3-4651-953a-2e50d36cd742"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "daas_retrieval",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "daas_retrieval",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {}
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 1,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\"\"\"\nProject context builder for injecting conversation memory into chat prompts.\nBuilds context directly from project_knowledge and conversation_index entries.\n\nFor DAAS project, uses custom retrieval rules:\n- Single-dream mode: Quoted title detection and title-based matching\n- Pattern-based mode: Vector similarity search using embeddings\n\"\"\"\nimport logging\nimport os\nimport re\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nfrom .db import get_conn\nfrom .memory import fetch_project_knowledge\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n",
+  "totalLinesInFile": 856
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the docstring and implementing the new DAAS RAG function:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "bbdebc3c-51e3-4f4c-b675-e93851dc3393"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 650,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                code_parts.append(\"\")  # Empty line between snippets\n        \n        if len(code_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(code_parts))\n            notes.append(\"Retrieved 5 code chunks via vector similarity search\")\n    \n    # Combine sections\n    context = \"\\n\\n\".join(context_parts)\n    \n    total_time = (time.time() - start_time) * 1000  # Convert to ms\n    logger.debug(\n        f\"Built THN RAG context with {len(conversations)} conversations and {len(code_chunks)} code chunks \"\n        f\"(conv: {conv_time:.1f}ms, code: {code_time:.1f}ms, total: {total_time:.1f}ms)\"\n    )\n    \n    if total_time &gt; 500:\n        logger.warning(f\"THN RAG generation exceeded 500ms target: {total_time:.1f}ms\")\n    \n    return {\n        \"context\": context,\n        \"notes\": notes\n    }\n\n\ndef build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)",
+  "totalLinesInFile": 855
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 680,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)\n        except Exception as e:\n            logger.error(f\"THN RAG generation failed: {e}\")",
+  "totalLinesInFile": 855
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding the new DAAS RAG function before `build_project_context()`:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9b195275-6374-45e5-a4c3-fce6474eb547"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "dd0a8240-efad-4699-ba94-ce4837aea0ad"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "8313ae5e-2ca8-4c90-ae7d-d414397f73cc"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "cd0ca935-9b0d-4d48-97c8-47730d27b11b"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "brain_core/context_builder.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "brain_core/context_builder.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Marking completed US2 tasks and moving to US3 (removing debugging messages):
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "06453d7f-b958-4985-8fed-06388f758270"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1350,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n\n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1370,
+  "limit": 15,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, block_text, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False\n                    reply = \"\"\n                    try:\n                        _interrupt_streaming = False  # Reset interrupt flag\n                        import time\n                        # More aggressive throttling: slower display for readability\n                        min_delay = 0.03  # 30ms minimum delay per character\n                        last_write_time = time.time()\n                        \n                        for chunk in stream_gen:\n                            # Check if user pressed Ctrl+C",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Finding where the spinner is stopped:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "stop_event\\.set\\(\\)|stop_event\\.clear\\(\\)",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "stop_event\\.set\\(\\)|stop_event\\.clear\\(\\)",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 1391,
+                  "content": "                                stop_event.set()"
+                },
+                {
+                  "lineNumber": 1421,
+                  "content": "                        stop_event.set()"
+                },
+                {
+                  "lineNumber": 1445,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1454,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1460,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1537,
+                  "content": "                                stop_event.set()"
+                },
+                {
+                  "lineNumber": 1567,
+                  "content": "                        stop_event.set()"
+                },
+                {
+                  "lineNumber": 1591,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1600,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1606,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1663,
+                  "content": "                        stop_event.set()"
+                },
+                {
+                  "lineNumber": 1693,
+                  "content": "                stop_event.set()"
+                },
+                {
+                  "lineNumber": 1717,
+                  "content": "            stop_event.set()"
+                },
+                {
+                  "lineNumber": 1722,
+                  "content": "            stop_event.set()"
+                }
+              ]
+            }
+          ],
+          "totalLines": 14,
+          "totalMatchedLines": 14
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1380,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        min_delay = 0.03  # 30ms minimum delay per character\n                        last_write_time = time.time()\n                        \n                        for chunk in stream_gen:\n                            # Check if user pressed Ctrl+C\n                            if _interrupt_streaming:\n                                _interrupt_streaming = False\n                                raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                            \n                            # Stop spinner on first chunk\n                            if not first_chunk_received:\n                                stop_event.set()\n                                spinner_thread.join()\n                                # Clear spinner line\n                                sys.stdout.write(\"\\r\" + \" \" * 80 + \"\\r\")\n                                sys.stdout.flush()\n                                # Start AI response line\n                                print(f\"\\n{ai_label} \", end=\"\", flush=True)\n                                first_chunk_received = True\n                            \n                            # Write character by character with delay for natural typing effect\n                            for char in chunk:\n                                # Check again before each character (more responsive)\n                                if _interrupt_streaming:\n                                    _interrupt_streaming = False\n                                    raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                                \n                                current_time = time.time()\n                                elapsed = current_time - last_write_time\n                                ",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing the spinner code from all three locations:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1415,
+  "limit": 35,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                                sys.stdout.flush()\n                                last_write_time = time.time()\n                                reply += char\n                        \n                        print()  # Newline after streaming completes\n                    except KeyboardInterrupt:\n                        stop_event.set()\n                        spinner_thread.join()\n                        _is_streaming = False  # Reset streaming flag\n                        print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                        # Save partial response if any was received\n                        if reply:\n                            try:\n                                from brain_core.db import save_message\n                                import datetime\n                                meta = {\n                                    \"model\": \"streaming\",\n                                    \"created_at\": datetime.datetime.utcnow().isoformat() + \"Z\",\n                                    \"interrupted\": True,\n                                    \"partial\": True,\n                                }\n                                save_message(conv_id, \"assistant\", reply, meta=meta)\n                                print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                            except Exception as e:\n                                logger.warning(f\"Failed to save partial response: {e}\")\n                                print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                        continue\n                    finally:\n                        _is_streaming = False  # Always reset streaming flag when done\n                except KeyboardInterrupt:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(\"\\n\\nAPI call interrupted. This may indicate:\", \"orange\", bold=True))\n                    print(color_text(\"  - Input is too large for API\", \"orange\"))\n                    print(color_text(\"  - Network timeout\", \"orange\"))",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1630,
+  "limit": 70,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            daemon=True,\n        )\n\n        spinner_thread.start()\n        try:\n            # Set streaming flag so signal handler knows we're streaming\n            _is_streaming = True\n            \n            # Spinner runs while we wait for API response\n            # Get the generator first (this starts the API call)\n            stream_gen = chat_turn(conv_id, user_text, current_project, stream=True)\n            \n            # Set streaming flag so signal handler knows we're streaming\n            _is_streaming = True\n            _interrupt_streaming = False  # Reset interrupt flag\n            \n            # Stop spinner and clear it when we get first chunk\n            first_chunk_received = False\n            reply = \"\"\n            try:\n                import time\n                # More aggressive throttling: slower display for readability\n                min_delay = 0.03  # 30ms minimum delay per character\n                last_write_time = time.time()\n                \n                for chunk in stream_gen:\n                    # Check if user pressed Ctrl+C\n                    if _interrupt_streaming:\n                        _interrupt_streaming = False\n                        raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                    \n                    # Stop spinner on first chunk\n                    if not first_chunk_received:\n                        stop_event.set()\n                        spinner_thread.join()\n                        # Clear spinner line\n                        sys.stdout.write(\"\\r\" + \" \" * 80 + \"\\r\")\n                        sys.stdout.flush()\n                        # Start AI response line\n                        print(f\"\\n{ai_label} \", end=\"\", flush=True)\n                        first_chunk_received = True\n                    \n                    # Write character by character with delay for natural typing effect\n                    for char in chunk:\n                        # Check again before each character (more responsive)\n                        if _interrupt_streaming:\n                            _interrupt_streaming = False\n                            raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                        \n                        current_time = time.time()\n                        elapsed = current_time - last_write_time\n                        \n                        # Wait if needed to maintain minimum delay\n                        if elapsed &lt; min_delay:\n                            time.sleep(min_delay - elapsed)\n                        \n                        sys.stdout.write(char)\n                        sys.stdout.flush()\n                        last_write_time = time.time()\n                        reply += char\n                \n                print()  # Newline after streaming completes\n            except KeyboardInterrupt:\n                stop_event.set()\n                spinner_thread.join()\n                _is_streaming = False  # Reset streaming flag\n                print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                # Save partial response if any was received\n                if reply:\n                    try:",
+  "totalLinesInFile": 1736
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing spinner code from all three locations:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "411188e8-f073-4598-ad09-6e46c55bbca2"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+The model provided an ambiguous search string to replace
+
+---
+
+The model provided an ambiguous search string to replace
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1450,
+  "limit": 15,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            elif special == \"readfile\":\n                # Read file and process content\n                filepath = msg.strip()\n                file_content, error_msg = read_file_content(filepath)\n                \n                if error_msg:\n                    print(color_text(error_msg, \"orange\", bold=True))\n                    continue\n                \n                if not file_content:\n                    print(color_text(\"File is empty.\", \"grey\"))\n                    continue\n                \n                # Provide feedback for large files\n                char_count = len(file_content)",
+  "totalLinesInFile": 1720
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Reading more context to make unique replacements:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1418,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                                    \"partial\": True,\n                                }\n                                save_message(conv_id, \"assistant\", reply, meta=meta)\n                                print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                            except Exception as e:\n                                logger.warning(f\"Failed to save partial response: {e}\")\n                                print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                        continue\n                    finally:\n                        _is_streaming = False  # Always reset streaming flag when done\n                except KeyboardInterrupt:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(\"\\n\\nAPI call interrupted. This may indicate:\", \"orange\", bold=True))\n                    print(color_text(\"  - Input is too large for API\", \"orange\"))\n                    print(color_text(\"  - Network timeout\", \"orange\"))\n                    print(color_text(\"  - API rate limit\", \"orange\"))\n                    print(color_text(\"\\nTry breaking the input into smaller chunks.\", \"orange\"))\n                    continue\n                except Exception as e:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(f\"\\n\\nError processing request: {e}\", \"orange\", bold=True))\n                    print(color_text(\"The input may be too large or there may be a network issue.\", \"orange\"))\n                    continue\n                finally:\n                    stop_event.set()\n                    spinner_thread.join()\n                    if reply:\n                        print()  # Ensure newline after response",
+  "totalLinesInFile": 1720
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1495,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    _interrupt_streaming = False  # Reset interrupt flag\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, file_content, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False\n                    reply = \"\"\n                    try:\n                        import time\n                        # More aggressive throttling: slower display for readability\n                        min_delay = 0.03  # 30ms minimum delay per character\n                        last_write_time = time.time()\n                        \n                        for chunk in stream_gen:\n                            # Check if user pressed Ctrl+C\n                            if _interrupt_streaming:\n                                _interrupt_streaming = False\n                                raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                            \n                            # Stop spinner on first chunk\n                            if not first_chunk_received:\n                                stop_event.set()\n                                spinner_thread.join()\n                                # Clear spinner line\n                                sys.stdout.write(\"\\r\" + \" \" * 80 + \"\\r\")\n                                sys.stdout.flush()\n                                # Start AI response line\n                                print(f\"\\n{ai_label} \", end=\"\", flush=True)\n                                first_chunk_received = True\n                            \n                            # Write character by character with delay for natural typing effect\n                            for char in chunk:\n                                # Check again before each character (more responsive)\n                                if _interrupt_streaming:\n                                    _interrupt_streaming = False\n                                    raise KeyboardInterrupt(\"Streaming interrupted by user\")\n                                \n                                current_time = time.time()\n                                elapsed = current_time - last_write_time\n                                \n                                # Wait if needed to maintain minimum delay\n                                if elapsed &lt; min_delay:\n                                    time.sleep(min_delay - elapsed)\n                                \n                                sys.stdout.write(char)",
+  "totalLinesInFile": 1720
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing spinner code from each location with more specific context:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1485,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                \n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    _interrupt_streaming = False  # Reset interrupt flag\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, file_content, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk",
+  "totalLinesInFile": 1720
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+The model provided an ambiguous search string to replace
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1475,
+  "limit": 35,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        color_text(\n                            f\"Warning: Very large file ({char_count:,} chars). \"\n                            \"This may take a long time or hit API limits.\",\n                            \"orange\",\n                        )\n                    )\n                    response = input(\"Continue? (y/N): \").strip().lower()\n                    if response != 'y':\n                        print(color_text(\"Cancelled.\", \"grey\"))\n                        continue\n                \n                thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n                stop_event = threading.Event()\n                spinner_thread = threading.Thread(\n                    target=spinner,\n                    args=(stop_event, thinking_label, style[\"color\"]),\n                    daemon=True,\n                )\n\n                spinner_thread.start()\n                try:\n                    # Set streaming flag so signal handler knows we're streaming\n                    _is_streaming = True\n                    _interrupt_streaming = False  # Reset interrupt flag\n                    \n                    # Spinner runs while we wait for API response\n                    # Get the generator first (this starts the API call)\n                    stream_gen = chat_turn(conv_id, file_content, current_project, stream=True)\n                    \n                    # Stop spinner and clear it when we get first chunk\n                    first_chunk_received = False\n                    reply = \"\"\n                    try:\n                        import time\n                        # More aggressive throttling: slower display for readability",
+  "totalLinesInFile": 1720
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing spinner code from each location with unique context:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "d988c7cc-552d-4c36-b633-6f85afa261aa"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1545,
+  "limit": 60,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                                    \"model\": \"streaming\",\n                                    \"created_at\": datetime.datetime.utcnow().isoformat() + \"Z\",\n                                    \"interrupted\": True,\n                                    \"partial\": True,\n                                }\n                                save_message(conv_id, \"assistant\", reply, meta=meta)\n                                print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                            except Exception as e:\n                                logger.warning(f\"Failed to save partial response: {e}\")\n                                print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                        continue\n                    finally:\n                        _is_streaming = False  # Always reset streaming flag when done\n                except KeyboardInterrupt:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(\"\\n\\nAPI call interrupted. This may indicate:\", \"orange\", bold=True))\n                    print(color_text(\"  - Input is too large for API\", \"orange\"))\n                    print(color_text(\"  - Network timeout\", \"orange\"))\n                    print(color_text(\"  - API rate limit\", \"orange\"))\n                    print(color_text(\"\\nTry breaking the input into smaller chunks.\", \"orange\"))\n                    continue\n                except Exception as e:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(f\"\\n\\nError processing request: {e}\", \"orange\", bold=True))\n                    print(color_text(\"The input may be too large or there may be a network issue.\", \"orange\"))\n                    continue\n                finally:\n                    stop_event.set()\n                    spinner_thread.join()\n                    if reply:\n                        print()  # Ensure newline after response\n            elif msg:\n                print(color_text(msg, style[\"color\"], bold=True))\n            continue\n\n        # normal chat turn with spinner (single-line or large input)\n        # Provide feedback for large inputs\n        char_count = len(user_text)\n        if char_count &gt; 1000:\n            print(\n                color_text(\n                    f\"Detected large input ({char_count:,} characters). Processing...\",\n                    \"grey\",\n                )\n            )\n\n        thinking_label = f\"{style['emoji']} Thinking for {style['label']}\"\n        stop_event = threading.Event()\n        spinner_thread = threading.Thread(\n            target=spinner,\n            args=(stop_event, thinking_label, style[\"color\"]),\n            daemon=True,\n        )\n\n        spinner_thread.start()\n        try:\n            # Set streaming flag so signal handler knows we're streaming\n            _is_streaming = True",
+  "totalLinesInFile": 1704
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing remaining spinner code:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "81075f16-c958-4784-98c7-953a9bddbda7"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+Offset 1685 is beyond file length (1682 lines)
+
+---
+
+
+
+---
+
+
+Checking the end of the file for remaining spinner code:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1655,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                    except Exception as e:\n                        logger.warning(f\"Failed to save partial response: {e}\")\n                        print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                continue\n            finally:\n                _is_streaming = False  # Always reset streaming flag when done\n        except Exception as e:\n            stop_event.set()\n            spinner_thread.join()\n            print(color_text(f\"\\n\\nError: {e}\", \"orange\", bold=True))\n            continue\n        finally:\n            stop_event.set()\n            spinner_thread.join()\n            if reply:\n                print()  # Ensure newline after response\n\n\nif __name__ == \"__main__\":\n    # Configure logging to show INFO level messages (for RAG verification)\n    logging.basicConfig(\n        level=logging.INFO,\n        format='%(levelname)s: %(message)s',\n        stream=sys.stderr\n    )\n    main()\n",
+  "totalLinesInFile": 1682
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "stop_event\\.set\\(\\)|spinner_thread|thinking_label",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "stop_event\\.set\\(\\)|spinner_thread|thinking_label",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 105,
+                  "content": "    spinner_thread = threading.Thread("
+                },
+                {
+                  "lineNumber": 110,
+                  "content": "    spinner_thread.start()"
+                },
+                {
+                  "lineNumber": 162,
+                  "content": "        spinner_thread.join(timeout=0.5)"
+                },
+                {
+                  "lineNumber": 1256,
+                  "content": "                    spinner_thread = threading.Thread("
+                },
+                {
+                  "lineNumber": 1261,
+                  "content": "                    spinner_thread.start()"
+                },
+                {
+                  "lineNumber": 1284,
+                  "content": "                        spinner_thread.join(timeout=0.5)"
+                },
+                {
+                  "lineNumber": 1405,
+                  "content": "                        stop_event.set()"
+                },
+                {
+                  "lineNumber": 1406,
+                  "content": "                        spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1429,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1430,
+                  "content": "                    spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1438,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1439,
+                  "content": "                    spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1444,
+                  "content": "                    stop_event.set()"
+                },
+                {
+                  "lineNumber": 1445,
+                  "content": "                    spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1535,
+                  "content": "                        stop_event.set()"
+                },
+                {
+                  "lineNumber": 1536,
+                  "content": "                        spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1639,
+                  "content": "                stop_event.set()"
+                },
+                {
+                  "lineNumber": 1640,
+                  "content": "                spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1663,
+                  "content": "            stop_event.set()"
+                },
+                {
+                  "lineNumber": 1664,
+                  "content": "            spinner_thread.join()"
+                },
+                {
+                  "lineNumber": 1668,
+                  "content": "            stop_event.set()"
+                },
+                {
+                  "lineNumber": 1669,
+                  "content": "            spinner_thread.join()"
+                }
+              ]
+            }
+          ],
+          "totalLines": 22,
+          "totalMatchedLines": 22
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing remaining spinner references in error handlers:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1400,
+  "limit": 50,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                                last_write_time = time.time()\n                                reply += char\n                        \n                        print()  # Newline after streaming completes\n                    except KeyboardInterrupt:\n                        stop_event.set()\n                        spinner_thread.join()\n                        _is_streaming = False  # Reset streaming flag\n                        print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                        # Save partial response if any was received\n                        if reply:\n                            try:\n                                from brain_core.db import save_message\n                                import datetime\n                                meta = {\n                                    \"model\": \"streaming\",\n                                    \"created_at\": datetime.datetime.utcnow().isoformat() + \"Z\",\n                                    \"interrupted\": True,\n                                    \"partial\": True,\n                                }\n                                save_message(conv_id, \"assistant\", reply, meta=meta)\n                                print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                            except Exception as e:\n                                logger.warning(f\"Failed to save partial response: {e}\")\n                                print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                        continue\n                    finally:\n                        _is_streaming = False  # Always reset streaming flag when done\n                except KeyboardInterrupt:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(\"\\n\\nAPI call interrupted. This may indicate:\", \"orange\", bold=True))\n                    print(color_text(\"  - Input is too large for API\", \"orange\"))\n                    print(color_text(\"  - Network timeout\", \"orange\"))\n                    print(color_text(\"  - API rate limit\", \"orange\"))\n                    print(color_text(\"\\nTry breaking the input into smaller chunks.\", \"orange\"))\n                    continue\n                except Exception as e:\n                    stop_event.set()\n                    spinner_thread.join()\n                    print(color_text(f\"\\n\\nError processing request: {e}\", \"orange\", bold=True))\n                    print(color_text(\"The input may be too large or there may be a network issue.\", \"orange\"))\n                    continue\n                finally:\n                    stop_event.set()\n                    spinner_thread.join()\n                    if reply:\n                        print()  # Ensure newline after response\n            elif special == \"mcp\":\n                _handle_mcp_command(msg, current_project, conv_id)",
+  "totalLinesInFile": 1682
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1530,
+  "limit": 15,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                                last_write_time = time.time()\n                                reply += char\n                        \n                        print()  # Newline after streaming completes\n                    except KeyboardInterrupt:\n                        stop_event.set()\n                        spinner_thread.join()\n                        _is_streaming = False  # Reset streaming flag\n                        print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                        # Save partial response if any was received\n                        if reply:\n                            try:\n                                from brain_core.db import save_message\n                                import datetime\n                                meta = {",
+  "totalLinesInFile": 1682
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1635,
+  "limit": 35,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        reply += char\n                \n                print()  # Newline after streaming completes\n            except KeyboardInterrupt:\n                stop_event.set()\n                spinner_thread.join()\n                _is_streaming = False  # Reset streaming flag\n                print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                # Save partial response if any was received\n                if reply:\n                    try:\n                        from brain_core.db import save_message\n                        import datetime\n                        meta = {\n                            \"model\": \"streaming\",\n                            \"created_at\": datetime.datetime.utcnow().isoformat() + \"Z\",\n                            \"interrupted\": True,\n                            \"partial\": True,\n                        }\n                        save_message(conv_id, \"assistant\", reply, meta=meta)\n                        print(color_text(f\"Partial response saved ({len(reply)} chars).\", \"grey\"))\n                    except Exception as e:\n                        logger.warning(f\"Failed to save partial response: {e}\")\n                        print(color_text(f\"Partial response received ({len(reply)} chars) but not saved.\", \"grey\"))\n                continue\n            finally:\n                _is_streaming = False  # Always reset streaming flag when done\n        except Exception as e:\n            stop_event.set()\n            spinner_thread.join()\n            print(color_text(f\"\\n\\nError: {e}\", \"orange\", bold=True))\n            continue\n        finally:\n            stop_event.set()\n            spinner_thread.join()",
+  "totalLinesInFile": 1682
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing leftover spinner references in error handlers:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "34fd0789-21b0-4dc9-9ba9-8cc3ab19eeb9"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "520cbd6e-8a9d-4ecb-a8bf-e7443151d7fa"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "b8149954-a3e2-471a-9b5c-68c20196d251"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "52df37c0-0465-4c94-801f-e27d6bfe919f"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "f6fe30ae-f5c2-41a6-9d7a-3a17c7ef4a5c"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "stop_event|spinner_thread|thinking_label",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "stop_event|spinner_thread|thinking_label",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {
+          "matches": [
+            {
+              "file": "chat_cli.py",
+              "matches": [
+                {
+                  "lineNumber": 68,
+                  "content": "def spinner(stop_event: threading.Event, label: str, color: str):"
+                },
+                {
+                  "lineNumber": 69,
+                  "content": "    \"\"\"Simple CLI spinner that runs until stop_event is set.\"\"\""
+                },
+                {
+                  "lineNumber": 71,
+                  "content": "    while not stop_event.is_set():"
+                },
+                {
+                  "lineNumber": 105,
+                  "content": "    spinner_thread = threading.Thread("
+                },
+                {
+                  "lineNumber": 110,
+                  "content": "    spinner_thread.start()"
+                },
+                {
+                  "lineNumber": 162,
+                  "content": "        spinner_thread.join(timeout=0.5)"
+                },
+                {
+                  "lineNumber": 1256,
+                  "content": "                    spinner_thread = threading.Thread("
+                },
+                {
+                  "lineNumber": 1261,
+                  "content": "                    spinner_thread.start()"
+                },
+                {
+                  "lineNumber": 1284,
+                  "content": "                        spinner_thread.join(timeout=0.5)"
+                },
+                {
+                  "lineNumber": 1629,
+                  "content": "                stop_event.set()"
+                },
+                {
+                  "lineNumber": 1630,
+                  "content": "                spinner_thread.join()"
+                }
+              ]
+            }
+          ],
+          "totalLines": 11,
+          "totalMatchedLines": 11
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Checking remaining spinner references to see if they're for other purposes:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 100,
+  "limit": 70,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    \n    style = get_project_style(current_project)\n    \n    # Run indexing in a thread with spinner\n    stop_spinner = threading.Event()\n    spinner_thread = threading.Thread(\n        target=spinner,\n        args=(stop_spinner, \"Indexing conversation...\", style[\"color\"]),\n        daemon=True,\n    )\n    spinner_thread.start()\n    \n    indexed_data = None\n    error_occurred = False\n    error_message = None\n    \n    try:\n        # If preserve_project is True, pass preserve_project flag to prevent Ollama from overriding\n        # Otherwise, pass current_project as override when conversation is \"general\"\n        if preserve_project:\n            indexed_data = index_session(conv_id, override_project=None, preserve_project=True)\n        else:\n            indexed_data = index_session(conv_id, override_project=current_project, preserve_project=False)\n        \n        # Handle case where indexing failed but conversation should still be saved\n        if indexed_data is None:\n            error_occurred = True\n            error_message = \"Indexing failed, but conversation saved\"\n            logger.warning(f\"Indexing failed for conversation {conv_id}, but conversation is still saved\")\n            print(color_text(\"⚠ Indexing failed, but conversation saved.\", \"orange\"))\n        else:\n            # Verify it was actually saved\n            from brain_core.conversation_indexer import view_memory\n            saved_memory = view_memory(conv_id)\n            if saved_memory:\n                logger.debug(f\"Verified saved to DB - Project: {saved_memory['project']}, Title: {saved_memory['title']}\")\n            else:\n                logger.warning(\"Indexing completed but memory not found in database!\")\n    except OllamaError as e:\n        # T014: Error handling for OllamaError\n        error_occurred = True\n        error_message = f\"Ollama connection error: {str(e)}\"\n        logger.exception(\"Ollama error during indexing\")\n    except ValueError as e:\n        # T014: Error handling for ValueError\n        # Check if this is the \"no messages\" case - that's not really an error\n        if \"No messages found\" in str(e):\n            logger.info(f\"Conversation {conv_id} has no messages - skipping indexing (this is normal)\")\n            error_occurred = False  # Not really an error\n            error_message = None\n        else:\n            error_occurred = True\n            error_message = f\"Indexing validation error: {str(e)}\"\n            logger.exception(\"Validation error during indexing\")\n    except Exception as e:\n        # T014: Error handling for generic Exception\n        error_occurred = True\n        error_message = f\"Unexpected error: {str(e)}\"\n        logger.exception(\"Unexpected error during indexing\")\n    finally:\n        # Stop spinner\n        stop_spinner.set()\n        spinner_thread.join(timeout=0.5)\n    \n    # Display result\n    if error_occurred:\n        # T014: Display user-friendly warning message\n        print(\n            color_text(\n                f\"⚠ Save failed: {error_message}\",",
+  "totalLinesInFile": 1668
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1250,
+  "limit": 40,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    if not subarg:\n                        print(color_text(\"Usage: /memory refresh &lt;session_id&gt;\", \"orange\"))\n                        continue\n                    \n                    # Run refresh with spinner\n                    stop_spinner = threading.Event()\n                    spinner_thread = threading.Thread(\n                        target=spinner,\n                        args=(stop_spinner, \"Refreshing memory...\", style[\"color\"]),\n                        daemon=True,\n                    )\n                    spinner_thread.start()\n                    \n                    indexed_data = None\n                    error_occurred = False\n                    error_message = None\n                    \n                    try:\n                        indexed_data = refresh_memory(subarg)\n                    except OllamaError as e:\n                        error_occurred = True\n                        error_message = f\"Ollama connection error: {str(e)}\"\n                        logger.exception(\"Ollama error during memory refresh\")\n                    except ValueError as e:\n                        error_occurred = True\n                        error_message = f\"Validation error: {str(e)}\"\n                        logger.exception(\"Validation error during memory refresh\")\n                    except Exception as e:\n                        error_occurred = True\n                        error_message = f\"Unexpected error: {str(e)}\"\n                        logger.exception(\"Unexpected error during memory refresh\")\n                    finally:\n                        # Stop spinner\n                        stop_spinner.set()\n                        spinner_thread.join(timeout=0.5)\n                    \n                    # Display result\n                    if error_occurred:\n                        print(\n                            color_text(",
+  "totalLinesInFile": 1668
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 1625,
+  "limit": 10,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                        reply += char\n                \n                print()  # Newline after streaming completes\n            except KeyboardInterrupt:\n                stop_event.set()\n                spinner_thread.join()\n                _is_streaming = False  # Reset streaming flag\n                print(color_text(\"\\n\\nStreaming stopped. You can continue with a new message.\", \"orange\", bold=True))\n                # Save partial response if any was received\n                if reply:",
+  "totalLinesInFile": 1668
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Removing the leftover spinner reference at lines 1629-1630. The other spinners are for indexing operations and should remain.
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "5d69feaf-f346-476a-b30c-2abe11ab1844"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "chat_cli.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "chat_cli.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "Thinking for",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "Thinking for",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {}
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "ef82eecf-9175-4504-a97a-09d287801685"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+All "Thinking for [PROJECT]" spinner code removed. Remaining spinner references are for indexing operations and should stay. Verifying the code compiles and updating tasks:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -m py_compile brain_core/context_builder.py chat_cli.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/context_builder.py"
+          },
+          {
+            "type": "word",
+            "value": "chat_cli.py"
+          }
+        ],
+        "fullText": "python3.10 -m py_compile brain_core/context_builder.py chat_cli.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "daas_retrieval",
+  "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "daas_retrieval",
+    "path": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core",
+    "outputMode": "content",
+    "workspaceResults": {
+      "/Users/petertumulty/Documents/Sites/project_chat/project_chat": {
+        "content": {}
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 700,
+  "limit": 15,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n    \n    # Cap top_k at 5, default to 3 if invalid\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3\n    \n    try:\n        # Generate embedding for user message\n        embedding_start = time.time()\n        query_embedding = generate_embedding(user_message)\n        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n        \n        # Vector similarity search\n        query_start = time.time()",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying integration and marking polish tasks:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 750,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            \n            dream_parts.append(\"\")  # Empty line\n            dream_parts.append(\"---\")  # Separator\n            dream_parts.append(\"\")  # Empty line\n        \n        # Remove last separator if present\n        if len(dream_parts) &gt; 1 and dream_parts[-1] == \"\" and dream_parts[-2] == \"---\":\n            dream_parts = dream_parts[:-2]\n        \n        context = \"\\n\".join(dream_parts)\n        format_time = (time.time() - format_start) * 1000  # Convert to ms\n        \n        total_time = (time.time() - start_time) * 1000  # Convert to ms\n        logger.debug(\n            f\"Built DAAS RAG context with {len(rows)} dreams \"\n            f\"(embedding: {embedding_time:.1f}ms, query: {query_time:.1f}ms, format: {format_time:.1f}ms, total: {total_time:.1f}ms)\"\n        )\n        \n        if total_time &gt; 500:\n            logger.warning(f\"DAAS RAG generation exceeded 500ms target: {total_time:.1f}ms\")",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 670,
+  "limit": 35,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        \"notes\": notes\n    }\n\n\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n    \n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n    \n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n    \n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n    \n    Performance:\n        Target: &lt;500ms total generation time\n        - Embedding generation: &lt;200ms\n        - Database query: &lt;200ms\n        - Formatting: &lt;100ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n    \n    # Cap top_k at 5, default to 3 if invalid\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/specs/014-revamp-daas-rag/tasks.md"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "9795d92d-0b1f-4ce7-9d7b-03ea250582c9"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 740,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            \n            dream_parts.append(f\"**Dream: {title or 'Untitled'}**\")\n            \n            if summary_short:\n                summary = summary_short[:300] + (\"...\" if len(summary_short) &gt; 300 else \"\")\n                dream_parts.append(f\"- **Summary**: {summary}\")\n            \n            if memory_snippet:\n                memory = memory_snippet[:200] + (\"...\" if len(memory_snippet) &gt; 200 else \"\")\n                dream_parts.append(f\"- **Key Details**: {memory}\")\n            \n            dream_parts.append(\"\")  # Empty line\n            dream_parts.append(\"---\")  # Separator\n            dream_parts.append(\"\")  # Empty line\n        \n        # Remove last separator if present\n        if len(dream_parts) &gt; 1 and dream_parts[-1] == \"\" and dream_parts[-2] == \"---\":\n            dream_parts = dream_parts[:-2]\n        \n        context = \"\\n\".join(dream_parts)\n        format_time = (time.time() - format_start) * 1000  # Convert to ms\n        \n        total_time = (time.time() - start_time) * 1000  # Convert to ms\n        logger.debug(\n            f\"Built DAAS RAG context with {len(rows)} dreams \"",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the integration point and preparing a summary:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 775,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        \n    except Exception as e:\n        logger.error(f\"Error building DAAS RAG context: {e}\", exc_info=True)\n        return {\"context\": \"\", \"notes\": []}\n\n\ndef build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses vector similarity search to retrieve related dreams.\n    For THN project: Uses RAG with conversation history and code snippets.\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "brain_core/context_builder.py",
+    "chat_cli.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "brain_core/context_builder.py"
+    },
+    {
+      "relativeWorkspacePath": "chat_cli.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -c \"from brain_core.context_builder import build_daas_rag_context; print('Import successful')\"",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-c"
+          },
+          {
+            "type": "string",
+            "value": "\"from brain_core.context_builder import build_daas_rag_context; print('Import successful')\""
+          }
+        ],
+        "fullText": "python3.10 -c \"from brain_core.context_builder import build_daas_rag_context; print('Import successful')\""
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "output": "Import successful\n",
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+## Implementation complete
+
+### Phase 1: Setup — complete
+- T001-T003: Reviewed existing code
+
+### Phase 3: User Story 1 — complete
+- T004: Deleted `brain_core/daas_retrieval.py`
+- T005-T007: Removed old DAAS retrieval code from `context_builder.py`
+- T008: Verified no remaining references to `daas_retrieval`
+
+### Phase 4: User Story 2 — complete
+- T010-T020: Implemented `build_daas_rag_context()` with:
+  - Input validation
+  - Embedding generation
+  - Vector similarity search
+  - Dream formatting with truncation (300/200 chars)
+  - Clear separators between dreams
+  - Error handling
+  - Performance logging
+  - Integration into `build_project_context()`
+
+### Phase 5: User Story 3 — complete
+- T024-T032: Removed all "Thinking for [PROJECT]" spinner code from 3 locations in `chat_cli.py`
+
+### Phase 6: Polish — mostly complete
+- T035-T038, T040: Verified and optimized code
+
+### Remaining tasks (manual testing)
+- T009, T021-T023, T033-T034, T039, T041-T042: Manual testing and validation
+
+### Summary
+- Files modified: `brain_core/context_builder.py`, `chat_cli.py`
+- Files deleted: `brain_core/daas_retrieval.py`
+- New function: `build_daas_rag_context()` (105 lines)
+- Code compiles: No syntax errors
+- Integration: DAAS RAG integrated into `build_project_context()`
+
+The new DAAS RAG system:
+- Retrieves related dreams by themes/symbols/events
+- Formats dreams with clear separation
+- Optimizes token usage (truncates to 300/200 chars)
+- Includes performance logging
+- Removes debugging "Thinking" messages
+
+Ready for manual testing.
+
+---
+
+_**User (2025-12-09 23:02Z)**_
+
+Now how can i verify this new daas rag. It should be added after the project knowledge section in the system prompt after the over and rules section
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking how DAAS RAG is integrated and where it appears in the system prompt:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 87,
+  "limit": 60,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    \"\"\"\n    Build the complete system prompt for a given project.\n    \n    Loads the base system prompt and appends project-specific extension if\n    the project is not \"general\". The extension includes overview and rules\n    from project_knowledge table. For THN project, also includes RAG context\n    (History &amp; Context and Relevant Code Snippets) only when user_message\n    is provided (typically on first message only to save tokens).\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, or \"general\")\n        user_message: Optional user message for THN RAG context generation.\n                     If empty, RAG context is not included (saves tokens).\n        \n    Returns:\n        Composed system prompt string (base + project extension + RAG if applicable)\n    \"\"\"\n    base_prompt = load_base_system_prompt()\n    \n    # Only add project extension if project is not \"general\"\n    if project and project.lower() != \"general\":\n        # Get project overview from project_knowledge table\n        project_overview = _get_project_overview(project)\n        \n        if project_overview:\n            # Start building project extension\n            project_extension_parts = [\n                f\"\\n\\nIn this current conversation is tagged as project {project.upper()}.\",\n                f\"\\n\\nHere's a general overview of the project {project.upper()}: {project_overview}\"\n            ]\n            \n            # Get and parse project rules\n            rules_text = _get_project_rules(project)\n            if rules_text:\n                parsed_rules = _parse_rules_text(rules_text)\n                if parsed_rules:\n                    # Format rules as numbered markdown list\n                    project_extension_parts.append(\"\\n\\n---\")\n                    project_extension_parts.append(f\"\\n\\n### Project {project.upper()} rules:\\n\")\n                    for i, rule in enumerate(parsed_rules, start=1):\n                        project_extension_parts.append(f\"{i}. {rule}\\n\")\n                    logger.debug(f\"Added {len(parsed_rules)} rules for {project.upper()}\")\n            \n            project_extension = \"\".join(project_extension_parts)\n            \n            # For THN project, append RAG context to system prompt\n            if project.upper() == \"THN\" and user_message:\n                try:\n                    rag_result = build_thn_rag_context(user_message)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"THN RAG context generation returned empty context\")\n                except Exception as e:",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py",
+  "offset": 58,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # Build messages for OpenAI\n    messages = []\n\n    # Message order: system prompt → RAG context → note reads → history\n    \n    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST\n    # For THN, RAG context is included directly in the system prompt only on first message\n    include_rag = project.upper() == \"THN\" and is_first_message\n    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")\n    \n    # Log RAG inclusion status for verification\n    if project.upper() == \"THN\":\n        if include_rag:\n            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})\n\n    # 2. Project context from RAG (if available and not THN) - SECOND\n    # THN RAG is now included in system prompt above, so skip here",
+  "totalLinesInFile": 282
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How is DAAS RAG context added to system messages? Is it included in the system prompt or as a separate message?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 24
+          },
+          "endPosition": {
+            "line": 280
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n\n    \n    # Log RAG inclusion status for verification\n    if project.upper() == \"THN\":\n        if include_rag:\n            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})\n\n    # 2. Project context from RAG (if available and not THN) - SECOND\n    # THN RAG is now included in system prompt above, so skip here\n    if project.upper() != \"THN\" and indexed_context and indexed_context.get(\"context\"):\n        # RAG content is self-explanatory, no verbose wrapper needed\n        context_msg = indexed_context['context']\n        if indexed_context.get(\"notes\"):\n            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                f\"- {note}\" for note in indexed_context[\"notes\"]\n            )\n        messages.append({\"role\": \"system\", \"content\": context_msg})\n\n    # Add existing project context (from memory.py) - also RAG context\n    if project_context:\n        messages.append({\"role\": \"system\", \"content\": project_context})\n    \n    # Add note reads first (most recent first) so they're fresh in context",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 25,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 27,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "    ",
+            "lineNumber": 67
+          },
+          {
+            "text": "    # Log RAG inclusion status for verification",
+            "lineNumber": 68
+          },
+          {
+            "text": "    if project.upper() == \"THN\":",
+            "lineNumber": 69
+          },
+          {
+            "text": "        if include_rag:",
+            "lineNumber": 70
+          },
+          {
+            "text": "            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")",
+            "lineNumber": 71
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 72
+          },
+          {
+            "text": "            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")",
+            "lineNumber": 73
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 74
+          },
+          {
+            "text": "        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")",
+            "lineNumber": 75
+          },
+          {
+            "text": "    ",
+            "lineNumber": 76
+          },
+          {
+            "text": "    # Uncomment the line below to see the full system prompt in logs:",
+            "lineNumber": 77
+          },
+          {
+            "text": "    # logger.info(f\"System prompt content:\\n{system_prompt}\")",
+            "lineNumber": 78
+          },
+          {
+            "text": "    messages.append({\"role\": \"system\", \"content\": system_prompt})",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "    # 2. Project context from RAG (if available and not THN) - SECOND",
+            "lineNumber": 81
+          },
+          {
+            "text": "    # THN RAG is now included in system prompt above, so skip here",
+            "lineNumber": 82
+          },
+          {
+            "text": "    if project.upper() != \"THN\" and indexed_context and indexed_context.get(\"context\"):",
+            "lineNumber": 83
+          },
+          {
+            "text": "        # RAG content is self-explanatory, no verbose wrapper needed",
+            "lineNumber": 84
+          },
+          {
+            "text": "        context_msg = indexed_context['context']",
+            "lineNumber": 85
+          },
+          {
+            "text": "        if indexed_context.get(\"notes\"):",
+            "lineNumber": 86
+          },
+          {
+            "text": "            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 87
+          },
+          {
+            "text": "                f\"- {note}\" for note in indexed_context[\"notes\"]",
+            "lineNumber": 88
+          },
+          {
+            "text": "            )",
+            "lineNumber": 89
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": context_msg})",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "    # Add existing project context (from memory.py) - also RAG context",
+            "lineNumber": 92
+          },
+          {
+            "text": "    if project_context:",
+            "lineNumber": 93
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": project_context})",
+            "lineNumber": 94
+          },
+          {
+            "text": "    ",
+            "lineNumber": 95
+          },
+          {
+            "text": "    # Add note reads first (most recent first) so they're fresh in context",
+            "lineNumber": 96
+          }
+        ]
+      },
+      "score": 0.5682079792022705
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 21,
+            "column": 20
+          },
+          "endPosition": {
+            "line": 280
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n    save_message(conversation_id, \"user\", user_text)\n\n    # Load conversation history first to check if this is the first message\n    history = load_conversation_messages(conversation_id, limit=50)\n    \n    # Extract note reads from history (system messages with note_read meta)\n    note_reads = []\n    other_messages = []\n    for msg in history:\n        meta = msg.get(\"meta\", {})\n        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":\n            note_reads.append(msg)\n        else:\n            other_messages.append(msg)\n    \n    # Check if this is the first user message (no user/assistant messages in history)\n    is_first_message = len(other_messages) == 0\n\n    # Build project-aware context from conversation_index (if available)\n    # Skip RAG generation for THN if not first message to save tokens\n    indexed_context = {}\n    if not (project.upper() == \"THN\" and not is_first_message):\n        try:\n            indexed_context = build_project_context(project, user_text)\n        except Exception as e:\n            # Log but don't fail - fallback to existing behavior\n            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")\n\n    # Only static + snippet context included now\n    project_context = get_project_context(project, conversation_id, limit_messages=80)\n    \n    # Build messages for OpenAI\n    messages = []\n\n    # Message order: system prompt → RAG context → note reads → history\n    \n    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST\n    # For THN, RAG context is included directly in the system prompt only on first message\n    include_rag = project.upper() == \"THN\" and is_first_message\n    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")\n    \n    # Log RAG inclusion status for verification",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "text": "    save_message(conversation_id, \"user\", user_text)",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "    # Load conversation history first to check if this is the first message",
+            "lineNumber": 29
+          },
+          {
+            "text": "    history = load_conversation_messages(conversation_id, limit=50)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    # Extract note reads from history (system messages with note_read meta)",
+            "lineNumber": 32
+          },
+          {
+            "text": "    note_reads = []",
+            "lineNumber": 33
+          },
+          {
+            "text": "    other_messages = []",
+            "lineNumber": 34
+          },
+          {
+            "text": "    for msg in history:",
+            "lineNumber": 35
+          },
+          {
+            "text": "        meta = msg.get(\"meta\", {})",
+            "lineNumber": 36
+          },
+          {
+            "text": "        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":",
+            "lineNumber": 37
+          },
+          {
+            "text": "            note_reads.append(msg)",
+            "lineNumber": 38
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            other_messages.append(msg)",
+            "lineNumber": 40
+          },
+          {
+            "text": "    ",
+            "lineNumber": 41
+          },
+          {
+            "text": "    # Check if this is the first user message (no user/assistant messages in history)",
+            "lineNumber": 42
+          },
+          {
+            "text": "    is_first_message = len(other_messages) == 0",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "    # Build project-aware context from conversation_index (if available)",
+            "lineNumber": 45
+          },
+          {
+            "text": "    # Skip RAG generation for THN if not first message to save tokens",
+            "lineNumber": 46
+          },
+          {
+            "text": "    indexed_context = {}",
+            "lineNumber": 47
+          },
+          {
+            "text": "    if not (project.upper() == \"THN\" and not is_first_message):",
+            "lineNumber": 48
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 49
+          },
+          {
+            "text": "            indexed_context = build_project_context(project, user_text)",
+            "lineNumber": 50
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 51
+          },
+          {
+            "text": "            # Log but don't fail - fallback to existing behavior",
+            "lineNumber": 52
+          },
+          {
+            "text": "            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "    # Only static + snippet context included now",
+            "lineNumber": 55
+          },
+          {
+            "text": "    project_context = get_project_context(project, conversation_id, limit_messages=80)",
+            "lineNumber": 56
+          },
+          {
+            "text": "    ",
+            "lineNumber": 57
+          },
+          {
+            "text": "    # Build messages for OpenAI",
+            "lineNumber": 58
+          },
+          {
+            "text": "    messages = []",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "    # Message order: system prompt → RAG context → note reads → history",
+            "lineNumber": 61
+          },
+          {
+            "text": "    ",
+            "lineNumber": 62
+          },
+          {
+            "text": "    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST",
+            "lineNumber": 63
+          },
+          {
+            "text": "    # For THN, RAG context is included directly in the system prompt only on first message",
+            "lineNumber": 64
+          },
+          {
+            "text": "    include_rag = project.upper() == \"THN\" and is_first_message",
+            "lineNumber": 65
+          },
+          {
+            "text": "    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")",
+            "lineNumber": 66
+          },
+          {
+            "text": "    ",
+            "lineNumber": 67
+          },
+          {
+            "text": "    # Log RAG inclusion status for verification",
+            "lineNumber": 68
+          }
+        ]
+      },
+      "score": 0.5140352249145508
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 82,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 154
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n    \"\"\"\n    Build the complete system prompt for a given project.\n    \n    Loads the base system prompt and appends project-specific extension if\n    the project is not \"general\". The extension includes overview and rules\n    from project_knowledge table. For THN project, also includes RAG context\n    (History &amp; Context and Relevant Code Snippets) only when user_message\n    is provided (typically on first message only to save tokens).\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, or \"general\")\n        user_message: Optional user message for THN RAG context generation.\n                     If empty, RAG context is not included (saves tokens).\n        \n    Returns:\n        Composed system prompt string (base + project extension + RAG if applicable)\n    \"\"\"\n    base_prompt = load_base_system_prompt()\n    \n    # Only add project extension if project is not \"general\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 87
+          },
+          {
+            "text": "    Build the complete system prompt for a given project.",
+            "lineNumber": 88
+          },
+          {
+            "text": "    ",
+            "lineNumber": 89
+          },
+          {
+            "text": "    Loads the base system prompt and appends project-specific extension if",
+            "lineNumber": 90
+          },
+          {
+            "text": "    the project is not \"general\". The extension includes overview and rules",
+            "lineNumber": 91
+          },
+          {
+            "text": "    from project_knowledge table. For THN project, also includes RAG context",
+            "lineNumber": 92
+          },
+          {
+            "text": "    (History &amp; Context and Relevant Code Snippets) only when user_message",
+            "lineNumber": 93
+          },
+          {
+            "text": "    is provided (typically on first message only to save tokens).",
+            "lineNumber": 94
+          },
+          {
+            "text": "    ",
+            "lineNumber": 95
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 96
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, or \"general\")",
+            "lineNumber": 97
+          },
+          {
+            "text": "        user_message: Optional user message for THN RAG context generation.",
+            "lineNumber": 98
+          },
+          {
+            "text": "                     If empty, RAG context is not included (saves tokens).",
+            "lineNumber": 99
+          },
+          {
+            "text": "        ",
+            "lineNumber": 100
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 101
+          },
+          {
+            "text": "        Composed system prompt string (base + project extension + RAG if applicable)",
+            "lineNumber": 102
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 103
+          },
+          {
+            "text": "    base_prompt = load_base_system_prompt()",
+            "lineNumber": 104
+          },
+          {
+            "text": "    ",
+            "lineNumber": 105
+          },
+          {
+            "text": "    # Only add project extension if project is not \"general\"",
+            "lineNumber": 106
+          }
+        ]
+      },
+      "score": 0.5097670555114746
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 85
+          },
+          "endPosition": {
+            "line": 188
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n\n            \n            # For THN project, append RAG context to system prompt\n            if project.upper() == \"THN\" and user_message:\n                try:\n                    rag_result = build_thn_rag_context(user_message)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"THN RAG context generation returned empty context\")\n                except Exception as e:\n                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)\n            \n            logger.debug(f\"Added project extension for {project.upper()}\")\n            return base_prompt + project_extension\n        else:\n            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")\n    \n    # Return base prompt only for general or if overview not found\n    return base_prompt\n\n\ndef _get_project_overview(project: str) -&gt; Optional[str]:\n    \"\"\"",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 86,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 87,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 130
+          },
+          {
+            "text": "            ",
+            "lineNumber": 131
+          },
+          {
+            "text": "            # For THN project, append RAG context to system prompt",
+            "lineNumber": 132
+          },
+          {
+            "text": "            if project.upper() == \"THN\" and user_message:",
+            "lineNumber": 133
+          },
+          {
+            "text": "                try:",
+            "lineNumber": 134
+          },
+          {
+            "text": "                    rag_result = build_thn_rag_context(user_message)",
+            "lineNumber": 135
+          },
+          {
+            "text": "                    if rag_result.get(\"context\"):",
+            "lineNumber": 136
+          },
+          {
+            "text": "                        project_extension += \"\\n\\n---\\n\\n\"",
+            "lineNumber": 137
+          },
+          {
+            "text": "                        project_extension += rag_result[\"context\"]",
+            "lineNumber": 138
+          },
+          {
+            "text": "                        if rag_result.get(\"notes\"):",
+            "lineNumber": 139
+          },
+          {
+            "text": "                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 140
+          },
+          {
+            "text": "                                f\"- {note}\" for note in rag_result[\"notes\"]",
+            "lineNumber": 141
+          },
+          {
+            "text": "                            )",
+            "lineNumber": 142
+          },
+          {
+            "text": "                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")",
+            "lineNumber": 143
+          },
+          {
+            "text": "                    else:",
+            "lineNumber": 144
+          },
+          {
+            "text": "                        logger.warning(\"THN RAG context generation returned empty context\")",
+            "lineNumber": 145
+          },
+          {
+            "text": "                except Exception as e:",
+            "lineNumber": 146
+          },
+          {
+            "text": "                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)",
+            "lineNumber": 147
+          },
+          {
+            "text": "            ",
+            "lineNumber": 148
+          },
+          {
+            "text": "            logger.debug(f\"Added project extension for {project.upper()}\")",
+            "lineNumber": 149
+          },
+          {
+            "text": "            return base_prompt + project_extension",
+            "lineNumber": 150
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 151
+          },
+          {
+            "text": "            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")",
+            "lineNumber": 152
+          },
+          {
+            "text": "    ",
+            "lineNumber": 153
+          },
+          {
+            "text": "    # Return base prompt only for general or if overview not found",
+            "lineNumber": 154
+          },
+          {
+            "text": "    return base_prompt",
+            "lineNumber": 155,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 156
+          },
+          {
+            "lineNumber": 157
+          },
+          {
+            "text": "def _get_project_overview(project: str) -&gt; Optional[str]:",
+            "lineNumber": 158,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 159
+          }
+        ]
+      },
+      "score": 0.45923569798469543
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 670,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 777
+          }
+        },
+        "contents": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n    \n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n    \n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n    \n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n    \n    Performance:\n        Target: &lt;500ms total generation time\n        - Embedding generation: &lt;200ms\n        - Database query: &lt;200ms\n        - Formatting: &lt;100ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n    \n    # Cap top_k at 5, default to 3 if invalid\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3\n    \n    try:\n        # Generate embedding for user message\n        embedding_start = time.time()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 674,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 675
+          },
+          {
+            "text": "    Build RAG context for DAAS project with related dreams.",
+            "lineNumber": 676
+          },
+          {
+            "text": "    ",
+            "lineNumber": 677
+          },
+          {
+            "text": "    Retrieves top-k relevant dreams from conversation_index using vector similarity",
+            "lineNumber": 678
+          },
+          {
+            "text": "    search based on themes, symbols, or events in the user message. Formats",
+            "lineNumber": 679
+          },
+          {
+            "text": "    dreams with clear separation and truncation to optimize token usage.",
+            "lineNumber": 680
+          },
+          {
+            "text": "    ",
+            "lineNumber": 681
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 682
+          },
+          {
+            "text": "        user_message: User query containing themes, symbols, or events to search",
+            "lineNumber": 683
+          },
+          {
+            "text": "        top_k: Number of dreams to retrieve (default: 3, max: 5)",
+            "lineNumber": 684
+          },
+          {
+            "text": "    ",
+            "lineNumber": 685
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 686
+          },
+          {
+            "text": "        Dict with:",
+            "lineNumber": 687
+          },
+          {
+            "text": "        - 'context': Formatted string with related dreams (empty if none found)",
+            "lineNumber": 688
+          },
+          {
+            "text": "        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")",
+            "lineNumber": 689
+          },
+          {
+            "text": "    ",
+            "lineNumber": 690
+          },
+          {
+            "text": "    Performance:",
+            "lineNumber": 691
+          },
+          {
+            "text": "        Target: &lt;500ms total generation time",
+            "lineNumber": 692
+          },
+          {
+            "text": "        - Embedding generation: &lt;200ms",
+            "lineNumber": 693
+          },
+          {
+            "text": "        - Database query: &lt;200ms",
+            "lineNumber": 694
+          },
+          {
+            "text": "        - Formatting: &lt;100ms",
+            "lineNumber": 695
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 696
+          },
+          {
+            "text": "    import time",
+            "lineNumber": 697
+          },
+          {
+            "text": "    start_time = time.time()",
+            "lineNumber": 698
+          },
+          {
+            "text": "    ",
+            "lineNumber": 699
+          },
+          {
+            "text": "    if not user_message or not user_message.strip():",
+            "lineNumber": 700
+          },
+          {
+            "text": "        return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 701
+          },
+          {
+            "text": "    ",
+            "lineNumber": 702
+          },
+          {
+            "text": "    # Cap top_k at 5, default to 3 if invalid",
+            "lineNumber": 703
+          },
+          {
+            "text": "    top_k = min(top_k, 5) if top_k &gt; 0 else 3",
+            "lineNumber": 704
+          },
+          {
+            "text": "    ",
+            "lineNumber": 705
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 706
+          },
+          {
+            "text": "        # Generate embedding for user message",
+            "lineNumber": 707
+          },
+          {
+            "text": "        embedding_start = time.time()",
+            "lineNumber": 708
+          }
+        ]
+      },
+      "score": 0.457974910736084
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 57,
+            "column": 5
+          }
+        },
+        "contents": "# API Contract: Revamp DAAS RAG System\n\n## Function: &#96;build_daas_rag_context&#96;\n\n**Location**: &#96;brain_core/context_builder.py&#96;\n\n**Purpose**: Build RAG context for DAAS project by retrieving related dreams using vector similarity search.\n\n### Signature\n\n&#96;&#96;&#96;python\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n\n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n\n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n\n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n\n    Raises:\n        None - always returns a dict (empty context if retrieval fails)\n    \"\"\"\n&#96;&#96;&#96;\n\n### Behavior\n\n1. **Input Validation**\n\n   - If &#96;user_message&#96; is empty or None, return empty context\n   - If &#96;top_k&#96; &gt; 5, cap at 5\n   - If &#96;top_k&#96; &lt; 1, default to 3\n\n2. **Embedding Generation**\n\n   - Call &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n   - Handle embedding generation errors gracefully\n\n3. **Vector Similarity Search**\n\n   - Query &#96;conversation_index&#96; table:\n     - Filter: &#96;project = 'DAAS'&#96; AND &#96;embedding IS NOT NULL&#96;\n     - Order by: &#96;embedding &lt;=&gt; query_embedding&#96; (cosine distance)\n     - Limit: &#96;top_k&#96;\n   - Return: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;\n\n4. **Formatting**\n\n   - For each retrieved dream:\n     ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contract: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Function: &#96;build_daas_rag_context&#96;",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "**Location**: &#96;brain_core/context_builder.py&#96;",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Purpose**: Build RAG context for DAAS project by retrieving related dreams using vector similarity search.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### Signature",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 11
+          },
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 12
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 13
+          },
+          {
+            "text": "    Build RAG context for DAAS project with related dreams.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "    Retrieves top-k relevant dreams from conversation_index using vector similarity",
+            "lineNumber": 16
+          },
+          {
+            "text": "    search based on themes, symbols, or events in the user message. Formats",
+            "lineNumber": 17
+          },
+          {
+            "text": "    dreams with clear separation and truncation to optimize token usage.",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 20
+          },
+          {
+            "text": "        user_message: User query containing themes, symbols, or events to search",
+            "lineNumber": 21
+          },
+          {
+            "text": "        top_k: Number of dreams to retrieve (default: 3, max: 5)",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Dict with:",
+            "lineNumber": 25
+          },
+          {
+            "text": "        - 'context': Formatted string with related dreams (empty if none found)",
+            "lineNumber": 26
+          },
+          {
+            "text": "        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 29
+          },
+          {
+            "text": "        None - always returns a dict (empty context if retrieval fails)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Behavior",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "1. **Input Validation**",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "   - If &#96;user_message&#96; is empty or None, return empty context",
+            "lineNumber": 38
+          },
+          {
+            "text": "   - If &#96;top_k&#96; &gt; 5, cap at 5",
+            "lineNumber": 39
+          },
+          {
+            "text": "   - If &#96;top_k&#96; &lt; 1, default to 3",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "2. **Embedding Generation**",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "   - Call &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;",
+            "lineNumber": 44
+          },
+          {
+            "text": "   - Handle embedding generation errors gracefully",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "3. **Vector Similarity Search**",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "   - Query &#96;conversation_index&#96; table:",
+            "lineNumber": 49
+          },
+          {
+            "text": "     - Filter: &#96;project = 'DAAS'&#96; AND &#96;embedding IS NOT NULL&#96;",
+            "lineNumber": 50
+          },
+          {
+            "text": "     - Order by: &#96;embedding &lt;=&gt; query_embedding&#96; (cosine distance)",
+            "lineNumber": 51
+          },
+          {
+            "text": "     - Limit: &#96;top_k&#96;",
+            "lineNumber": 52
+          },
+          {
+            "text": "   - Return: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "4. **Formatting**",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "   - For each retrieved dream:",
+            "lineNumber": 57
+          },
+          {
+            "text": "     ",
+            "lineNumber": 58
+          }
+        ]
+      },
+      "score": 0.4502105116844177
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 45
+          }
+        },
+        "contents": "# Feature Specification: Revamp DAAS RAG System\n\n**Feature ID**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nRevamp the DAAS (Dream Analysis and Symbolism) RAG system to provide a focused, cost-effective retrieval system that enriches dream analysis without confusing conversation history. The new system will retrieve related DAAS-embedded data by themes, symbols, or events to provide symbolic parallels and deeper meaning while keeping each dream's events separate and self-contained.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current DAAS RAG Implementation**\n\n   - Remove &#96;daas_retrieval.py&#96; file and all its functions\n   - Remove DAAS-specific retrieval logic from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n   - Remove single-dream mode and pattern-based mode implementations\n   - Clean up any DAAS-specific retrieval code that uses conversation history\n\n2. **Implement New DAAS RAG System**\n\n   **Core Principles:**\n\n   - Retrieve related DAAS-embedded data by themes, symbols, or events\n   - Highlight symbolic parallels or contrasts without merging dream events\n   - Keep each dream's events, characters, and timelines separate and self-contained\n   - Compare symbols and themes only at the conceptual level\n   - Integrate DAAS's multitradition framework naturally\n   - Limit retrieval strictly to DAAS-tagged data (no outside references)\n   - Provide concise, thoughtful guidance without over-explaining\n   - If no relevant retrieval results, focus on unique details of current dream\n\n   **Retrieval Strategy:**\n\n   - Use vector similarity search on &#96;conversation_index&#96; table for DAAS project\n   - Search by themes, symbols, or events from the current dream/query\n   - Return top-k relevant dreams (configurable, default: 3-5)\n   - Format retrieved dreams with clear separation and boundaries\n   - Include only essential fields: title, key themes, symbols, summary\n\n3. **Remove Debugging Messages**\n\n   - Remove \"Thinking for [PROJECT]\" spinner messages from &#96;chat_cli.py&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature ID**: &#96;014-revamp-daas-rag&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Planning",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "Revamp the DAAS (Dream Analysis and Symbolism) RAG system to provide a focused, cost-effective retrieval system that enriches dream analysis without confusing conversation history. The new system will retrieve related DAAS-embedded data by themes, symbols, or events to provide symbolic parallels and deeper meaning while keeping each dream's events separate and self-contained.",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "1. **Remove Current DAAS RAG Implementation**",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "   - Remove &#96;daas_retrieval.py&#96; file and all its functions",
+            "lineNumber": 17
+          },
+          {
+            "text": "   - Remove DAAS-specific retrieval logic from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;",
+            "lineNumber": 18
+          },
+          {
+            "text": "   - Remove single-dream mode and pattern-based mode implementations",
+            "lineNumber": 19
+          },
+          {
+            "text": "   - Clean up any DAAS-specific retrieval code that uses conversation history",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "2. **Implement New DAAS RAG System**",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "   **Core Principles:**",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "   - Retrieve related DAAS-embedded data by themes, symbols, or events",
+            "lineNumber": 26
+          },
+          {
+            "text": "   - Highlight symbolic parallels or contrasts without merging dream events",
+            "lineNumber": 27
+          },
+          {
+            "text": "   - Keep each dream's events, characters, and timelines separate and self-contained",
+            "lineNumber": 28
+          },
+          {
+            "text": "   - Compare symbols and themes only at the conceptual level",
+            "lineNumber": 29
+          },
+          {
+            "text": "   - Integrate DAAS's multitradition framework naturally",
+            "lineNumber": 30
+          },
+          {
+            "text": "   - Limit retrieval strictly to DAAS-tagged data (no outside references)",
+            "lineNumber": 31
+          },
+          {
+            "text": "   - Provide concise, thoughtful guidance without over-explaining",
+            "lineNumber": 32
+          },
+          {
+            "text": "   - If no relevant retrieval results, focus on unique details of current dream",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "   **Retrieval Strategy:**",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "   - Use vector similarity search on &#96;conversation_index&#96; table for DAAS project",
+            "lineNumber": 37
+          },
+          {
+            "text": "   - Search by themes, symbols, or events from the current dream/query",
+            "lineNumber": 38
+          },
+          {
+            "text": "   - Return top-k relevant dreams (configurable, default: 3-5)",
+            "lineNumber": 39
+          },
+          {
+            "text": "   - Format retrieved dreams with clear separation and boundaries",
+            "lineNumber": 40
+          },
+          {
+            "text": "   - Include only essential fields: title, key themes, symbols, summary",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "3. **Remove Debugging Messages**",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "   - Remove \"Thinking for [PROJECT]\" spinner messages from &#96;chat_cli.py&#96;",
+            "lineNumber": 45
+          }
+        ]
+      },
+      "score": 0.43610361218452454
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 673
+          },
+          "endPosition": {
+            "line": 967
+          }
+        },
+        "contents": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n\n        for row in rows:\n            session_id, title, summary_short, memory_snippet = row\n            \n            dream_parts.append(f\"**Dream: {title or 'Untitled'}**\")\n            \n            if summary_short:\n                summary = summary_short[:300] + (\"...\" if len(summary_short) &gt; 300 else \"\")\n                dream_parts.append(f\"- **Summary**: {summary}\")\n            \n            if memory_snippet:\n                memory = memory_snippet[:200] + (\"...\" if len(memory_snippet) &gt; 200 else \"\")\n                dream_parts.append(f\"- **Key Details**: {memory}\")\n            \n            dream_parts.append(\"\")  # Empty line\n            dream_parts.append(\"---\")  # Separator\n            dream_parts.append(\"\")  # Empty line\n        \n        # Remove last separator if present\n        if len(dream_parts) &gt; 1 and dream_parts[-1] == \"\" and dream_parts[-2] == \"---\":\n            dream_parts = dream_parts[:-2]\n        \n        context = \"\\n\".join(dream_parts)\n        format_time = (time.time() - format_start) * 1000  # Convert to ms\n        \n        total_time = (time.time() - start_time) * 1000  # Convert to ms\n        logger.debug(\n            f\"Built DAAS RAG context with {len(rows)} dreams \"\n            f\"(embedding: {embedding_time:.1f}ms, query: {query_time:.1f}ms, format: {format_time:.1f}ms, total: {total_time:.1f}ms)\"\n        )\n        \n        if total_time &gt; 500:\n            logger.warning(f\"DAAS RAG generation exceeded 500ms target: {total_time:.1f}ms\")\n        \n        return {\n            \"context\": context,\n            \"notes\": [f\"Retrieved {len(rows)} dreams via vector similarity search\"]\n        }\n        \n    except Exception as e:\n        logger.error(f\"Error building DAAS RAG context: {e}\", exc_info=True)\n        return {\"context\": \"\", \"notes\": []}\n\n\ndef build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    ",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 674,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 675,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 674,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 737
+          },
+          {
+            "text": "        for row in rows:",
+            "lineNumber": 738
+          },
+          {
+            "text": "            session_id, title, summary_short, memory_snippet = row",
+            "lineNumber": 739
+          },
+          {
+            "text": "            ",
+            "lineNumber": 740
+          },
+          {
+            "text": "            dream_parts.append(f\"**Dream: {title or 'Untitled'}**\")",
+            "lineNumber": 741
+          },
+          {
+            "text": "            ",
+            "lineNumber": 742
+          },
+          {
+            "text": "            if summary_short:",
+            "lineNumber": 743
+          },
+          {
+            "text": "                summary = summary_short[:300] + (\"...\" if len(summary_short) &gt; 300 else \"\")",
+            "lineNumber": 744
+          },
+          {
+            "text": "                dream_parts.append(f\"- **Summary**: {summary}\")",
+            "lineNumber": 745
+          },
+          {
+            "text": "            ",
+            "lineNumber": 746
+          },
+          {
+            "text": "            if memory_snippet:",
+            "lineNumber": 747
+          },
+          {
+            "text": "                memory = memory_snippet[:200] + (\"...\" if len(memory_snippet) &gt; 200 else \"\")",
+            "lineNumber": 748
+          },
+          {
+            "text": "                dream_parts.append(f\"- **Key Details**: {memory}\")",
+            "lineNumber": 749
+          },
+          {
+            "text": "            ",
+            "lineNumber": 750
+          },
+          {
+            "text": "            dream_parts.append(\"\")  # Empty line",
+            "lineNumber": 751
+          },
+          {
+            "text": "            dream_parts.append(\"---\")  # Separator",
+            "lineNumber": 752
+          },
+          {
+            "text": "            dream_parts.append(\"\")  # Empty line",
+            "lineNumber": 753
+          },
+          {
+            "text": "        ",
+            "lineNumber": 754
+          },
+          {
+            "text": "        # Remove last separator if present",
+            "lineNumber": 755
+          },
+          {
+            "text": "        if len(dream_parts) &gt; 1 and dream_parts[-1] == \"\" and dream_parts[-2] == \"---\":",
+            "lineNumber": 756
+          },
+          {
+            "text": "            dream_parts = dream_parts[:-2]",
+            "lineNumber": 757
+          },
+          {
+            "text": "        ",
+            "lineNumber": 758
+          },
+          {
+            "text": "        context = \"\\n\".join(dream_parts)",
+            "lineNumber": 759
+          },
+          {
+            "text": "        format_time = (time.time() - format_start) * 1000  # Convert to ms",
+            "lineNumber": 760
+          },
+          {
+            "text": "        ",
+            "lineNumber": 761
+          },
+          {
+            "text": "        total_time = (time.time() - start_time) * 1000  # Convert to ms",
+            "lineNumber": 762
+          },
+          {
+            "text": "        logger.debug(",
+            "lineNumber": 763
+          },
+          {
+            "text": "            f\"Built DAAS RAG context with {len(rows)} dreams \"",
+            "lineNumber": 764
+          },
+          {
+            "text": "            f\"(embedding: {embedding_time:.1f}ms, query: {query_time:.1f}ms, format: {format_time:.1f}ms, total: {total_time:.1f}ms)\"",
+            "lineNumber": 765
+          },
+          {
+            "text": "        )",
+            "lineNumber": 766
+          },
+          {
+            "text": "        ",
+            "lineNumber": 767
+          },
+          {
+            "text": "        if total_time &gt; 500:",
+            "lineNumber": 768
+          },
+          {
+            "text": "            logger.warning(f\"DAAS RAG generation exceeded 500ms target: {total_time:.1f}ms\")",
+            "lineNumber": 769
+          },
+          {
+            "text": "        ",
+            "lineNumber": 770
+          },
+          {
+            "text": "        return {",
+            "lineNumber": 771
+          },
+          {
+            "text": "            \"context\": context,",
+            "lineNumber": 772
+          },
+          {
+            "text": "            \"notes\": [f\"Retrieved {len(rows)} dreams via vector similarity search\"]",
+            "lineNumber": 773
+          },
+          {
+            "text": "        }",
+            "lineNumber": 774
+          },
+          {
+            "text": "        ",
+            "lineNumber": 775
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 776
+          },
+          {
+            "text": "        logger.error(f\"Error building DAAS RAG context: {e}\", exc_info=True)",
+            "lineNumber": 777
+          },
+          {
+            "text": "        return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 778,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 779
+          },
+          {
+            "lineNumber": 780
+          },
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 781,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 782,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 783,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 784,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 785,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 786,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 787
+          }
+        ]
+      },
+      "score": 0.43491214513778687
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 34
+          }
+        },
+        "contents": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG\n\n## Overview\n\nImprove the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.\n\n## Requirements\n\n### 1. Base System Prompt\n\n- Create a new base system prompt that applies to ALL conversations regardless of project\n- Store the base system prompt in a separate file for easy editing\n- Base system prompt should be the starting point for all project conversations\n- Design should be extensible to support project-specific system prompts in the future\n\n**Base System Prompt Content:**\n\n&#96;&#96;&#96;\nYou are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.\n\nHere are a few rules that will apply to all chats\n\n1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.\n\n2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.\n\n3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.\n\n4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"\n\n5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.\n&#96;&#96;&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Improve the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. Base System Prompt",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Create a new base system prompt that applies to ALL conversations regardless of project",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Store the base system prompt in a separate file for easy editing",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Base system prompt should be the starting point for all project conversations",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Design should be extensible to support project-specific system prompts in the future",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Base System Prompt Content:**",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "Here are a few rules that will apply to all chats",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          }
+        ]
+      },
+      "score": 0.4283193051815033
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 673
+          },
+          "endPosition": {
+            "line": 777
+          }
+        },
+        "contents": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n\n    \n    try:\n        # Generate embedding for user message\n        embedding_start = time.time()\n        query_embedding = generate_embedding(user_message)\n        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n        \n        # Vector similarity search\n        query_start = time.time()\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS'\n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector\n                    LIMIT %s\n                    \"\"\",\n                    (embedding_str, top_k),\n                )\n                rows = cur.fetchall()\n        query_time = (time.time() - query_start) * 1000  # Convert to ms\n        \n        if not rows:\n            logger.debug(\"No DAAS dreams found via vector similarity search\")\n            return {\"context\": \"\", \"notes\": []}\n        \n        # Format dreams with truncation\n        format_start = time.time()\n        dream_parts = [\"### Related Dreams for Analysis\\n\"]\n        for row in rows:\n            session_id, title, summary_short, memory_snippet = row",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 674,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 675,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 674,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 704
+          },
+          {
+            "text": "    ",
+            "lineNumber": 705
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 706
+          },
+          {
+            "text": "        # Generate embedding for user message",
+            "lineNumber": 707
+          },
+          {
+            "text": "        embedding_start = time.time()",
+            "lineNumber": 708
+          },
+          {
+            "text": "        query_embedding = generate_embedding(user_message)",
+            "lineNumber": 709
+          },
+          {
+            "text": "        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms",
+            "lineNumber": 710
+          },
+          {
+            "text": "        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'",
+            "lineNumber": 711
+          },
+          {
+            "text": "        ",
+            "lineNumber": 712
+          },
+          {
+            "text": "        # Vector similarity search",
+            "lineNumber": 713
+          },
+          {
+            "text": "        query_start = time.time()",
+            "lineNumber": 714
+          },
+          {
+            "text": "        with get_conn() as conn:",
+            "lineNumber": 715
+          },
+          {
+            "text": "            with conn.cursor() as cur:",
+            "lineNumber": 716
+          },
+          {
+            "text": "                cur.execute(",
+            "lineNumber": 717
+          },
+          {
+            "text": "                    \"\"\"",
+            "lineNumber": 718
+          },
+          {
+            "text": "                    SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 719
+          },
+          {
+            "text": "                    FROM conversation_index",
+            "lineNumber": 720
+          },
+          {
+            "text": "                    WHERE project = 'DAAS'",
+            "lineNumber": 721
+          },
+          {
+            "text": "                      AND embedding IS NOT NULL",
+            "lineNumber": 722
+          },
+          {
+            "text": "                    ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 723
+          },
+          {
+            "text": "                    LIMIT %s",
+            "lineNumber": 724
+          },
+          {
+            "text": "                    \"\"\",",
+            "lineNumber": 725
+          },
+          {
+            "text": "                    (embedding_str, top_k),",
+            "lineNumber": 726
+          },
+          {
+            "text": "                )",
+            "lineNumber": 727
+          },
+          {
+            "text": "                rows = cur.fetchall()",
+            "lineNumber": 728
+          },
+          {
+            "text": "        query_time = (time.time() - query_start) * 1000  # Convert to ms",
+            "lineNumber": 729
+          },
+          {
+            "text": "        ",
+            "lineNumber": 730
+          },
+          {
+            "text": "        if not rows:",
+            "lineNumber": 731
+          },
+          {
+            "text": "            logger.debug(\"No DAAS dreams found via vector similarity search\")",
+            "lineNumber": 732
+          },
+          {
+            "text": "            return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 733
+          },
+          {
+            "text": "        ",
+            "lineNumber": 734
+          },
+          {
+            "text": "        # Format dreams with truncation",
+            "lineNumber": 735
+          },
+          {
+            "text": "        format_start = time.time()",
+            "lineNumber": 736
+          },
+          {
+            "text": "        dream_parts = [\"### Related Dreams for Analysis\\n\"]",
+            "lineNumber": 737
+          },
+          {
+            "text": "        for row in rows:",
+            "lineNumber": 738
+          },
+          {
+            "text": "            session_id, title, summary_short, memory_snippet = row",
+            "lineNumber": 739
+          }
+        ]
+      },
+      "score": 0.4197984039783478
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 86
+          }
+        },
+        "contents": "# Data Model: Revamp DAAS RAG System\n\n## Overview\n\nNo new database schema changes required. This feature uses existing tables and indexes.\n\n## Existing Tables Used\n\n### &#96;conversation_index&#96;\n\n**Purpose**: Stores indexed conversation data including DAAS dreams with embeddings.\n\n**Fields Used**:\n\n- &#96;session_id&#96; (UUID): Unique identifier for the conversation/dream\n- &#96;title&#96; (TEXT): Dream title\n- &#96;summary_short&#96; (TEXT): Brief summary of the dream\n- &#96;memory_snippet&#96; (TEXT): Key memorable details from the dream\n- &#96;embedding&#96; (vector): Vector embedding for similarity search\n- &#96;project&#96; (TEXT): Project tag (filtered to 'DAAS')\n\n**Indexes Used**:\n\n- Existing vector index on &#96;embedding&#96; column (pgvector)\n- Existing index on &#96;project&#96; column\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT session_id, title, summary_short, memory_snippet\nFROM conversation_index\nWHERE project = 'DAAS'\n  AND embedding IS NOT NULL\nORDER BY embedding &lt;=&gt; %s::vector\nLIMIT 3\n&#96;&#96;&#96;\n\n## Data Transformations\n\n### Input: User Message\n\n- Raw text query from user\n- Contains themes, symbols, or events they want to explore\n\n### Processing: Embedding Generation\n\n- User message → &#96;generate_embedding(user_message)&#96; → Vector embedding\n- Uses existing &#96;embedding_service.py&#96; infrastructure\n\n### Processing: Vector Similarity Search\n\n- Query embedding compared against stored dream embeddings\n- Cosine distance (&#96;&lt;=&gt;&#96;) used for similarity\n- Top 3-5 most similar dreams retrieved\n\n### Output: Formatted RAG Context\n\n- Each dream formatted with:\n  - Title (full)\n  - Summary (truncated to 300 chars)\n  - Memory snippet (truncated to 200 chars)\n- Dreams separated with clear markdown formatting\n- Total context: ~850-1350 tokens\n\n## Data Flow\n\n&#96;&#96;&#96;\nUser Message\n    ↓\nGenerate Embedding (embedding_service.py)\n    ↓\nVector Similarity Search (conversation_index table)\n    ↓\nRetrieve Top 3-5 Dreams\n    ↓\nFormat with Truncation\n    ↓\nReturn RAG Context Dict\n    ↓\nInject into System Prompt\n&#96;&#96;&#96;\n\n## Constraints\n\n1. **No Conversation History**: Only dream data from &#96;conversation_index&#96;, no conversation messages\n2. **DAAS-Only**: Strictly filtered by &#96;project = 'DAAS'&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "No new database schema changes required. This feature uses existing tables and indexes.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Existing Tables Used",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### &#96;conversation_index&#96;",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Purpose**: Stores indexed conversation data including DAAS dreams with embeddings.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Fields Used**:",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "- &#96;session_id&#96; (UUID): Unique identifier for the conversation/dream",
+            "lineNumber": 15
+          },
+          {
+            "text": "- &#96;title&#96; (TEXT): Dream title",
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;summary_short&#96; (TEXT): Brief summary of the dream",
+            "lineNumber": 17
+          },
+          {
+            "text": "- &#96;memory_snippet&#96; (TEXT): Key memorable details from the dream",
+            "lineNumber": 18
+          },
+          {
+            "text": "- &#96;embedding&#96; (vector): Vector embedding for similarity search",
+            "lineNumber": 19
+          },
+          {
+            "text": "- &#96;project&#96; (TEXT): Project tag (filtered to 'DAAS')",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Indexes Used**:",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "- Existing vector index on &#96;embedding&#96; column (pgvector)",
+            "lineNumber": 24
+          },
+          {
+            "text": "- Existing index on &#96;project&#96; column",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 29
+          },
+          {
+            "text": "SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 30
+          },
+          {
+            "text": "FROM conversation_index",
+            "lineNumber": 31
+          },
+          {
+            "text": "WHERE project = 'DAAS'",
+            "lineNumber": 32
+          },
+          {
+            "text": "  AND embedding IS NOT NULL",
+            "lineNumber": 33
+          },
+          {
+            "text": "ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 34
+          },
+          {
+            "text": "LIMIT 3",
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "## Data Transformations",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "### Input: User Message",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "- Raw text query from user",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Contains themes, symbols, or events they want to explore",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "### Processing: Embedding Generation",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "- User message → &#96;generate_embedding(user_message)&#96; → Vector embedding",
+            "lineNumber": 47
+          },
+          {
+            "text": "- Uses existing &#96;embedding_service.py&#96; infrastructure",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "### Processing: Vector Similarity Search",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "- Query embedding compared against stored dream embeddings",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Cosine distance (&#96;&lt;=&gt;&#96;) used for similarity",
+            "lineNumber": 53
+          },
+          {
+            "text": "- Top 3-5 most similar dreams retrieved",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "### Output: Formatted RAG Context",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- Each dream formatted with:",
+            "lineNumber": 58
+          },
+          {
+            "text": "  - Title (full)",
+            "lineNumber": 59
+          },
+          {
+            "text": "  - Summary (truncated to 300 chars)",
+            "lineNumber": 60
+          },
+          {
+            "text": "  - Memory snippet (truncated to 200 chars)",
+            "lineNumber": 61
+          },
+          {
+            "text": "- Dreams separated with clear markdown formatting",
+            "lineNumber": 62
+          },
+          {
+            "text": "- Total context: ~850-1350 tokens",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 65
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "text": "User Message",
+            "lineNumber": 68
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 69
+          },
+          {
+            "text": "Generate Embedding (embedding_service.py)",
+            "lineNumber": 70
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 71
+          },
+          {
+            "text": "Vector Similarity Search (conversation_index table)",
+            "lineNumber": 72
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 73
+          },
+          {
+            "text": "Retrieve Top 3-5 Dreams",
+            "lineNumber": 74
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 75
+          },
+          {
+            "text": "Format with Truncation",
+            "lineNumber": 76
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 77
+          },
+          {
+            "text": "Return RAG Context Dict",
+            "lineNumber": 78
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 79
+          },
+          {
+            "text": "Inject into System Prompt",
+            "lineNumber": 80
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "## Constraints",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "1. **No Conversation History**: Only dream data from &#96;conversation_index&#96;, no conversation messages",
+            "lineNumber": 85
+          },
+          {
+            "text": "2. **DAAS-Only**: Strictly filtered by &#96;project = 'DAAS'&#96;",
+            "lineNumber": 86
+          }
+        ]
+      },
+      "score": 0.419116735458374
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/research.md",
+        "range": {
+          "startPosition": {
+            "line": 120
+          },
+          "endPosition": {
+            "line": 172
+          }
+        },
+        "contents": "**Alternatives Considered**:\n\n- Keep spinner but make it optional via flag - **Rejected**: User explicitly requested removal\n- Replace with simpler loading indicator - **Rejected**: User wants no debugging messages\n- Log to file instead - **Rejected**: Not what user requested\n\n---\n\n### 5. Integration with Existing System\n\n**Question**: How should new DAAS RAG integrate with &#96;build_project_context()&#96;?\n\n**Decision**: Follow the same pattern as THN RAG:\n\n- Check if &#96;project == 'DAAS'&#96;\n- Call &#96;build_daas_rag_context(user_message)&#96;\n- Return formatted context dict\n- Handle errors gracefully with fallback\n\n**Rationale**:\n\n- Consistent with existing code patterns\n- Easy to maintain and understand\n- Clear separation of concerns\n- Follows established project conventions\n\n**Code Structure**:\n\n&#96;&#96;&#96;python\nif project == 'DAAS':\n    try:\n        return build_daas_rag_context(user_message)\n    except Exception as e:\n        logger.error(f\"DAAS RAG generation failed: {e}\")\n        # Fall through to default behavior\n&#96;&#96;&#96;\n\n---\n\n## Technical Decisions Summary\n\n| Decision            | Choice                              | Rationale                                 |\n| ------------------- | ----------------------------------- | ----------------------------------------- |\n| Vector Search Input | Full user message                   | Simple, leverages existing infrastructure |\n| Dream Format        | Markdown with separators            | Clear, readable, consistent               |\n| Token Limits        | 300/200 char truncation, 3-5 dreams | Balances context with efficiency          |\n| Debug Messages      | Remove completely                   | User request, cleaner UX                  |\n| Integration Pattern | Follow THN RAG pattern              | Consistency, maintainability              |\n\n## Open Questions Resolved\n\n✅ All technical questions resolved. No remaining clarifications needed.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Alternatives Considered**:",
+            "lineNumber": 121
+          },
+          {
+            "lineNumber": 122
+          },
+          {
+            "text": "- Keep spinner but make it optional via flag - **Rejected**: User explicitly requested removal",
+            "lineNumber": 123
+          },
+          {
+            "text": "- Replace with simpler loading indicator - **Rejected**: User wants no debugging messages",
+            "lineNumber": 124
+          },
+          {
+            "text": "- Log to file instead - **Rejected**: Not what user requested",
+            "lineNumber": 125
+          },
+          {
+            "lineNumber": 126
+          },
+          {
+            "text": "---",
+            "lineNumber": 127
+          },
+          {
+            "lineNumber": 128
+          },
+          {
+            "text": "### 5. Integration with Existing System",
+            "lineNumber": 129
+          },
+          {
+            "lineNumber": 130
+          },
+          {
+            "text": "**Question**: How should new DAAS RAG integrate with &#96;build_project_context()&#96;?",
+            "lineNumber": 131
+          },
+          {
+            "lineNumber": 132
+          },
+          {
+            "text": "**Decision**: Follow the same pattern as THN RAG:",
+            "lineNumber": 133
+          },
+          {
+            "lineNumber": 134
+          },
+          {
+            "text": "- Check if &#96;project == 'DAAS'&#96;",
+            "lineNumber": 135
+          },
+          {
+            "text": "- Call &#96;build_daas_rag_context(user_message)&#96;",
+            "lineNumber": 136
+          },
+          {
+            "text": "- Return formatted context dict",
+            "lineNumber": 137
+          },
+          {
+            "text": "- Handle errors gracefully with fallback",
+            "lineNumber": 138
+          },
+          {
+            "lineNumber": 139
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 140
+          },
+          {
+            "lineNumber": 141
+          },
+          {
+            "text": "- Consistent with existing code patterns",
+            "lineNumber": 142
+          },
+          {
+            "text": "- Easy to maintain and understand",
+            "lineNumber": 143
+          },
+          {
+            "text": "- Clear separation of concerns",
+            "lineNumber": 144
+          },
+          {
+            "text": "- Follows established project conventions",
+            "lineNumber": 145
+          },
+          {
+            "lineNumber": 146
+          },
+          {
+            "text": "**Code Structure**:",
+            "lineNumber": 147
+          },
+          {
+            "lineNumber": 148
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 149
+          },
+          {
+            "text": "if project == 'DAAS':",
+            "lineNumber": 150
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 151
+          },
+          {
+            "text": "        return build_daas_rag_context(user_message)",
+            "lineNumber": 152
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 153
+          },
+          {
+            "text": "        logger.error(f\"DAAS RAG generation failed: {e}\")",
+            "lineNumber": 154
+          },
+          {
+            "text": "        # Fall through to default behavior",
+            "lineNumber": 155
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 156
+          },
+          {
+            "lineNumber": 157
+          },
+          {
+            "text": "---",
+            "lineNumber": 158
+          },
+          {
+            "lineNumber": 159
+          },
+          {
+            "text": "## Technical Decisions Summary",
+            "lineNumber": 160
+          },
+          {
+            "lineNumber": 161
+          },
+          {
+            "text": "| Decision            | Choice                              | Rationale                                 |",
+            "lineNumber": 162
+          },
+          {
+            "text": "| ------------------- | ----------------------------------- | ----------------------------------------- |",
+            "lineNumber": 163
+          },
+          {
+            "text": "| Vector Search Input | Full user message                   | Simple, leverages existing infrastructure |",
+            "lineNumber": 164
+          },
+          {
+            "text": "| Dream Format        | Markdown with separators            | Clear, readable, consistent               |",
+            "lineNumber": 165
+          },
+          {
+            "text": "| Token Limits        | 300/200 char truncation, 3-5 dreams | Balances context with efficiency          |",
+            "lineNumber": 166
+          },
+          {
+            "text": "| Debug Messages      | Remove completely                   | User request, cleaner UX                  |",
+            "lineNumber": 167
+          },
+          {
+            "text": "| Integration Pattern | Follow THN RAG pattern              | Consistency, maintainability              |",
+            "lineNumber": 168
+          },
+          {
+            "lineNumber": 169
+          },
+          {
+            "text": "## Open Questions Resolved",
+            "lineNumber": 170
+          },
+          {
+            "lineNumber": 171
+          },
+          {
+            "text": "✅ All technical questions resolved. No remaining clarifications needed.",
+            "lineNumber": 172
+          }
+        ]
+      },
+      "score": 0.4164605140686035
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/data-model.md",
+        "range": {
+          "startPosition": {
+            "line": 55
+          },
+          "endPosition": {
+            "line": 110
+          }
+        },
+        "contents": "LIMIT 5\n&#96;&#96;&#96;\n\n## Data Flow\n\n1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;\n2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules\n3. **Build context** → &#96;build_project_context(project='THN', user_message)&#96; in &#96;context_builder.py&#96;\n4. **Query conversations** → SELECT from &#96;conversation_index&#96; WHERE project='THN' ORDER BY indexed_at DESC LIMIT 5\n5. **Query code** → Vector similarity search on &#96;code_index&#96; using user_message embedding\n6. **Format RAG** → Combine into formatted string with History &amp; Context and Relevant Code Snippets sections\n7. **Return context** → &#96;{\"context\": str, \"notes\": List[str]}&#96;\n8. **Inject into messages** → Added as system message in &#96;chat.py&#96; **after** the system prompt (which contains overview/rules)\n\n**Message Order**:\n\n- System message 1: Base prompt + project overview + project rules (from &#96;build_project_system_prompt()&#96;)\n- System message 2: THN RAG (History &amp; Context + Relevant Code Snippets) (from &#96;build_project_context()&#96;)\n- System message 3: Note reads (if any)\n- User/Assistant messages: Conversation history\n\n## Data Transformations\n\n### Conversation Entry Formatting\n\n**Input**: Row from &#96;conversation_index&#96;\n\n&#96;&#96;&#96;python\n{\n    'title': 'THN Network Setup',\n    'tags': ['networking', 'vlan', 'firewall'],\n    'key_entities': ['Firewalla', 'Mac Mini'],\n    'summary_detailed': 'Long summary text...',\n    'memory_snippet': 'Memory text...'\n}\n&#96;&#96;&#96;\n\n**Output**: Formatted string\n\n&#96;&#96;&#96;\n- **Title:** THN Network Setup\n- **Tags:** networking, vlan, firewall\n- **Key Entities:** Firewalla, Mac Mini\n- **Summary:** Long summary text... (truncated if &gt;500 chars)\n- **Memory Snippet:** Memory text... (truncated if &gt;300 chars)\n&#96;&#96;&#96;\n\n### Code Snippet Formatting\n\n**Input**: Row from &#96;code_index&#96;\n\n&#96;&#96;&#96;python\n{\n    'file_path': 'brain_core/context_builder.py',\n    'language': 'python',",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "LIMIT 5",
+            "lineNumber": 56
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "1. **User sends message** → &#96;chat_turn()&#96; in &#96;chat.py&#96;",
+            "lineNumber": 61
+          },
+          {
+            "text": "2. **Build system prompt** → &#96;build_project_system_prompt(project='THN')&#96; includes base prompt + project overview + rules",
+            "lineNumber": 62
+          },
+          {
+            "text": "3. **Build context** → &#96;build_project_context(project='THN', user_message)&#96; in &#96;context_builder.py&#96;",
+            "lineNumber": 63
+          },
+          {
+            "text": "4. **Query conversations** → SELECT from &#96;conversation_index&#96; WHERE project='THN' ORDER BY indexed_at DESC LIMIT 5",
+            "lineNumber": 64
+          },
+          {
+            "text": "5. **Query code** → Vector similarity search on &#96;code_index&#96; using user_message embedding",
+            "lineNumber": 65
+          },
+          {
+            "text": "6. **Format RAG** → Combine into formatted string with History &amp; Context and Relevant Code Snippets sections",
+            "lineNumber": 66
+          },
+          {
+            "text": "7. **Return context** → &#96;{\"context\": str, \"notes\": List[str]}&#96;",
+            "lineNumber": 67
+          },
+          {
+            "text": "8. **Inject into messages** → Added as system message in &#96;chat.py&#96; **after** the system prompt (which contains overview/rules)",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "**Message Order**:",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "- System message 1: Base prompt + project overview + project rules (from &#96;build_project_system_prompt()&#96;)",
+            "lineNumber": 72
+          },
+          {
+            "text": "- System message 2: THN RAG (History &amp; Context + Relevant Code Snippets) (from &#96;build_project_context()&#96;)",
+            "lineNumber": 73
+          },
+          {
+            "text": "- System message 3: Note reads (if any)",
+            "lineNumber": 74
+          },
+          {
+            "text": "- User/Assistant messages: Conversation history",
+            "lineNumber": 75
+          },
+          {
+            "lineNumber": 76
+          },
+          {
+            "text": "## Data Transformations",
+            "lineNumber": 77
+          },
+          {
+            "lineNumber": 78
+          },
+          {
+            "text": "### Conversation Entry Formatting",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "**Input**: Row from &#96;conversation_index&#96;",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 83
+          },
+          {
+            "text": "{",
+            "lineNumber": 84
+          },
+          {
+            "text": "    'title': 'THN Network Setup',",
+            "lineNumber": 85
+          },
+          {
+            "text": "    'tags': ['networking', 'vlan', 'firewall'],",
+            "lineNumber": 86
+          },
+          {
+            "text": "    'key_entities': ['Firewalla', 'Mac Mini'],",
+            "lineNumber": 87
+          },
+          {
+            "text": "    'summary_detailed': 'Long summary text...',",
+            "lineNumber": 88
+          },
+          {
+            "text": "    'memory_snippet': 'Memory text...'",
+            "lineNumber": 89
+          },
+          {
+            "text": "}",
+            "lineNumber": 90
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "**Output**: Formatted string",
+            "lineNumber": 93
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 95
+          },
+          {
+            "text": "- **Title:** THN Network Setup",
+            "lineNumber": 96
+          },
+          {
+            "text": "- **Tags:** networking, vlan, firewall",
+            "lineNumber": 97
+          },
+          {
+            "text": "- **Key Entities:** Firewalla, Mac Mini",
+            "lineNumber": 98
+          },
+          {
+            "text": "- **Summary:** Long summary text... (truncated if &gt;500 chars)",
+            "lineNumber": 99
+          },
+          {
+            "text": "- **Memory Snippet:** Memory text... (truncated if &gt;300 chars)",
+            "lineNumber": 100
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 101
+          },
+          {
+            "lineNumber": 102
+          },
+          {
+            "text": "### Code Snippet Formatting",
+            "lineNumber": 103
+          },
+          {
+            "lineNumber": 104
+          },
+          {
+            "text": "**Input**: Row from &#96;code_index&#96;",
+            "lineNumber": 105
+          },
+          {
+            "lineNumber": 106
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 107
+          },
+          {
+            "text": "{",
+            "lineNumber": 108
+          },
+          {
+            "text": "    'file_path': 'brain_core/context_builder.py',",
+            "lineNumber": 109
+          },
+          {
+            "text": "    'language': 'python',",
+            "lineNumber": 110
+          }
+        ]
+      },
+      "score": 0.4137454032897949
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 68
+          }
+        },
+        "contents": "\"\"\"\nProject context builder for injecting conversation memory into chat prompts.\nBuilds context directly from project_knowledge and conversation_index entries.\n\nFor DAAS project, uses vector similarity search to retrieve related dreams by themes, symbols, or events.\nFor THN project, uses RAG with conversation history and code snippets.\n\"\"\"\nimport logging\nimport os\nimport re\nfrom pathlib import Path\nfrom typing import Dict, List, Optional, Any\n\nfrom .db import get_conn\nfrom .memory import fetch_project_knowledge\nfrom .embedding_service import generate_embedding\n\nlogger = logging.getLogger(__name__)\n\n# Module-level cache for base system prompt\n_base_system_prompt_cache: Optional[str] = None\n\n\ndef load_base_system_prompt() -&gt; str:\n    \"\"\"\n    Load the base system prompt from brain_core/base_system_prompt.txt.\n    \n    Uses module-level caching to avoid repeated file I/O. If the file is missing\n    or unreadable, falls back to a minimal default prompt and logs a warning.\n    \n    Returns:\n        Base system prompt as string\n        \n    Raises:\n        None - always returns a valid string (either from file or fallback)\n    \"\"\"\n    global _base_system_prompt_cache\n    \n    # Return cached value if available\n    if _base_system_prompt_cache is not None:\n        return _base_system_prompt_cache\n    \n    # Determine file path relative to this module\n    module_dir = Path(__file__).parent\n    prompt_file = module_dir / \"base_system_prompt.txt\"\n    \n    try:\n        # Load prompt from file\n        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "\"\"\"",
+            "lineNumber": 1
+          },
+          {
+            "text": "Project context builder for injecting conversation memory into chat prompts.",
+            "lineNumber": 2
+          },
+          {
+            "text": "Builds context directly from project_knowledge and conversation_index entries.",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "For DAAS project, uses vector similarity search to retrieve related dreams by themes, symbols, or events.",
+            "lineNumber": 5
+          },
+          {
+            "text": "For THN project, uses RAG with conversation history and code snippets.",
+            "lineNumber": 6
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 7
+          },
+          {
+            "text": "import logging",
+            "lineNumber": 8
+          },
+          {
+            "text": "import os",
+            "lineNumber": 9
+          },
+          {
+            "text": "import re",
+            "lineNumber": 10
+          },
+          {
+            "text": "from pathlib import Path",
+            "lineNumber": 11
+          },
+          {
+            "text": "from typing import Dict, List, Optional, Any",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "from .db import get_conn",
+            "lineNumber": 14
+          },
+          {
+            "text": "from .memory import fetch_project_knowledge",
+            "lineNumber": 15
+          },
+          {
+            "text": "from .embedding_service import generate_embedding",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "logger = logging.getLogger(__name__)",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "# Module-level cache for base system prompt",
+            "lineNumber": 20
+          },
+          {
+            "text": "_base_system_prompt_cache: Optional[str] = None",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "def load_base_system_prompt() -&gt; str:",
+            "lineNumber": 24,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 25
+          },
+          {
+            "text": "    Load the base system prompt from brain_core/base_system_prompt.txt.",
+            "lineNumber": 26
+          },
+          {
+            "text": "    ",
+            "lineNumber": 27
+          },
+          {
+            "text": "    Uses module-level caching to avoid repeated file I/O. If the file is missing",
+            "lineNumber": 28
+          },
+          {
+            "text": "    or unreadable, falls back to a minimal default prompt and logs a warning.",
+            "lineNumber": 29
+          },
+          {
+            "text": "    ",
+            "lineNumber": 30
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 31
+          },
+          {
+            "text": "        Base system prompt as string",
+            "lineNumber": 32
+          },
+          {
+            "text": "        ",
+            "lineNumber": 33
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 34
+          },
+          {
+            "text": "        None - always returns a valid string (either from file or fallback)",
+            "lineNumber": 35
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 36
+          },
+          {
+            "text": "    global _base_system_prompt_cache",
+            "lineNumber": 37
+          },
+          {
+            "text": "    ",
+            "lineNumber": 38
+          },
+          {
+            "text": "    # Return cached value if available",
+            "lineNumber": 39
+          },
+          {
+            "text": "    if _base_system_prompt_cache is not None:",
+            "lineNumber": 40
+          },
+          {
+            "text": "        return _base_system_prompt_cache",
+            "lineNumber": 41
+          },
+          {
+            "text": "    ",
+            "lineNumber": 42
+          },
+          {
+            "text": "    # Determine file path relative to this module",
+            "lineNumber": 43
+          },
+          {
+            "text": "    module_dir = Path(__file__).parent",
+            "lineNumber": 44
+          },
+          {
+            "text": "    prompt_file = module_dir / \"base_system_prompt.txt\"",
+            "lineNumber": 45
+          },
+          {
+            "text": "    ",
+            "lineNumber": 46
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 47
+          },
+          {
+            "text": "        # Load prompt from file",
+            "lineNumber": 48
+          },
+          {
+            "text": "        prompt_content = prompt_file.read_text(encoding='utf-8').strip()",
+            "lineNumber": 49
+          }
+        ]
+      },
+      "score": 0.40954816341400146
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 24
+          },
+          "endPosition": {
+            "line": 280
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n\n    \n    # Add note reads first (most recent first) so they're fresh in context\n    if note_reads:\n        # Get the most recent note read (last in list since history is chronological)\n        most_recent_note = note_reads[-1]\n        note_content = most_recent_note.get(\"content\", \"\")\n        # Extract just the note content (skip the header)\n        if \"[Note loaded:\" in note_content:\n            note_parts = note_content.split(\"\\n\\n\", 1)\n            if len(note_parts) &gt; 1:\n                note_content = note_parts[1]  # Get content after header\n        messages.append({\n            \"role\": \"system\",\n            \"content\": f\"The user has loaded a note for discussion. Here is the note content:\\n\\n{note_content}\\n\\nYou can now reference and discuss this note naturally in the conversation.\"\n        })\n    \n    # Add other conversation messages\n    messages.extend(other_messages)\n\n    # Query OpenAI\n    if stream:\n        # Streaming mode: yield chunks as they arrive",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 25,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 27,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "    ",
+            "lineNumber": 95
+          },
+          {
+            "text": "    # Add note reads first (most recent first) so they're fresh in context",
+            "lineNumber": 96
+          },
+          {
+            "text": "    if note_reads:",
+            "lineNumber": 97
+          },
+          {
+            "text": "        # Get the most recent note read (last in list since history is chronological)",
+            "lineNumber": 98
+          },
+          {
+            "text": "        most_recent_note = note_reads[-1]",
+            "lineNumber": 99
+          },
+          {
+            "text": "        note_content = most_recent_note.get(\"content\", \"\")",
+            "lineNumber": 100
+          },
+          {
+            "text": "        # Extract just the note content (skip the header)",
+            "lineNumber": 101
+          },
+          {
+            "text": "        if \"[Note loaded:\" in note_content:",
+            "lineNumber": 102
+          },
+          {
+            "text": "            note_parts = note_content.split(\"\\n\\n\", 1)",
+            "lineNumber": 103
+          },
+          {
+            "text": "            if len(note_parts) &gt; 1:",
+            "lineNumber": 104
+          },
+          {
+            "text": "                note_content = note_parts[1]  # Get content after header",
+            "lineNumber": 105
+          },
+          {
+            "text": "        messages.append({",
+            "lineNumber": 106
+          },
+          {
+            "text": "            \"role\": \"system\",",
+            "lineNumber": 107
+          },
+          {
+            "text": "            \"content\": f\"The user has loaded a note for discussion. Here is the note content:\\n\\n{note_content}\\n\\nYou can now reference and discuss this note naturally in the conversation.\"",
+            "lineNumber": 108
+          },
+          {
+            "text": "        })",
+            "lineNumber": 109
+          },
+          {
+            "text": "    ",
+            "lineNumber": 110
+          },
+          {
+            "text": "    # Add other conversation messages",
+            "lineNumber": 111
+          },
+          {
+            "text": "    messages.extend(other_messages)",
+            "lineNumber": 112
+          },
+          {
+            "lineNumber": 113
+          },
+          {
+            "text": "    # Query OpenAI",
+            "lineNumber": 114
+          },
+          {
+            "text": "    if stream:",
+            "lineNumber": 115
+          },
+          {
+            "text": "        # Streaming mode: yield chunks as they arrive",
+            "lineNumber": 116
+          }
+        ]
+      },
+      "score": 0.39663583040237427
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 777,
+            "column": 43
+          },
+          "endPosition": {
+            "line": 967
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses vector similarity search to retrieve related dreams.\n    For THN project: Uses RAG with conversation history and code snippets.\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: new RAG format\n    if project == 'DAAS':\n        try:\n            return build_daas_rag_context(user_message, top_k=3)\n        except Exception as e:\n            logger.error(f\"DAAS RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 781,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 782,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 783,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 784,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 785,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 786,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 787
+          },
+          {
+            "text": "    Build project-aware context from project_knowledge and conversation_index entries.",
+            "lineNumber": 788
+          },
+          {
+            "text": "    ",
+            "lineNumber": 789
+          },
+          {
+            "text": "    For DAAS project: Uses vector similarity search to retrieve related dreams.",
+            "lineNumber": 790
+          },
+          {
+            "text": "    For THN project: Uses RAG with conversation history and code snippets.",
+            "lineNumber": 791
+          },
+          {
+            "text": "    For other projects: Uses keyword-based relevance scoring.",
+            "lineNumber": 792
+          },
+          {
+            "text": "    ",
+            "lineNumber": 793
+          },
+          {
+            "text": "    Fetches stable project overview from project_knowledge table, queries indexed",
+            "lineNumber": 794
+          },
+          {
+            "text": "    memories from conversation_index for the project, applies simple relevance scoring,",
+            "lineNumber": 795
+          },
+          {
+            "text": "    selects top N relevant entries, and formats them directly into context.",
+            "lineNumber": 796
+          },
+          {
+            "text": "    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,",
+            "lineNumber": 797
+          },
+          {
+            "text": "    then conversation_index memories (specific conversation details) SECOND.",
+            "lineNumber": 798
+          },
+          {
+            "text": "    ",
+            "lineNumber": 799
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 800
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 801
+          },
+          {
+            "text": "        user_message: Current user message to match against (used for relevance scoring)",
+            "lineNumber": 802
+          },
+          {
+            "text": "        limit_memories: Max number of indexed entries to consider (default: 200)",
+            "lineNumber": 803
+          },
+          {
+            "text": "        top_n: Number of top relevant entries to use (default: 5)",
+            "lineNumber": 804
+          },
+          {
+            "text": "    ",
+            "lineNumber": 805
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 806
+          },
+          {
+            "text": "        Dict with 'context' (string) and 'notes' (list of strings)",
+            "lineNumber": 807
+          },
+          {
+            "text": "        Returns empty dict if no relevant data found",
+            "lineNumber": 808
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 809
+          },
+          {
+            "text": "    ",
+            "lineNumber": 810
+          },
+          {
+            "text": "    # DAAS-specific retrieval: new RAG format",
+            "lineNumber": 811
+          },
+          {
+            "text": "    if project == 'DAAS':",
+            "lineNumber": 812
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 813
+          },
+          {
+            "text": "            return build_daas_rag_context(user_message, top_k=3)",
+            "lineNumber": 814
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 815
+          },
+          {
+            "text": "            logger.error(f\"DAAS RAG generation failed: {e}\")",
+            "lineNumber": 816
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 817
+          },
+          {
+            "text": "    ",
+            "lineNumber": 818
+          },
+          {
+            "text": "    # THN-specific retrieval: new RAG format",
+            "lineNumber": 819
+          },
+          {
+            "text": "    if project == 'THN':",
+            "lineNumber": 820
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 821
+          },
+          {
+            "text": "            return build_thn_rag_context(user_message)",
+            "lineNumber": 822
+          }
+        ]
+      },
+      "score": 0.39415720105171204
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 75
+          },
+          "endPosition": {
+            "line": 101
+          }
+        },
+        "contents": "- [x] T012 [US2] Implement embedding generation in &#96;build_daas_rag_context()&#96; using &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n- [x] T013 [US2] Implement vector similarity search query in &#96;build_daas_rag_context()&#96; to retrieve dreams from &#96;conversation_index&#96; table filtered by &#96;project = 'DAAS'&#96; and &#96;embedding IS NOT NULL&#96;\n- [x] T014 [US2] Implement dream formatting in &#96;build_daas_rag_context()&#96; with markdown headers, truncating &#96;summary_short&#96; to 300 chars and &#96;memory_snippet&#96; to 200 chars\n- [x] T015 [US2] Add clear separators between dreams in formatted output (use &#96;---&#96; markdown separator)\n- [x] T016 [US2] Add header \"### Related Dreams for Analysis\" to formatted context\n- [x] T017 [US2] Implement error handling in &#96;build_daas_rag_context()&#96; to return empty context on embedding or database errors\n- [x] T018 [US2] Add logging for DAAS RAG operations in &#96;build_daas_rag_context()&#96; (debug level for normal operations, error level for failures)\n- [x] T019 [US2] Integrate &#96;build_daas_rag_context()&#96; into &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check after THN check (around line 788)\n- [x] T020 [US2] Add call to &#96;build_daas_rag_context(user_message, top_k=3)&#96; in &#96;build_project_context()&#96; for DAAS project with error handling fallback\n- [ ] T021 [US2] Test new DAAS RAG with various queries (themes, symbols, events) to verify retrieval and formatting\n- [ ] T022 [US2] Verify RAG context stays under 1000 tokens (test with 3-5 dreams)\n- [ ] T023 [US2] Verify RAG generation completes in &lt;500ms (measure performance)\n\n**Checkpoint**: At this point, new DAAS RAG system should be fully functional, retrieving and formatting related dreams correctly with proper separation and token optimization.\n\n---\n\n## Phase 5: User Story 3 - Remove Debugging Messages (Priority: P2)\n\n**Goal**: Remove \"Thinking for [PROJECT]\" spinner messages from chat interface to provide cleaner user experience.\n\n**Independent Test**: Start any project conversation and verify that no \"Thinking for [PROJECT]\" spinner appears during message processing.\n\n### Implementation for User Story 3\n\n- [x] T024 [US3] Remove &#96;thinking_label&#96; variable assignment at line 1356 in &#96;chat_cli.py&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [x] T012 [US2] Implement embedding generation in &#96;build_daas_rag_context()&#96; using &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;",
+            "lineNumber": 76
+          },
+          {
+            "text": "- [x] T013 [US2] Implement vector similarity search query in &#96;build_daas_rag_context()&#96; to retrieve dreams from &#96;conversation_index&#96; table filtered by &#96;project = 'DAAS'&#96; and &#96;embedding IS NOT NULL&#96;",
+            "lineNumber": 77
+          },
+          {
+            "text": "- [x] T014 [US2] Implement dream formatting in &#96;build_daas_rag_context()&#96; with markdown headers, truncating &#96;summary_short&#96; to 300 chars and &#96;memory_snippet&#96; to 200 chars",
+            "lineNumber": 78
+          },
+          {
+            "text": "- [x] T015 [US2] Add clear separators between dreams in formatted output (use &#96;---&#96; markdown separator)",
+            "lineNumber": 79
+          },
+          {
+            "text": "- [x] T016 [US2] Add header \"### Related Dreams for Analysis\" to formatted context",
+            "lineNumber": 80
+          },
+          {
+            "text": "- [x] T017 [US2] Implement error handling in &#96;build_daas_rag_context()&#96; to return empty context on embedding or database errors",
+            "lineNumber": 81
+          },
+          {
+            "text": "- [x] T018 [US2] Add logging for DAAS RAG operations in &#96;build_daas_rag_context()&#96; (debug level for normal operations, error level for failures)",
+            "lineNumber": 82
+          },
+          {
+            "text": "- [x] T019 [US2] Integrate &#96;build_daas_rag_context()&#96; into &#96;build_project_context()&#96; function in &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check after THN check (around line 788)",
+            "lineNumber": 83
+          },
+          {
+            "text": "- [x] T020 [US2] Add call to &#96;build_daas_rag_context(user_message, top_k=3)&#96; in &#96;build_project_context()&#96; for DAAS project with error handling fallback",
+            "lineNumber": 84
+          },
+          {
+            "text": "- [ ] T021 [US2] Test new DAAS RAG with various queries (themes, symbols, events) to verify retrieval and formatting",
+            "lineNumber": 85
+          },
+          {
+            "text": "- [ ] T022 [US2] Verify RAG context stays under 1000 tokens (test with 3-5 dreams)",
+            "lineNumber": 86
+          },
+          {
+            "text": "- [ ] T023 [US2] Verify RAG generation completes in &lt;500ms (measure performance)",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "**Checkpoint**: At this point, new DAAS RAG system should be fully functional, retrieving and formatting related dreams correctly with proper separation and token optimization.",
+            "lineNumber": 89
+          },
+          {
+            "lineNumber": 90
+          },
+          {
+            "text": "---",
+            "lineNumber": 91
+          },
+          {
+            "lineNumber": 92
+          },
+          {
+            "text": "## Phase 5: User Story 3 - Remove Debugging Messages (Priority: P2)",
+            "lineNumber": 93
+          },
+          {
+            "lineNumber": 94
+          },
+          {
+            "text": "**Goal**: Remove \"Thinking for [PROJECT]\" spinner messages from chat interface to provide cleaner user experience.",
+            "lineNumber": 95
+          },
+          {
+            "lineNumber": 96
+          },
+          {
+            "text": "**Independent Test**: Start any project conversation and verify that no \"Thinking for [PROJECT]\" spinner appears during message processing.",
+            "lineNumber": 97
+          },
+          {
+            "lineNumber": 98
+          },
+          {
+            "text": "### Implementation for User Story 3",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "- [x] T024 [US3] Remove &#96;thinking_label&#96; variable assignment at line 1356 in &#96;chat_cli.py&#96;",
+            "lineNumber": 101
+          }
+        ]
+      },
+      "score": 0.39358043670654297
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 29
+          },
+          "endPosition": {
+            "line": 69
+          }
+        },
+        "contents": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.\n&#96;&#96;&#96;\n\n### 2. Project-Specific Context Extension\n\n- When a user is in a specific project (e.g., &#96;/ff&#96;, &#96;/thn&#96;, &#96;/daas&#96;, &#96;/700b&#96;), append project-specific context to the base system prompt\n- Format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"\n- Project-specific RAG should only be used when having a conversation under that specific project\n\n### 3. Code Cleanup\n\n- Remove any hardcoded system prompt text under THN and DAAS\n- Update logic in &#96;context_builder.py&#96; to use the new base system prompt as the foundation\n- Ensure project_knowledge retrieval is under specific logic for project-specific conversations\n- Make the system extensible for future project-specific system prompts and custom RAG\n\n### 4. Architecture Requirements\n\n- Base system prompt must be loaded from a file\n- System prompt should be composable: base + project-specific extensions\n- Context building should clearly separate base prompt from project-specific RAG\n- Design should support future additions of project-specific system prompts\n\n## Technical Constraints\n\n- Must work with existing project structure (Python 3.10+)\n- Must integrate with existing &#96;context_builder.py&#96; and &#96;chat.py&#96;\n- Must maintain backward compatibility with existing project tags (THN, DAAS, FF, 700B, general)\n- Must preserve existing RAG functionality (DAAS dream retrieval, THN code retrieval, etc.)\n\n## Success Criteria\n\n1. Base system prompt is loaded from a file and applied to all conversations\n2. Project-specific context is appended only when in that project\n3. No hardcoded system prompts remain in THN/DAAS code\n4. System is extensible for future project-specific prompts\n5. All existing functionality continues to work",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "### 2. Project-Specific Context Extension",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "- When a user is in a specific project (e.g., &#96;/ff&#96;, &#96;/thn&#96;, &#96;/daas&#96;, &#96;/700b&#96;), append project-specific context to the base system prompt",
+            "lineNumber": 38
+          },
+          {
+            "text": "- Format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"",
+            "lineNumber": 39
+          },
+          {
+            "text": "- Project-specific RAG should only be used when having a conversation under that specific project",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "### 3. Code Cleanup",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "- Remove any hardcoded system prompt text under THN and DAAS",
+            "lineNumber": 44
+          },
+          {
+            "text": "- Update logic in &#96;context_builder.py&#96; to use the new base system prompt as the foundation",
+            "lineNumber": 45
+          },
+          {
+            "text": "- Ensure project_knowledge retrieval is under specific logic for project-specific conversations",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Make the system extensible for future project-specific system prompts and custom RAG",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "### 4. Architecture Requirements",
+            "lineNumber": 49
+          },
+          {
+            "lineNumber": 50
+          },
+          {
+            "text": "- Base system prompt must be loaded from a file",
+            "lineNumber": 51
+          },
+          {
+            "text": "- System prompt should be composable: base + project-specific extensions",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Context building should clearly separate base prompt from project-specific RAG",
+            "lineNumber": 53
+          },
+          {
+            "text": "- Design should support future additions of project-specific system prompts",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "## Technical Constraints",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- Must work with existing project structure (Python 3.10+)",
+            "lineNumber": 58
+          },
+          {
+            "text": "- Must integrate with existing &#96;context_builder.py&#96; and &#96;chat.py&#96;",
+            "lineNumber": 59
+          },
+          {
+            "text": "- Must maintain backward compatibility with existing project tags (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 60
+          },
+          {
+            "text": "- Must preserve existing RAG functionality (DAAS dream retrieval, THN code retrieval, etc.)",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "## Success Criteria",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "1. Base system prompt is loaded from a file and applied to all conversations",
+            "lineNumber": 65
+          },
+          {
+            "text": "2. Project-specific context is appended only when in that project",
+            "lineNumber": 66
+          },
+          {
+            "text": "3. No hardcoded system prompts remain in THN/DAAS code",
+            "lineNumber": 67
+          },
+          {
+            "text": "4. System is extensible for future project-specific prompts",
+            "lineNumber": 68
+          },
+          {
+            "text": "5. All existing functionality continues to work",
+            "lineNumber": 69
+          }
+        ]
+      },
+      "score": 0.3924489915370941
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 25
+          }
+        },
+        "contents": "# Research Notes: Improve Context Building with Base System Prompt\n\n## 1. Base System Prompt Storage\n\n- **Decision**: Store base system prompt in &#96;brain_core/base_system_prompt.txt&#96; as a plain text file.\n- **Rationale**: Simple, editable, version-controlled, no parsing overhead. Text file is the most straightforward approach for content that users may need to edit frequently.\n- **Alternatives Considered**:\n  - Database storage (project_knowledge table). Rejected because base prompt is not project-specific and should be easily editable without database access.\n  - YAML/JSON configuration file. Rejected due to unnecessary complexity for a single text block.\n  - Environment variable. Rejected because it's not user-friendly for editing multi-line content.\n\n## 2. System Prompt Composition Strategy\n\n- **Decision**: Use string concatenation to compose base prompt + project-specific extension. Base prompt is loaded once at module import or function call, project extension is appended when project is not \"general\".\n- **Rationale**: Simple, performant, clear separation of concerns. Base prompt is universal, project extensions are additive.\n- **Alternatives Considered**:\n  - Template-based system (Jinja2). Rejected due to unnecessary dependency for simple string composition.\n  - Separate system message per component. Rejected because OpenAI API works best with a single coherent system message per conversation.\n\n## 3. Project-Specific Context Format\n\n- **Decision**: Append project context in format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"\n- **Rationale**: Clear, consistent format that explicitly states the project context. Uses existing project_knowledge table's overview column.\n- **Alternatives Considered**:\n  - Separate system message for project context. Rejected to keep system messages minimal and focused.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research Notes: Improve Context Building with Base System Prompt",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## 1. Base System Prompt Storage",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "- **Decision**: Store base system prompt in &#96;brain_core/base_system_prompt.txt&#96; as a plain text file.",
+            "lineNumber": 5
+          },
+          {
+            "text": "- **Rationale**: Simple, editable, version-controlled, no parsing overhead. Text file is the most straightforward approach for content that users may need to edit frequently.",
+            "lineNumber": 6
+          },
+          {
+            "text": "- **Alternatives Considered**:",
+            "lineNumber": 7
+          },
+          {
+            "text": "  - Database storage (project_knowledge table). Rejected because base prompt is not project-specific and should be easily editable without database access.",
+            "lineNumber": 8
+          },
+          {
+            "text": "  - YAML/JSON configuration file. Rejected due to unnecessary complexity for a single text block.",
+            "lineNumber": 9
+          },
+          {
+            "text": "  - Environment variable. Rejected because it's not user-friendly for editing multi-line content.",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "## 2. System Prompt Composition Strategy",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "- **Decision**: Use string concatenation to compose base prompt + project-specific extension. Base prompt is loaded once at module import or function call, project extension is appended when project is not \"general\".",
+            "lineNumber": 14
+          },
+          {
+            "text": "- **Rationale**: Simple, performant, clear separation of concerns. Base prompt is universal, project extensions are additive.",
+            "lineNumber": 15
+          },
+          {
+            "text": "- **Alternatives Considered**:",
+            "lineNumber": 16
+          },
+          {
+            "text": "  - Template-based system (Jinja2). Rejected due to unnecessary dependency for simple string composition.",
+            "lineNumber": 17
+          },
+          {
+            "text": "  - Separate system message per component. Rejected because OpenAI API works best with a single coherent system message per conversation.",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "## 3. Project-Specific Context Format",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "- **Decision**: Append project context in format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview column from project_knowledge&gt;.\"",
+            "lineNumber": 22
+          },
+          {
+            "text": "- **Rationale**: Clear, consistent format that explicitly states the project context. Uses existing project_knowledge table's overview column.",
+            "lineNumber": 23
+          },
+          {
+            "text": "- **Alternatives Considered**:",
+            "lineNumber": 24
+          },
+          {
+            "text": "  - Separate system message for project context. Rejected to keep system messages minimal and focused.",
+            "lineNumber": 25
+          }
+        ]
+      },
+      "score": 0.390700101852417
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 67
+          }
+        },
+        "contents": "# API Contract: Context Building System\n\n## Overview\n\nThis contract defines the functions and interfaces for loading and composing system prompts in the context building system.\n\n## Functions\n\n### &#96;load_base_system_prompt() -&gt; str&#96;\n\nLoads the base system prompt from &#96;brain_core/base_system_prompt.txt&#96;.\n\n**Returns**: Base system prompt as string\n\n**Raises**:\n\n- &#96;FileNotFoundError&#96;: If file doesn't exist (handled with fallback)\n- &#96;IOError&#96;: If file cannot be read (handled with fallback)\n\n**Side Effects**: Caches prompt in module-level variable to avoid repeated file I/O\n\n**Example**:\n\n&#96;&#96;&#96;python\nfrom brain_core.context_builder import load_base_system_prompt\nbase_prompt = load_base_system_prompt()\n&#96;&#96;&#96;\n\n### &#96;build_project_system_prompt(project: str) -&gt; str&#96;\n\nBuilds the complete system prompt for a given project by composing base prompt with project-specific extension.\n\n**Parameters**:\n\n- &#96;project&#96;: Project tag (THN, DAAS, FF, 700B, or \"general\")\n\n**Returns**: Composed system prompt string\n\n**Behavior**:\n\n- Loads base system prompt\n- If project is not \"general\", appends project-specific extension using format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview from project_knowledge&gt;.\"\n- Returns composed prompt\n\n**Example**:\n\n&#96;&#96;&#96;python\nfrom brain_core.context_builder import build_project_system_prompt\nsystem_prompt = build_project_system_prompt(\"DAAS\")\n&#96;&#96;&#96;\n\n### &#96;build_project_context(project: str, user_message: str, ...) -&gt; Dict[str, Any]&#96;\n\n**Modified Function**: Existing function is refactored to use new system prompt composition.\n\n**Changes**:\n\n- No longer includes hardcoded system prompt text\n- System prompt is built separately using &#96;build_project_system_prompt()&#96;\n- RAG retrieval logic remains unchanged (only used for project-specific conversations)\n\n**Returns**: Dict with 'context' (RAG content) and 'notes' (metadata). System prompt is handled separately in &#96;chat.py&#96;.\n\n## Integration Points\n\n### &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contract: Context Building System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This contract defines the functions and interfaces for loading and composing system prompts in the context building system.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Functions",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### &#96;load_base_system_prompt() -&gt; str&#96;",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "Loads the base system prompt from &#96;brain_core/base_system_prompt.txt&#96;.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Returns**: Base system prompt as string",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Raises**:",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;FileNotFoundError&#96;: If file doesn't exist (handled with fallback)",
+            "lineNumber": 17
+          },
+          {
+            "text": "- &#96;IOError&#96;: If file cannot be read (handled with fallback)",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "**Side Effects**: Caches prompt in module-level variable to avoid repeated file I/O",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 24
+          },
+          {
+            "text": "from brain_core.context_builder import load_base_system_prompt",
+            "lineNumber": 25
+          },
+          {
+            "text": "base_prompt = load_base_system_prompt()",
+            "lineNumber": 26
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "### &#96;build_project_system_prompt(project: str) -&gt; str&#96;",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "Builds the complete system prompt for a given project by composing base prompt with project-specific extension.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Parameters**:",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "- &#96;project&#96;: Project tag (THN, DAAS, FF, 700B, or \"general\")",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Returns**: Composed system prompt string",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**Behavior**:",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "- Loads base system prompt",
+            "lineNumber": 41
+          },
+          {
+            "text": "- If project is not \"general\", appends project-specific extension using format: \"In this current conversation is tagged as project &lt;project_name&gt; and here we are going to discuss &lt;overview from project_knowledge&gt;.\"",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Returns composed prompt",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Example**:",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 47
+          },
+          {
+            "text": "from brain_core.context_builder import build_project_system_prompt",
+            "lineNumber": 48
+          },
+          {
+            "text": "system_prompt = build_project_system_prompt(\"DAAS\")",
+            "lineNumber": 49
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "### &#96;build_project_context(project: str, user_message: str, ...) -&gt; Dict[str, Any]&#96;",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "**Modified Function**: Existing function is refactored to use new system prompt composition.",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "**Changes**:",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- No longer includes hardcoded system prompt text",
+            "lineNumber": 58
+          },
+          {
+            "text": "- System prompt is built separately using &#96;build_project_system_prompt()&#96;",
+            "lineNumber": 59
+          },
+          {
+            "text": "- RAG retrieval logic remains unchanged (only used for project-specific conversations)",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "**Returns**: Dict with 'context' (RAG content) and 'notes' (metadata). System prompt is handled separately in &#96;chat.py&#96;.",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "## Integration Points",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### &#96;chat_turn()&#96; in &#96;brain_core/chat.py&#96;",
+            "lineNumber": 66
+          }
+        ]
+      },
+      "score": 0.3889503479003906
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/013-enhance-thn-rag/contracts/api.md",
+        "range": {
+          "startPosition": {
+            "line": 203
+          },
+          "endPosition": {
+            "line": 261
+          }
+        },
+        "contents": "if project == 'THN':\n    try:\n        return build_thn_rag_context(user_message)\n    except Exception as e:\n        logger.error(f\"THN RAG generation failed: {e}\")\n        # Fall through to default behavior\n&#96;&#96;&#96;\n\n### Message Ordering in &#96;chat.py&#96;\n\n**Location**: &#96;brain_core/chat.py&#96;\n\n**Current Message Order** (lines 54-100):\n1. System prompt (base + project extension with overview/rules) - &#96;build_project_system_prompt()&#96;\n2. Project context from RAG - &#96;build_project_context()&#96; output (this is where THN RAG appears)\n3. Existing project context (from memory.py)\n4. Note reads\n5. Conversation messages\n\n**Requirement**: THN RAG must appear **after** the project_knowledge section (overview and rules) which is in the first system message. The RAG is included in the second system message, maintaining this order.\n\n**Wrapper Text Update**: The wrapper text in &#96;chat.py&#96; (lines 67-72) should be updated to be more concise. Current text:\n&#96;&#96;&#96;python\nf\"We're working on project {project} together. \"\nf\"Here's relevant context from prior conversations and notes:\\n\\n\"\n&#96;&#96;&#96;\n\n**Recommended replacement**: Remove wrapper text entirely and let RAG sections speak for themselves, or use a concise one-liner like:\n&#96;&#96;&#96;python\nf\"Context from THN project history and codebase:\\n\\n\"\n&#96;&#96;&#96;\n\nThe RAG content itself (History &amp; Context + Relevant Code Snippets sections) is self-explanatory and doesn't need verbose introduction.&#96;\n\n---\n\n## Testing Contracts\n\n### Unit Tests\n\n1. **&#96;test_build_thn_rag_context()&#96;**:\n\n   - Test with 5 conversations and 5 code chunks\n   - Test with empty results (no conversations, no code)\n   - Test with partial results (some conversations, no code)\n   - Test truncation of long fields\n   - Test NULL field handling\n\n2. **&#96;test_format_conversation_entry()&#96;**:\n\n   - Test with all fields present\n   - Test with NULL fields\n   - Test JSONB array formatting\n   - Test truncation\n\n3. **&#96;test_format_code_snippet()&#96;**:\n\n   - Test with metadata (function_name)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "if project == 'THN':",
+            "lineNumber": 204
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 205
+          },
+          {
+            "text": "        return build_thn_rag_context(user_message)",
+            "lineNumber": 206
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 207
+          },
+          {
+            "text": "        logger.error(f\"THN RAG generation failed: {e}\")",
+            "lineNumber": 208
+          },
+          {
+            "text": "        # Fall through to default behavior",
+            "lineNumber": 209
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 210
+          },
+          {
+            "lineNumber": 211
+          },
+          {
+            "text": "### Message Ordering in &#96;chat.py&#96;",
+            "lineNumber": 212
+          },
+          {
+            "lineNumber": 213
+          },
+          {
+            "text": "**Location**: &#96;brain_core/chat.py&#96;",
+            "lineNumber": 214
+          },
+          {
+            "lineNumber": 215
+          },
+          {
+            "text": "**Current Message Order** (lines 54-100):",
+            "lineNumber": 216
+          },
+          {
+            "text": "1. System prompt (base + project extension with overview/rules) - &#96;build_project_system_prompt()&#96;",
+            "lineNumber": 217
+          },
+          {
+            "text": "2. Project context from RAG - &#96;build_project_context()&#96; output (this is where THN RAG appears)",
+            "lineNumber": 218
+          },
+          {
+            "text": "3. Existing project context (from memory.py)",
+            "lineNumber": 219
+          },
+          {
+            "text": "4. Note reads",
+            "lineNumber": 220
+          },
+          {
+            "text": "5. Conversation messages",
+            "lineNumber": 221
+          },
+          {
+            "lineNumber": 222
+          },
+          {
+            "text": "**Requirement**: THN RAG must appear **after** the project_knowledge section (overview and rules) which is in the first system message. The RAG is included in the second system message, maintaining this order.",
+            "lineNumber": 223
+          },
+          {
+            "lineNumber": 224
+          },
+          {
+            "text": "**Wrapper Text Update**: The wrapper text in &#96;chat.py&#96; (lines 67-72) should be updated to be more concise. Current text:",
+            "lineNumber": 225
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 226
+          },
+          {
+            "text": "f\"We're working on project {project} together. \"",
+            "lineNumber": 227
+          },
+          {
+            "text": "f\"Here's relevant context from prior conversations and notes:\\n\\n\"",
+            "lineNumber": 228
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 229
+          },
+          {
+            "lineNumber": 230
+          },
+          {
+            "text": "**Recommended replacement**: Remove wrapper text entirely and let RAG sections speak for themselves, or use a concise one-liner like:",
+            "lineNumber": 231
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 232
+          },
+          {
+            "text": "f\"Context from THN project history and codebase:\\n\\n\"",
+            "lineNumber": 233
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 234
+          },
+          {
+            "lineNumber": 235
+          },
+          {
+            "text": "The RAG content itself (History &amp; Context + Relevant Code Snippets sections) is self-explanatory and doesn't need verbose introduction.&#96;",
+            "lineNumber": 236
+          },
+          {
+            "lineNumber": 237
+          },
+          {
+            "text": "---",
+            "lineNumber": 238
+          },
+          {
+            "lineNumber": 239
+          },
+          {
+            "text": "## Testing Contracts",
+            "lineNumber": 240
+          },
+          {
+            "lineNumber": 241
+          },
+          {
+            "text": "### Unit Tests",
+            "lineNumber": 242
+          },
+          {
+            "lineNumber": 243
+          },
+          {
+            "text": "1. **&#96;test_build_thn_rag_context()&#96;**:",
+            "lineNumber": 244
+          },
+          {
+            "lineNumber": 245
+          },
+          {
+            "text": "   - Test with 5 conversations and 5 code chunks",
+            "lineNumber": 246
+          },
+          {
+            "text": "   - Test with empty results (no conversations, no code)",
+            "lineNumber": 247
+          },
+          {
+            "text": "   - Test with partial results (some conversations, no code)",
+            "lineNumber": 248
+          },
+          {
+            "text": "   - Test truncation of long fields",
+            "lineNumber": 249
+          },
+          {
+            "text": "   - Test NULL field handling",
+            "lineNumber": 250
+          },
+          {
+            "lineNumber": 251
+          },
+          {
+            "text": "2. **&#96;test_format_conversation_entry()&#96;**:",
+            "lineNumber": 252
+          },
+          {
+            "lineNumber": 253
+          },
+          {
+            "text": "   - Test with all fields present",
+            "lineNumber": 254
+          },
+          {
+            "text": "   - Test with NULL fields",
+            "lineNumber": 255
+          },
+          {
+            "text": "   - Test JSONB array formatting",
+            "lineNumber": 256
+          },
+          {
+            "text": "   - Test truncation",
+            "lineNumber": 257
+          },
+          {
+            "lineNumber": 258
+          },
+          {
+            "text": "3. **&#96;test_format_code_snippet()&#96;**:",
+            "lineNumber": 259
+          },
+          {
+            "lineNumber": 260
+          },
+          {
+            "text": "   - Test with metadata (function_name)",
+            "lineNumber": 261
+          }
+        ]
+      },
+      "score": 0.3873470425605774
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/quickstart.md",
+        "range": {
+          "startPosition": {
+            "line": 52
+          },
+          "endPosition": {
+            "line": 93
+          }
+        },
+        "contents": "&#96;&#96;&#96;python\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n\n    Retrieves top-k relevant dreams using vector similarity search.\n    \"\"\"\n    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n\n    # Cap top_k at 5\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3\n\n    try:\n        # Generate embedding for user message\n        query_embedding = generate_embedding(user_message)\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n\n        # Vector similarity search\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS'\n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector\n                    LIMIT %s\n                    \"\"\",\n                    (embedding_str, top_k),\n                )\n                rows = cur.fetchall()\n\n        if not rows:\n            return {\"context\": \"\", \"notes\": []}\n\n        # Format dreams with truncation\n        dream_parts = [\"### Related Dreams for Analysis\\n\"]\n        for row in rows:\n            session_id, title, summary_short, memory_snippet = row",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 53
+          },
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 54
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 55
+          },
+          {
+            "text": "    Build RAG context for DAAS project with related dreams.",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "    Retrieves top-k relevant dreams using vector similarity search.",
+            "lineNumber": 58
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 59
+          },
+          {
+            "text": "    if not user_message or not user_message.strip():",
+            "lineNumber": 60
+          },
+          {
+            "text": "        return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 61
+          },
+          {
+            "lineNumber": 62
+          },
+          {
+            "text": "    # Cap top_k at 5",
+            "lineNumber": 63
+          },
+          {
+            "text": "    top_k = min(top_k, 5) if top_k &gt; 0 else 3",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 66
+          },
+          {
+            "text": "        # Generate embedding for user message",
+            "lineNumber": 67
+          },
+          {
+            "text": "        query_embedding = generate_embedding(user_message)",
+            "lineNumber": 68
+          },
+          {
+            "text": "        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "        # Vector similarity search",
+            "lineNumber": 71
+          },
+          {
+            "text": "        with get_conn() as conn:",
+            "lineNumber": 72
+          },
+          {
+            "text": "            with conn.cursor() as cur:",
+            "lineNumber": 73
+          },
+          {
+            "text": "                cur.execute(",
+            "lineNumber": 74
+          },
+          {
+            "text": "                    \"\"\"",
+            "lineNumber": 75
+          },
+          {
+            "text": "                    SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 76
+          },
+          {
+            "text": "                    FROM conversation_index",
+            "lineNumber": 77
+          },
+          {
+            "text": "                    WHERE project = 'DAAS'",
+            "lineNumber": 78
+          },
+          {
+            "text": "                      AND embedding IS NOT NULL",
+            "lineNumber": 79
+          },
+          {
+            "text": "                    ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 80
+          },
+          {
+            "text": "                    LIMIT %s",
+            "lineNumber": 81
+          },
+          {
+            "text": "                    \"\"\",",
+            "lineNumber": 82
+          },
+          {
+            "text": "                    (embedding_str, top_k),",
+            "lineNumber": 83
+          },
+          {
+            "text": "                )",
+            "lineNumber": 84
+          },
+          {
+            "text": "                rows = cur.fetchall()",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "        if not rows:",
+            "lineNumber": 87
+          },
+          {
+            "text": "            return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "        # Format dreams with truncation",
+            "lineNumber": 90
+          },
+          {
+            "text": "        dream_parts = [\"### Related Dreams for Analysis\\n\"]",
+            "lineNumber": 91
+          },
+          {
+            "text": "        for row in rows:",
+            "lineNumber": 92
+          },
+          {
+            "text": "            session_id, title, summary_short, memory_snippet = row",
+            "lineNumber": 93
+          }
+        ]
+      },
+      "score": 0.38608288764953613
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/plan.md",
+        "range": {
+          "startPosition": {
+            "line": 91
+          },
+          "endPosition": {
+            "line": 153
+          }
+        },
+        "contents": "3. **Token Optimization Strategies**\n\n   - Research: How to limit retrieved content while maintaining usefulness\n   - Decision:\n     - Truncate summaries to 300 chars\n     - Truncate memory snippets to 200 chars\n     - Limit to 3-5 dreams (configurable)\n   - Rationale: Balances context richness with token efficiency\n\n4. **Removing Debugging Messages**\n   - Research: Where \"Thinking\" spinner is implemented\n   - Decision: Remove spinner thread and thinking label from chat_cli.py\n   - Rationale: Improves user experience by removing unnecessary visual noise\n\n## Phase 1: Design &amp; Contracts ✅\n\n**Status**: Complete - See &#96;data-model.md&#96;, &#96;contracts/api.md&#96;, and &#96;quickstart.md&#96;.\n\n### Data Model\n\n**Existing Tables Used:**\n\n- &#96;conversation_index&#96;: Contains DAAS dreams with embeddings\n  - Fields used: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;, &#96;embedding&#96;\n  - Filter: &#96;project = 'DAAS'&#96;\n  - Search: Vector similarity using &#96;embedding &lt;=&gt; query_embedding&#96;\n\n**No Schema Changes Required**\n\n### API Contracts\n\n**Function: &#96;build_daas_rag_context(user_message: str) -&gt; Dict[str, Any]&#96;**\n\n- **Location**: &#96;brain_core/context_builder.py&#96;\n- **Purpose**: Build RAG context for DAAS project\n- **Input**: User message string\n- **Output**: Dict with &#96;context&#96; (formatted string) and &#96;notes&#96; (list of source notes)\n- **Behavior**:\n  - Generate embedding for user_message\n  - Query &#96;conversation_index&#96; WHERE &#96;project = 'DAAS'&#96; using vector similarity\n  - Return top 3-5 dreams (configurable)\n  - Format with clear separation between dreams\n  - Truncate content to stay within token limits\n\n**Integration Point: &#96;build_project_context()&#96;**\n\n- Remove old DAAS retrieval logic (lines 704-786)\n- Add call to &#96;build_daas_rag_context()&#96; for DAAS project\n- Follow pattern similar to THN RAG implementation\n\n### Quickstart Guide\n\n**For Developers:**\n\n1. Remove &#96;brain_core/daas_retrieval.py&#96; file\n2. Remove DAAS-specific code from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n3. Implement &#96;build_daas_rag_context()&#96; function\n4. Remove \"Thinking\" spinner from &#96;chat_cli.py&#96; (3 locations)\n5. Test with DAAS project conversation\n\n**For Users:**",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "3. **Token Optimization Strategies**",
+            "lineNumber": 92
+          },
+          {
+            "lineNumber": 93
+          },
+          {
+            "text": "   - Research: How to limit retrieved content while maintaining usefulness",
+            "lineNumber": 94
+          },
+          {
+            "text": "   - Decision:",
+            "lineNumber": 95
+          },
+          {
+            "text": "     - Truncate summaries to 300 chars",
+            "lineNumber": 96
+          },
+          {
+            "text": "     - Truncate memory snippets to 200 chars",
+            "lineNumber": 97
+          },
+          {
+            "text": "     - Limit to 3-5 dreams (configurable)",
+            "lineNumber": 98
+          },
+          {
+            "text": "   - Rationale: Balances context richness with token efficiency",
+            "lineNumber": 99
+          },
+          {
+            "lineNumber": 100
+          },
+          {
+            "text": "4. **Removing Debugging Messages**",
+            "lineNumber": 101
+          },
+          {
+            "text": "   - Research: Where \"Thinking\" spinner is implemented",
+            "lineNumber": 102
+          },
+          {
+            "text": "   - Decision: Remove spinner thread and thinking label from chat_cli.py",
+            "lineNumber": 103
+          },
+          {
+            "text": "   - Rationale: Improves user experience by removing unnecessary visual noise",
+            "lineNumber": 104
+          },
+          {
+            "lineNumber": 105
+          },
+          {
+            "text": "## Phase 1: Design &amp; Contracts ✅",
+            "lineNumber": 106
+          },
+          {
+            "lineNumber": 107
+          },
+          {
+            "text": "**Status**: Complete - See &#96;data-model.md&#96;, &#96;contracts/api.md&#96;, and &#96;quickstart.md&#96;.",
+            "lineNumber": 108
+          },
+          {
+            "lineNumber": 109
+          },
+          {
+            "text": "### Data Model",
+            "lineNumber": 110
+          },
+          {
+            "lineNumber": 111
+          },
+          {
+            "text": "**Existing Tables Used:**",
+            "lineNumber": 112
+          },
+          {
+            "lineNumber": 113
+          },
+          {
+            "text": "- &#96;conversation_index&#96;: Contains DAAS dreams with embeddings",
+            "lineNumber": 114
+          },
+          {
+            "text": "  - Fields used: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;, &#96;embedding&#96;",
+            "lineNumber": 115
+          },
+          {
+            "text": "  - Filter: &#96;project = 'DAAS'&#96;",
+            "lineNumber": 116
+          },
+          {
+            "text": "  - Search: Vector similarity using &#96;embedding &lt;=&gt; query_embedding&#96;",
+            "lineNumber": 117
+          },
+          {
+            "lineNumber": 118
+          },
+          {
+            "text": "**No Schema Changes Required**",
+            "lineNumber": 119
+          },
+          {
+            "lineNumber": 120
+          },
+          {
+            "text": "### API Contracts",
+            "lineNumber": 121
+          },
+          {
+            "lineNumber": 122
+          },
+          {
+            "text": "**Function: &#96;build_daas_rag_context(user_message: str) -&gt; Dict[str, Any]&#96;**",
+            "lineNumber": 123
+          },
+          {
+            "lineNumber": 124
+          },
+          {
+            "text": "- **Location**: &#96;brain_core/context_builder.py&#96;",
+            "lineNumber": 125
+          },
+          {
+            "text": "- **Purpose**: Build RAG context for DAAS project",
+            "lineNumber": 126
+          },
+          {
+            "text": "- **Input**: User message string",
+            "lineNumber": 127
+          },
+          {
+            "text": "- **Output**: Dict with &#96;context&#96; (formatted string) and &#96;notes&#96; (list of source notes)",
+            "lineNumber": 128
+          },
+          {
+            "text": "- **Behavior**:",
+            "lineNumber": 129
+          },
+          {
+            "text": "  - Generate embedding for user_message",
+            "lineNumber": 130
+          },
+          {
+            "text": "  - Query &#96;conversation_index&#96; WHERE &#96;project = 'DAAS'&#96; using vector similarity",
+            "lineNumber": 131
+          },
+          {
+            "text": "  - Return top 3-5 dreams (configurable)",
+            "lineNumber": 132
+          },
+          {
+            "text": "  - Format with clear separation between dreams",
+            "lineNumber": 133
+          },
+          {
+            "text": "  - Truncate content to stay within token limits",
+            "lineNumber": 134
+          },
+          {
+            "lineNumber": 135
+          },
+          {
+            "text": "**Integration Point: &#96;build_project_context()&#96;**",
+            "lineNumber": 136
+          },
+          {
+            "lineNumber": 137
+          },
+          {
+            "text": "- Remove old DAAS retrieval logic (lines 704-786)",
+            "lineNumber": 138
+          },
+          {
+            "text": "- Add call to &#96;build_daas_rag_context()&#96; for DAAS project",
+            "lineNumber": 139
+          },
+          {
+            "text": "- Follow pattern similar to THN RAG implementation",
+            "lineNumber": 140
+          },
+          {
+            "lineNumber": 141
+          },
+          {
+            "text": "### Quickstart Guide",
+            "lineNumber": 142
+          },
+          {
+            "lineNumber": 143
+          },
+          {
+            "text": "**For Developers:**",
+            "lineNumber": 144
+          },
+          {
+            "lineNumber": 145
+          },
+          {
+            "text": "1. Remove &#96;brain_core/daas_retrieval.py&#96; file",
+            "lineNumber": 146
+          },
+          {
+            "text": "2. Remove DAAS-specific code from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;",
+            "lineNumber": 147
+          },
+          {
+            "text": "3. Implement &#96;build_daas_rag_context()&#96; function",
+            "lineNumber": 148
+          },
+          {
+            "text": "4. Remove \"Thinking\" spinner from &#96;chat_cli.py&#96; (3 locations)",
+            "lineNumber": 149
+          },
+          {
+            "text": "5. Test with DAAS project conversation",
+            "lineNumber": 150
+          },
+          {
+            "lineNumber": 151
+          },
+          {
+            "text": "**For Users:**",
+            "lineNumber": 152
+          }
+        ]
+      },
+      "score": 0.37974199652671814
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 75
+          },
+          "endPosition": {
+            "line": 99
+          }
+        },
+        "contents": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py\n- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py\n- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py\n\n**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional\n\n---\n\n## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)\n\n**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations\n\n**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.\n\n### Implementation for User Story 3\n\n- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths\n- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py\n- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py\n- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py\n- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py\n- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [ ] T011 [US2] Test project extension with all project types (THN, DAAS, FF, 700B) in brain_core/context_builder.py",
+            "lineNumber": 76
+          },
+          {
+            "text": "- [x] T012 [US2] Verify project extension uses overview from project_knowledge table with key='overview' in brain_core/context_builder.py",
+            "lineNumber": 77
+          },
+          {
+            "text": "- [x] T013 [US2] Handle missing project_knowledge overview gracefully (omit extension, use base prompt only) in build_project_system_prompt() function in brain_core/context_builder.py",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - base prompt + project extensions are functional",
+            "lineNumber": 80
+          },
+          {
+            "lineNumber": 81
+          },
+          {
+            "text": "---",
+            "lineNumber": 82
+          },
+          {
+            "lineNumber": 83
+          },
+          {
+            "text": "## Phase 5: User Story 3 - Code Cleanup and RAG Separation (Priority: P2)",
+            "lineNumber": 84
+          },
+          {
+            "lineNumber": 85
+          },
+          {
+            "text": "**Goal**: Remove hardcoded system prompts from THN/DAAS code paths and ensure RAG is only used for project-specific conversations",
+            "lineNumber": 86
+          },
+          {
+            "lineNumber": 87
+          },
+          {
+            "text": "**Independent Test**: Verify no hardcoded system prompt text remains in context_builder.py for THN/DAAS. Verify RAG retrieval only happens when in project-specific conversations. Verify existing RAG functionality (DAAS dreams, THN code) still works.",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "### Implementation for User Story 3",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "- [x] T014 [US3] Review build_project_context() function in brain_core/context_builder.py to identify hardcoded prompt text in THN/DAAS code paths",
+            "lineNumber": 92
+          },
+          {
+            "text": "- [x] T015 [US3] Remove any hardcoded system prompt text from DAAS retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 93
+          },
+          {
+            "text": "- [x] T016 [US3] Remove any hardcoded system prompt text from THN retrieval section in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 94
+          },
+          {
+            "text": "- [x] T017 [US3] Ensure build_project_context() returns only RAG context (no system prompt) in brain_core/context_builder.py",
+            "lineNumber": 95
+          },
+          {
+            "text": "- [ ] T018 [US3] Verify RAG retrieval logic is only executed for project-specific conversations (not general) in build_project_context() function in brain_core/context_builder.py",
+            "lineNumber": 96
+          },
+          {
+            "text": "- [ ] T019 [US3] Test DAAS dream retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 97
+          },
+          {
+            "text": "- [ ] T020 [US3] Test THN code retrieval still works correctly after cleanup in brain_core/context_builder.py",
+            "lineNumber": 98
+          },
+          {
+            "text": "- [x] T021 [US3] Verify message order in chat_turn() function: system prompt (base + project extension) → RAG context → note reads → history in brain_core/chat.py",
+            "lineNumber": 99
+          }
+        ]
+      },
+      "score": 0.3747853934764862
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 592,
+            "column": 27
+          },
+          "endPosition": {
+            "line": 670
+          }
+        },
+        "contents": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.\n    \n    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks\n    from code_index using vector similarity search. Formats them into a structured RAG context\n    that appears after the project_knowledge section (overview + rules) in system messages.\n    \n    Args:\n        user_message: Current user message for code similarity search\n    \n    Returns:\n        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)\n        \n    Performance:\n        Target: &lt;500ms total generation time\n        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)\n        - Code similarity search: &lt;200ms (uses vector index)\n        - Formatting: &lt;50ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    notes = []\n    context_parts = []\n    \n    # Retrieve and format conversations\n    conv_start = time.time()\n    conversations = _retrieve_thn_conversations(limit=5)\n    conv_time = (time.time() - conv_start) * 1000  # Convert to ms\n    \n    if conversations:\n        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]\n        for row in conversations:\n            formatted = _format_conversation_entry(row)\n            if formatted:\n                history_parts.append(formatted)\n                history_parts.append(\"\")  # Empty line between entries\n        \n        if len(history_parts) &gt; 1:  # More than just the header\n            context_parts.append(\"\\n\".join(history_parts))\n            notes.append(\"Retrieved 5 conversations from conversation_index\")\n    \n    # Retrieve and format code snippets\n    code_start = time.time()\n    code_chunks = _retrieve_thn_code(user_message, top_k=5)\n    code_time = (time.time() - code_start) * 1000  # Convert to ms\n    \n    if code_chunks:",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_thn_rag_context(user_message: str) -&gt; Dict[str, Any]:",
+            "lineNumber": 596,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 597
+          },
+          {
+            "text": "    Build new RAG context for THN project with History &amp; Context and Relevant Code Snippets sections.",
+            "lineNumber": 598
+          },
+          {
+            "text": "    ",
+            "lineNumber": 599
+          },
+          {
+            "text": "    Retrieves last 5 THN conversations from conversation_index and top 5 relevant code chunks",
+            "lineNumber": 600
+          },
+          {
+            "text": "    from code_index using vector similarity search. Formats them into a structured RAG context",
+            "lineNumber": 601
+          },
+          {
+            "text": "    that appears after the project_knowledge section (overview + rules) in system messages.",
+            "lineNumber": 602
+          },
+          {
+            "text": "    ",
+            "lineNumber": 603
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 604
+          },
+          {
+            "text": "        user_message: Current user message for code similarity search",
+            "lineNumber": 605
+          },
+          {
+            "text": "    ",
+            "lineNumber": 606
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 607
+          },
+          {
+            "text": "        Dict with 'context' (formatted RAG string with both sections) and 'notes' (list of source notes)",
+            "lineNumber": 608
+          },
+          {
+            "text": "        ",
+            "lineNumber": 609
+          },
+          {
+            "text": "    Performance:",
+            "lineNumber": 610
+          },
+          {
+            "text": "        Target: &lt;500ms total generation time",
+            "lineNumber": 611
+          },
+          {
+            "text": "        - Conversation retrieval: &lt;50ms (uses indexed_at DESC index)",
+            "lineNumber": 612
+          },
+          {
+            "text": "        - Code similarity search: &lt;200ms (uses vector index)",
+            "lineNumber": 613
+          },
+          {
+            "text": "        - Formatting: &lt;50ms",
+            "lineNumber": 614
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 615
+          },
+          {
+            "text": "    import time",
+            "lineNumber": 616
+          },
+          {
+            "text": "    start_time = time.time()",
+            "lineNumber": 617
+          },
+          {
+            "text": "    ",
+            "lineNumber": 618
+          },
+          {
+            "text": "    notes = []",
+            "lineNumber": 619
+          },
+          {
+            "text": "    context_parts = []",
+            "lineNumber": 620
+          },
+          {
+            "text": "    ",
+            "lineNumber": 621
+          },
+          {
+            "text": "    # Retrieve and format conversations",
+            "lineNumber": 622
+          },
+          {
+            "text": "    conv_start = time.time()",
+            "lineNumber": 623
+          },
+          {
+            "text": "    conversations = _retrieve_thn_conversations(limit=5)",
+            "lineNumber": 624
+          },
+          {
+            "text": "    conv_time = (time.time() - conv_start) * 1000  # Convert to ms",
+            "lineNumber": 625
+          },
+          {
+            "text": "    ",
+            "lineNumber": 626
+          },
+          {
+            "text": "    if conversations:",
+            "lineNumber": 627
+          },
+          {
+            "text": "        history_parts = [\"### History &amp; Context: Last 5 Conversations\\n\"]",
+            "lineNumber": 628
+          },
+          {
+            "text": "        for row in conversations:",
+            "lineNumber": 629
+          },
+          {
+            "text": "            formatted = _format_conversation_entry(row)",
+            "lineNumber": 630
+          },
+          {
+            "text": "            if formatted:",
+            "lineNumber": 631
+          },
+          {
+            "text": "                history_parts.append(formatted)",
+            "lineNumber": 632
+          },
+          {
+            "text": "                history_parts.append(\"\")  # Empty line between entries",
+            "lineNumber": 633
+          },
+          {
+            "text": "        ",
+            "lineNumber": 634
+          },
+          {
+            "text": "        if len(history_parts) &gt; 1:  # More than just the header",
+            "lineNumber": 635
+          },
+          {
+            "text": "            context_parts.append(\"\\n\".join(history_parts))",
+            "lineNumber": 636
+          },
+          {
+            "text": "            notes.append(\"Retrieved 5 conversations from conversation_index\")",
+            "lineNumber": 637
+          },
+          {
+            "text": "    ",
+            "lineNumber": 638
+          },
+          {
+            "text": "    # Retrieve and format code snippets",
+            "lineNumber": 639
+          },
+          {
+            "text": "    code_start = time.time()",
+            "lineNumber": 640
+          },
+          {
+            "text": "    code_chunks = _retrieve_thn_code(user_message, top_k=5)",
+            "lineNumber": 641
+          },
+          {
+            "text": "    code_time = (time.time() - code_start) * 1000  # Convert to ms",
+            "lineNumber": 642
+          },
+          {
+            "text": "    ",
+            "lineNumber": 643
+          },
+          {
+            "text": "    if code_chunks:",
+            "lineNumber": 644
+          }
+        ]
+      },
+      "score": 0.3698399066925049
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+DAAS RAG is currently added as a separate system message. Updating it to be included in the system prompt after the overview and rules, like THN. Modifying the code:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 130,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            project_extension = \"\".join(project_extension_parts)\n            \n            # For THN project, append RAG context to system prompt\n            if project.upper() == \"THN\" and user_message:\n                try:\n                    rag_result = build_thn_rag_context(user_message)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added THN RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"THN RAG context generation returned empty context\")\n                except Exception as e:\n                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)\n            \n            logger.debug(f\"Added project extension for {project.upper()}\")\n            return base_prompt + project_extension\n        else:\n            logger.debug(f\"No project overview found for {project.upper()}, using base prompt only\")\n    \n    # Return base prompt only for general or if overview not found",
+  "totalLinesInFile": 970
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py",
+  "offset": 63,
+  "limit": 25,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # 1. System prompt (base + project extension + RAG for THN on first message only) - FIRST\n    # For THN, RAG context is included directly in the system prompt only on first message\n    include_rag = project.upper() == \"THN\" and is_first_message\n    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")\n    \n    # Log RAG inclusion status for verification\n    if project.upper() == \"THN\":\n        if include_rag:\n            logger.info(f\"THN RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"THN RAG skipped (not first message, is_first_message={is_first_message})\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})\n\n    # 2. Project context from RAG (if available and not THN) - SECOND\n    # THN RAG is now included in system prompt above, so skip here\n    if project.upper() != \"THN\" and indexed_context and indexed_context.get(\"context\"):\n        # RAG content is self-explanatory, no verbose wrapper needed\n        context_msg = indexed_context['context']\n        if indexed_context.get(\"notes\"):\n            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+  "totalLinesInFile": 282
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "e6d22800-473a-495f-b9f7-556c446011bf"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "45bbebe1-8736-4330-83c8-f79e390f3ae5"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "82a25c8c-4ddf-4666-a658-8c6064a4630f"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "5d1b6751-544a-44b9-a58a-9b4f03cec963"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "affe7dfb-34dd-4c34-be12-f7c75799e0bf"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "ffc719b9-0edc-4d4b-bd9c-9b169fb2ef10"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 800,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses vector similarity search to retrieve related dreams.\n    For THN project: Uses RAG with conversation history and code snippets.\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating `build_project_context()` to skip DAAS RAG since it's now in the system prompt:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 820,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: new RAG format\n    if project == 'DAAS':\n        try:\n            return build_daas_rag_context(user_message, top_k=3)\n        except Exception as e:\n            logger.error(f\"DAAS RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "brain_core/context_builder.py",
+    "brain_core/chat.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "brain_core/context_builder.py"
+    },
+    {
+      "relativeWorkspacePath": "brain_core/chat.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -m py_compile brain_core/context_builder.py brain_core/chat.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/context_builder.py"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/chat.py"
+          }
+        ],
+        "fullText": "python3.10 -m py_compile brain_core/context_builder.py brain_core/chat.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+DAAS RAG is now included in the system prompt after the overview and rules. Adding a verification function and updating the `/rag` command to support DAAS:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py",
+  "offset": 195,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "def debug_project_context(project: str, conversation_id: uuid.UUID):\n    \"\"\"Print out the current project context (/context).\"\"\"\n    ctx = get_project_context(project, conversation_id, limit_messages=80)\n    if not ctx:\n        print(color_text(f\"[context] No project context found for {project}\", \"grey\"))\n        return\n    print(color_text(f\"[context] Project={project}\", \"grey\"))\n    print(color_text(\"-\" * 60, \"grey\"))\n    print(ctx)\n    print(color_text(\"-\" * 60, \"grey\"))\n\n\ndef debug_rag_context(project: str, user_message: str = \"\"):\n    \"\"\"Print out the RAG context for THN project (/rag).\"\"\"\n    if project.upper() != \"THN\":\n        print(color_text(f\"[rag] RAG context is only available for THN project (current: {project})\", \"orange\"))\n        return\n    \n    from brain_core.context_builder import build_thn_rag_context\n    \n    print(color_text(f\"[rag] Generating RAG context for THN\", \"green\"))\n    print(color_text(\"-\" * 60, \"grey\"))\n    \n    try:\n        rag_result = build_thn_rag_context(user_message or \"THN project\")\n        if rag_result.get(\"context\"):\n            print(rag_result[\"context\"])\n            if rag_result.get(\"notes\"):\n                print(color_text(\"\\nKey sources:\", \"grey\"))\n                for note in rag_result[\"notes\"]:",
+  "totalLinesInFile": 1666
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/chat_cli.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "dc7e7e8f-a77a-4acd-9e97-6be539547f57"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 148,
+  "limit": 5,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "                    logger.warning(f\"Failed to add THN RAG context to system prompt: {e}\", exc_info=True)\n            \n            # For DAAS project, append RAG context to system prompt\n            if project.upper() == \"DAAS\" and user_message:\n                try:",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "chat_cli.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "chat_cli.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+DAAS RAG is now included in the system prompt after the overview and rules, like THN. Verification steps:
+
+## How to Verify DAAS RAG
+
+### 1. **Check Logs** (Automatic)
+On the first message in a DAAS conversation, you'll see:
+- `INFO: DAAS RAG included in system prompt (first message, length: X chars)`
+- `INFO: Added DAAS RAG context to system prompt (X chars, Y sources)`
+- `DEBUG: Built DAAS RAG context with X dreams (embedding: Xms, query: Xms, format: Xms, total: Xms)`
+
+### 2. **Use `/rag` Command** (Manual)
+In chat_cli, type:
+```
+/rag
+```
+or with a query:
+```
+/rag what dreams have I had about water?
+```
+
+This shows:
+- Related Dreams for Analysis section
+- Formatted dreams with separators
+- Key sources used
+
+### 3. **Ask the AI on First Message**
+On the first message in a new DAAS conversation, ask:
+```
+"Can you show me the full system prompt including the RAG section?"
+```
+
+The AI should include:
+- Base system prompt
+- Project overview
+- Project rules
+- **Related Dreams for Analysis** section (the RAG content)
+
+### 4. **Verify Structure**
+The system prompt order should be:
+1. Base system prompt
+2. Project overview
+3. Project rules
+4. **--- separator**
+5. **Related Dreams for Analysis** (DAAS RAG)
+6. Key sources (if any)
+
+### 5. **Check Database**
+Verify data exists:
+- `conversation_index` table should have DAAS entries with embeddings
+- Query: `SELECT COUNT(*) FROM conversation_index WHERE project = 'DAAS' AND embedding IS NOT NULL;`
+
+**Summary:**
+- First message: DAAS RAG is generated and included in system prompt (check logs or ask AI)
+- Later messages: DAAS RAG is skipped (check logs show "skipped")
+- Use `/rag` anytime to see what RAG would contain
+- RAG appears after overview and rules in the system prompt
+
+The enhanced logging will show in your terminal when DAAS RAG is included or skipped.
+
+---
+
+_**User (2025-12-09 23:02Z)**_
+
+Essenitally i want to use this RAG only when I a prompt the model to provide an analysis of a dream or have a deep converastion about a dream. How would i go about utilizing the RAG in only those scenarios
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Making DAAS RAG conditional: only include it when the message requests dream analysis or deep discussion. Adding detection logic:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 674,
+  "limit": 30,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "    # Combine sections\n    context = \"\\n\\n\".join(context_parts)\n    \n    total_time = (time.time() - start_time) * 1000  # Convert to ms\n    logger.debug(\n        f\"Built THN RAG context with {len(conversations)} conversations and {len(code_chunks)} code chunks \"\n        f\"(conv: {conv_time:.1f}ms, code: {code_time:.1f}ms, total: {total_time:.1f}ms)\"\n    )\n    \n    if total_time &gt; 500:\n        logger.warning(f\"THN RAG generation exceeded 500ms target: {total_time:.1f}ms\")\n    \n    return {\n        \"context\": context,\n        \"notes\": notes\n    }\n\n\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n    \n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n    \n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n    ",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="semantic_search_full">
+<details>
+<summary>Tool use: **semantic_search_full**</summary>
+
+
+Parameters:
+
+```json
+{
+  "query": "How to detect if a user message is asking for dream analysis or interpretation?",
+  "topK": 10,
+  "explanation": ""
+}
+```
+Result:
+
+```json
+{
+  "codeResults": [
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 21,
+            "column": 20
+          },
+          "endPosition": {
+            "line": 280
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n    save_message(conversation_id, \"user\", user_text)\n\n    # Load conversation history first to check if this is the first message\n    history = load_conversation_messages(conversation_id, limit=50)\n    \n    # Extract note reads from history (system messages with note_read meta)\n    note_reads = []\n    other_messages = []\n    for msg in history:\n        meta = msg.get(\"meta\", {})\n        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":\n            note_reads.append(msg)\n        else:\n            other_messages.append(msg)\n    \n    # Check if this is the first user message (no user/assistant messages in history)\n    is_first_message = len(other_messages) == 0\n\n    # Build project-aware context from conversation_index (if available)\n    # Skip RAG generation for THN/DAAS if not first message to save tokens (RAG included in system prompt)\n    indexed_context = {}\n    if not (project.upper() in (\"THN\", \"DAAS\") and not is_first_message):\n        try:\n            indexed_context = build_project_context(project, user_text)\n        except Exception as e:\n            # Log but don't fail - fallback to existing behavior\n            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")\n\n    # Only static + snippet context included now\n    project_context = get_project_context(project, conversation_id, limit_messages=80)\n    \n    # Build messages for OpenAI\n    messages = []\n\n    # Message order: system prompt → RAG context → note reads → history\n    \n    # 1. System prompt (base + project extension + RAG for THN/DAAS on first message only) - FIRST\n    # For THN and DAAS, RAG context is included directly in the system prompt only on first message\n    include_rag = project.upper() in (\"THN\", \"DAAS\") and is_first_message\n    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")\n    \n    # Log RAG inclusion status for verification",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "text": "    save_message(conversation_id, \"user\", user_text)",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "    # Load conversation history first to check if this is the first message",
+            "lineNumber": 29
+          },
+          {
+            "text": "    history = load_conversation_messages(conversation_id, limit=50)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    ",
+            "lineNumber": 31
+          },
+          {
+            "text": "    # Extract note reads from history (system messages with note_read meta)",
+            "lineNumber": 32
+          },
+          {
+            "text": "    note_reads = []",
+            "lineNumber": 33
+          },
+          {
+            "text": "    other_messages = []",
+            "lineNumber": 34
+          },
+          {
+            "text": "    for msg in history:",
+            "lineNumber": 35
+          },
+          {
+            "text": "        meta = msg.get(\"meta\", {})",
+            "lineNumber": 36
+          },
+          {
+            "text": "        if meta.get(\"note_read\") and msg.get(\"role\") == \"system\":",
+            "lineNumber": 37
+          },
+          {
+            "text": "            note_reads.append(msg)",
+            "lineNumber": 38
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 39
+          },
+          {
+            "text": "            other_messages.append(msg)",
+            "lineNumber": 40
+          },
+          {
+            "text": "    ",
+            "lineNumber": 41
+          },
+          {
+            "text": "    # Check if this is the first user message (no user/assistant messages in history)",
+            "lineNumber": 42
+          },
+          {
+            "text": "    is_first_message = len(other_messages) == 0",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "    # Build project-aware context from conversation_index (if available)",
+            "lineNumber": 45
+          },
+          {
+            "text": "    # Skip RAG generation for THN/DAAS if not first message to save tokens (RAG included in system prompt)",
+            "lineNumber": 46
+          },
+          {
+            "text": "    indexed_context = {}",
+            "lineNumber": 47
+          },
+          {
+            "text": "    if not (project.upper() in (\"THN\", \"DAAS\") and not is_first_message):",
+            "lineNumber": 48
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 49
+          },
+          {
+            "text": "            indexed_context = build_project_context(project, user_text)",
+            "lineNumber": 50
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 51
+          },
+          {
+            "text": "            # Log but don't fail - fallback to existing behavior",
+            "lineNumber": 52
+          },
+          {
+            "text": "            logger.warning(f\"Failed to build indexed context for project {project}: {e}\")",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "    # Only static + snippet context included now",
+            "lineNumber": 55
+          },
+          {
+            "text": "    project_context = get_project_context(project, conversation_id, limit_messages=80)",
+            "lineNumber": 56
+          },
+          {
+            "text": "    ",
+            "lineNumber": 57
+          },
+          {
+            "text": "    # Build messages for OpenAI",
+            "lineNumber": 58
+          },
+          {
+            "text": "    messages = []",
+            "lineNumber": 59
+          },
+          {
+            "lineNumber": 60
+          },
+          {
+            "text": "    # Message order: system prompt → RAG context → note reads → history",
+            "lineNumber": 61
+          },
+          {
+            "text": "    ",
+            "lineNumber": 62
+          },
+          {
+            "text": "    # 1. System prompt (base + project extension + RAG for THN/DAAS on first message only) - FIRST",
+            "lineNumber": 63
+          },
+          {
+            "text": "    # For THN and DAAS, RAG context is included directly in the system prompt only on first message",
+            "lineNumber": 64
+          },
+          {
+            "text": "    include_rag = project.upper() in (\"THN\", \"DAAS\") and is_first_message",
+            "lineNumber": 65
+          },
+          {
+            "text": "    system_prompt = build_project_system_prompt(project, user_text if include_rag else \"\")",
+            "lineNumber": 66
+          },
+          {
+            "text": "    ",
+            "lineNumber": 67
+          },
+          {
+            "text": "    # Log RAG inclusion status for verification",
+            "lineNumber": 68
+          }
+        ]
+      },
+      "score": 0.3965792953968048
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/base_system_prompt.txt",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 15
+          }
+        },
+        "contents": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.\n\nHere are a few rules that will apply to all chats\n\n1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.\n\n2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.\n\n3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.\n\n4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"\n\n5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "Here are a few rules that will apply to all chats",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 15
+          }
+        ]
+      },
+      "score": 0.3546355962753296
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./.cursor/commands/speckit.checklist.md",
+        "range": {
+          "startPosition": {
+            "line": 38
+          },
+          "endPosition": {
+            "line": 66
+          }
+        },
+        "contents": "2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:\n   - Be generated from the user's phrasing + extracted signals from spec/plan/tasks\n   - Only ask about information that materially changes checklist content\n   - Be skipped individually if already unambiguous in &#96;$ARGUMENTS&#96;\n   - Prefer precision over breadth\n\n   Generation algorithm:\n   1. Extract signals: feature domain keywords (e.g., auth, latency, UX, API), risk indicators (\"critical\", \"must\", \"compliance\"), stakeholder hints (\"QA\", \"review\", \"security team\"), and explicit deliverables (\"a11y\", \"rollback\", \"contracts\").\n   2. Cluster signals into candidate focus areas (max 4) ranked by relevance.\n   3. Identify probable audience &amp; timing (author, reviewer, QA, release) if not explicit.\n   4. Detect missing dimensions: scope breadth, depth/rigor, risk emphasis, exclusion boundaries, measurable acceptance criteria.\n   5. Formulate questions chosen from these archetypes:\n      - Scope refinement (e.g., \"Should this include integration touchpoints with X and Y or stay limited to local module correctness?\")\n      - Risk prioritization (e.g., \"Which of these potential risk areas should receive mandatory gating checks?\")\n      - Depth calibration (e.g., \"Is this a lightweight pre-commit sanity list or a formal release gate?\")\n      - Audience framing (e.g., \"Will this be used by the author only or peers during PR review?\")\n      - Boundary exclusion (e.g., \"Should we explicitly exclude performance tuning items this round?\")\n      - Scenario class gap (e.g., \"No recovery flows detected—are rollback / partial failure paths in scope?\")\n\n   Question formatting rules:\n   - If presenting options, generate a compact table with columns: Option | Candidate | Why It Matters\n   - Limit to A–E options maximum; omit table if a free-form answer is clearer\n   - Never ask the user to restate what they already said\n   - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: \"Confirm whether X belongs in scope.\"\n\n   Defaults when interaction impossible:\n   - Depth: Standard",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "2. **Clarify intent (dynamic)**: Derive up to THREE initial contextual clarifying questions (no pre-baked catalog). They MUST:",
+            "lineNumber": 40
+          },
+          {
+            "text": "   - Be generated from the user's phrasing + extracted signals from spec/plan/tasks",
+            "lineNumber": 41
+          },
+          {
+            "text": "   - Only ask about information that materially changes checklist content",
+            "lineNumber": 42
+          },
+          {
+            "text": "   - Be skipped individually if already unambiguous in &#96;$ARGUMENTS&#96;",
+            "lineNumber": 43
+          },
+          {
+            "text": "   - Prefer precision over breadth",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "   Generation algorithm:",
+            "lineNumber": 46
+          },
+          {
+            "text": "   1. Extract signals: feature domain keywords (e.g., auth, latency, UX, API), risk indicators (\"critical\", \"must\", \"compliance\"), stakeholder hints (\"QA\", \"review\", \"security team\"), and explicit deliverables (\"a11y\", \"rollback\", \"contracts\").",
+            "lineNumber": 47
+          },
+          {
+            "text": "   2. Cluster signals into candidate focus areas (max 4) ranked by relevance.",
+            "lineNumber": 48
+          },
+          {
+            "text": "   3. Identify probable audience &amp; timing (author, reviewer, QA, release) if not explicit.",
+            "lineNumber": 49
+          },
+          {
+            "text": "   4. Detect missing dimensions: scope breadth, depth/rigor, risk emphasis, exclusion boundaries, measurable acceptance criteria.",
+            "lineNumber": 50
+          },
+          {
+            "text": "   5. Formulate questions chosen from these archetypes:",
+            "lineNumber": 51
+          },
+          {
+            "text": "      - Scope refinement (e.g., \"Should this include integration touchpoints with X and Y or stay limited to local module correctness?\")",
+            "lineNumber": 52
+          },
+          {
+            "text": "      - Risk prioritization (e.g., \"Which of these potential risk areas should receive mandatory gating checks?\")",
+            "lineNumber": 53
+          },
+          {
+            "text": "      - Depth calibration (e.g., \"Is this a lightweight pre-commit sanity list or a formal release gate?\")",
+            "lineNumber": 54
+          },
+          {
+            "text": "      - Audience framing (e.g., \"Will this be used by the author only or peers during PR review?\")",
+            "lineNumber": 55
+          },
+          {
+            "text": "      - Boundary exclusion (e.g., \"Should we explicitly exclude performance tuning items this round?\")",
+            "lineNumber": 56
+          },
+          {
+            "text": "      - Scenario class gap (e.g., \"No recovery flows detected—are rollback / partial failure paths in scope?\")",
+            "lineNumber": 57
+          },
+          {
+            "lineNumber": 58
+          },
+          {
+            "text": "   Question formatting rules:",
+            "lineNumber": 59
+          },
+          {
+            "text": "   - If presenting options, generate a compact table with columns: Option | Candidate | Why It Matters",
+            "lineNumber": 60
+          },
+          {
+            "text": "   - Limit to A–E options maximum; omit table if a free-form answer is clearer",
+            "lineNumber": 61
+          },
+          {
+            "text": "   - Never ask the user to restate what they already said",
+            "lineNumber": 62
+          },
+          {
+            "text": "   - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: \"Confirm whether X belongs in scope.\"",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "   Defaults when interaction impossible:",
+            "lineNumber": 65
+          },
+          {
+            "text": "   - Depth: Standard",
+            "lineNumber": 66
+          }
+        ]
+      },
+      "score": 0.35398390889167786
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 795,
+            "column": 43
+          },
+          "endPosition": {
+            "line": 985
+          }
+        },
+        "contents": "def build_project_context(\n    project: str,\n    user_message: str,\n    limit_memories: int = 200,\n    top_n: int = 5,\n) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build project-aware context from project_knowledge and conversation_index entries.\n    \n    For DAAS project: Uses vector similarity search to retrieve related dreams.\n    For THN project: Uses RAG with conversation history and code snippets.\n    For other projects: Uses keyword-based relevance scoring.\n    \n    Fetches stable project overview from project_knowledge table, queries indexed\n    memories from conversation_index for the project, applies simple relevance scoring,\n    selects top N relevant entries, and formats them directly into context.\n    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,\n    then conversation_index memories (specific conversation details) SECOND.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, general)\n        user_message: Current user message to match against (used for relevance scoring)\n        limit_memories: Max number of indexed entries to consider (default: 200)\n        top_n: Number of top relevant entries to use (default: 5)\n    \n    Returns:\n        Dict with 'context' (string) and 'notes' (list of strings)\n        Returns empty dict if no relevant data found\n    \"\"\"\n    \n    # DAAS-specific retrieval: new RAG format\n    if project == 'DAAS':\n        try:\n            return build_daas_rag_context(user_message, top_k=3)\n        except Exception as e:\n            logger.error(f\"DAAS RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # THN-specific retrieval: new RAG format\n    if project == 'THN':\n        try:\n            return build_thn_rag_context(user_message)\n        except Exception as e:\n            logger.error(f\"THN RAG generation failed: {e}\")\n            # Fall through to default behavior (keyword-based search)\n    \n    # Get project-scoped meditation notes (if MCP available)\n    mcp_notes_context = None",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_context(",
+            "lineNumber": 799,
+            "isSignature": true
+          },
+          {
+            "text": "    project: str,",
+            "lineNumber": 800,
+            "isSignature": true
+          },
+          {
+            "text": "    user_message: str,",
+            "lineNumber": 801,
+            "isSignature": true
+          },
+          {
+            "text": "    limit_memories: int = 200,",
+            "lineNumber": 802,
+            "isSignature": true
+          },
+          {
+            "text": "    top_n: int = 5,",
+            "lineNumber": 803,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Dict[str, Any]:",
+            "lineNumber": 804,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 805
+          },
+          {
+            "text": "    Build project-aware context from project_knowledge and conversation_index entries.",
+            "lineNumber": 806
+          },
+          {
+            "text": "    ",
+            "lineNumber": 807
+          },
+          {
+            "text": "    For DAAS project: Uses vector similarity search to retrieve related dreams.",
+            "lineNumber": 808
+          },
+          {
+            "text": "    For THN project: Uses RAG with conversation history and code snippets.",
+            "lineNumber": 809
+          },
+          {
+            "text": "    For other projects: Uses keyword-based relevance scoring.",
+            "lineNumber": 810
+          },
+          {
+            "text": "    ",
+            "lineNumber": 811
+          },
+          {
+            "text": "    Fetches stable project overview from project_knowledge table, queries indexed",
+            "lineNumber": 812
+          },
+          {
+            "text": "    memories from conversation_index for the project, applies simple relevance scoring,",
+            "lineNumber": 813
+          },
+          {
+            "text": "    selects top N relevant entries, and formats them directly into context.",
+            "lineNumber": 814
+          },
+          {
+            "text": "    Follows strategic ordering: project_knowledge summaries (stable overview) FIRST,",
+            "lineNumber": 815
+          },
+          {
+            "text": "    then conversation_index memories (specific conversation details) SECOND.",
+            "lineNumber": 816
+          },
+          {
+            "text": "    ",
+            "lineNumber": 817
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 818
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, general)",
+            "lineNumber": 819
+          },
+          {
+            "text": "        user_message: Current user message to match against (used for relevance scoring)",
+            "lineNumber": 820
+          },
+          {
+            "text": "        limit_memories: Max number of indexed entries to consider (default: 200)",
+            "lineNumber": 821
+          },
+          {
+            "text": "        top_n: Number of top relevant entries to use (default: 5)",
+            "lineNumber": 822
+          },
+          {
+            "text": "    ",
+            "lineNumber": 823
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 824
+          },
+          {
+            "text": "        Dict with 'context' (string) and 'notes' (list of strings)",
+            "lineNumber": 825
+          },
+          {
+            "text": "        Returns empty dict if no relevant data found",
+            "lineNumber": 826
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 827
+          },
+          {
+            "text": "    ",
+            "lineNumber": 828
+          },
+          {
+            "text": "    # DAAS-specific retrieval: new RAG format",
+            "lineNumber": 829
+          },
+          {
+            "text": "    if project == 'DAAS':",
+            "lineNumber": 830
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 831
+          },
+          {
+            "text": "            return build_daas_rag_context(user_message, top_k=3)",
+            "lineNumber": 832
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 833
+          },
+          {
+            "text": "            logger.error(f\"DAAS RAG generation failed: {e}\")",
+            "lineNumber": 834
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 835
+          },
+          {
+            "text": "    ",
+            "lineNumber": 836
+          },
+          {
+            "text": "    # THN-specific retrieval: new RAG format",
+            "lineNumber": 837
+          },
+          {
+            "text": "    if project == 'THN':",
+            "lineNumber": 838
+          },
+          {
+            "text": "        try:",
+            "lineNumber": 839
+          },
+          {
+            "text": "            return build_thn_rag_context(user_message)",
+            "lineNumber": 840
+          },
+          {
+            "text": "        except Exception as e:",
+            "lineNumber": 841
+          },
+          {
+            "text": "            logger.error(f\"THN RAG generation failed: {e}\")",
+            "lineNumber": 842
+          },
+          {
+            "text": "            # Fall through to default behavior (keyword-based search)",
+            "lineNumber": 843
+          },
+          {
+            "text": "    ",
+            "lineNumber": 844
+          },
+          {
+            "text": "    # Get project-scoped meditation notes (if MCP available)",
+            "lineNumber": 845
+          },
+          {
+            "text": "    mcp_notes_context = None",
+            "lineNumber": 846
+          }
+        ]
+      },
+      "score": 0.3500041961669922
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 82,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 172
+          }
+        },
+        "contents": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:\n    \"\"\"\n    Build the complete system prompt for a given project.\n    \n    Loads the base system prompt and appends project-specific extension if\n    the project is not \"general\". The extension includes overview and rules\n    from project_knowledge table. For THN and DAAS projects, also includes RAG context\n    only when user_message is provided (typically on first message only to save tokens).\n    THN RAG includes History &amp; Context and Relevant Code Snippets.\n    DAAS RAG includes Related Dreams for Analysis.\n    \n    Args:\n        project: Project tag (THN, DAAS, FF, 700B, or \"general\")\n        user_message: Optional user message for THN/DAAS RAG context generation.\n                     If empty, RAG context is not included (saves tokens).\n        \n    Returns:\n        Composed system prompt string (base + project extension + RAG if applicable)\n    \"\"\"\n    base_prompt = load_base_system_prompt()\n    \n    # Only add project extension if project is not \"general\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_project_system_prompt(project: str, user_message: str = \"\") -&gt; str:",
+            "lineNumber": 86,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 87
+          },
+          {
+            "text": "    Build the complete system prompt for a given project.",
+            "lineNumber": 88
+          },
+          {
+            "text": "    ",
+            "lineNumber": 89
+          },
+          {
+            "text": "    Loads the base system prompt and appends project-specific extension if",
+            "lineNumber": 90
+          },
+          {
+            "text": "    the project is not \"general\". The extension includes overview and rules",
+            "lineNumber": 91
+          },
+          {
+            "text": "    from project_knowledge table. For THN and DAAS projects, also includes RAG context",
+            "lineNumber": 92
+          },
+          {
+            "text": "    only when user_message is provided (typically on first message only to save tokens).",
+            "lineNumber": 93
+          },
+          {
+            "text": "    THN RAG includes History &amp; Context and Relevant Code Snippets.",
+            "lineNumber": 94
+          },
+          {
+            "text": "    DAAS RAG includes Related Dreams for Analysis.",
+            "lineNumber": 95
+          },
+          {
+            "text": "    ",
+            "lineNumber": 96
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 97
+          },
+          {
+            "text": "        project: Project tag (THN, DAAS, FF, 700B, or \"general\")",
+            "lineNumber": 98
+          },
+          {
+            "text": "        user_message: Optional user message for THN/DAAS RAG context generation.",
+            "lineNumber": 99
+          },
+          {
+            "text": "                     If empty, RAG context is not included (saves tokens).",
+            "lineNumber": 100
+          },
+          {
+            "text": "        ",
+            "lineNumber": 101
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 102
+          },
+          {
+            "text": "        Composed system prompt string (base + project extension + RAG if applicable)",
+            "lineNumber": 103
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 104
+          },
+          {
+            "text": "    base_prompt = load_base_system_prompt()",
+            "lineNumber": 105
+          },
+          {
+            "text": "    ",
+            "lineNumber": 106
+          },
+          {
+            "text": "    # Only add project extension if project is not \"general\"",
+            "lineNumber": 107
+          }
+        ]
+      },
+      "score": 0.3449136018753052
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/research.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 67
+          }
+        },
+        "contents": "# Research: Revamp DAAS RAG System\n\n**Feature**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27\n\n## Research Decisions\n\n### 1. Vector Similarity Search Strategy\n\n**Question**: How should we extract themes/symbols/events from user query for vector search?\n\n**Decision**: Use the full user message for embedding generation, similar to THN code search implementation.\n\n**Rationale**:\n\n- Simpler implementation - no need to parse or extract specific themes/symbols\n- Leverages existing embedding infrastructure (&#96;embedding_service.py&#96;)\n- User's natural language query already contains relevant themes/symbols/events\n- Consistent with THN RAG approach (uses full user message)\n\n**Alternatives Considered**:\n\n- Parse query for specific keywords (themes, symbols, events) - **Rejected**: Too complex, may miss context\n- Use separate embeddings for title, summary, memory - **Rejected**: More complex, not needed for initial implementation\n- Hybrid approach (keywords + full query) - **Rejected**: Over-engineering for current needs\n\n**Implementation**: Use &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;, then query &#96;conversation_index&#96; with vector similarity search.\n\n---\n\n### 2. Dream Formatting and Separation\n\n**Question**: What's the best format for presenting multiple dreams with clear boundaries?\n\n**Decision**: Use markdown-style formatting with clear headers and horizontal separators between dreams.\n\n**Format**:\n\n&#96;&#96;&#96;\n### Related Dreams for Analysis\n\n**Dream: [Title]**\n- **Themes**: [extracted or from summary]\n- **Summary**: [truncated to 300 chars]\n- **Key Details**: [memory_snippet truncated to 200 chars]\n\n---\n\n**Dream: [Title]**\n...\n&#96;&#96;&#96;\n\n**Rationale**:\n\n- Clear visual separation between dreams\n- Maintains readability\n- Easy to parse and understand\n- Consistent with existing project formatting patterns\n\n**Alternatives Considered**:\n\n- Numbered list format - **Rejected**: Less clear separation\n- Single paragraph with separators only - **Rejected**: Harder to scan\n- JSON-like structure - **Rejected**: Too verbose, not human-readable\n\n---",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Research: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature**: &#96;014-revamp-daas-rag&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27",
+            "lineNumber": 4
+          },
+          {
+            "lineNumber": 5
+          },
+          {
+            "text": "## Research Decisions",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "### 1. Vector Similarity Search Strategy",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "**Question**: How should we extract themes/symbols/events from user query for vector search?",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "**Decision**: Use the full user message for embedding generation, similar to THN code search implementation.",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "- Simpler implementation - no need to parse or extract specific themes/symbols",
+            "lineNumber": 16
+          },
+          {
+            "text": "- Leverages existing embedding infrastructure (&#96;embedding_service.py&#96;)",
+            "lineNumber": 17
+          },
+          {
+            "text": "- User's natural language query already contains relevant themes/symbols/events",
+            "lineNumber": 18
+          },
+          {
+            "text": "- Consistent with THN RAG approach (uses full user message)",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "**Alternatives Considered**:",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "- Parse query for specific keywords (themes, symbols, events) - **Rejected**: Too complex, may miss context",
+            "lineNumber": 23
+          },
+          {
+            "text": "- Use separate embeddings for title, summary, memory - **Rejected**: More complex, not needed for initial implementation",
+            "lineNumber": 24
+          },
+          {
+            "text": "- Hybrid approach (keywords + full query) - **Rejected**: Over-engineering for current needs",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "**Implementation**: Use &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;, then query &#96;conversation_index&#96; with vector similarity search.",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "---",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "### 2. Dream Formatting and Separation",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Question**: What's the best format for presenting multiple dreams with clear boundaries?",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**Decision**: Use markdown-style formatting with clear headers and horizontal separators between dreams.",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "**Format**:",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 39
+          },
+          {
+            "text": "### Related Dreams for Analysis",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "**Dream: [Title]**",
+            "lineNumber": 42
+          },
+          {
+            "text": "- **Themes**: [extracted or from summary]",
+            "lineNumber": 43
+          },
+          {
+            "text": "- **Summary**: [truncated to 300 chars]",
+            "lineNumber": 44
+          },
+          {
+            "text": "- **Key Details**: [memory_snippet truncated to 200 chars]",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "---",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "**Dream: [Title]**",
+            "lineNumber": 49
+          },
+          {
+            "text": "...",
+            "lineNumber": 50
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 51
+          },
+          {
+            "lineNumber": 52
+          },
+          {
+            "text": "**Rationale**:",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "- Clear visual separation between dreams",
+            "lineNumber": 55
+          },
+          {
+            "text": "- Maintains readability",
+            "lineNumber": 56
+          },
+          {
+            "text": "- Easy to parse and understand",
+            "lineNumber": 57
+          },
+          {
+            "text": "- Consistent with existing project formatting patterns",
+            "lineNumber": 58
+          },
+          {
+            "lineNumber": 59
+          },
+          {
+            "text": "**Alternatives Considered**:",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "- Numbered list format - **Rejected**: Less clear separation",
+            "lineNumber": 62
+          },
+          {
+            "text": "- Single paragraph with separators only - **Rejected**: Harder to scan",
+            "lineNumber": 63
+          },
+          {
+            "text": "- JSON-like structure - **Rejected**: Too verbose, not human-readable",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "---",
+            "lineNumber": 66
+          }
+        ]
+      },
+      "score": 0.3378680348396301
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/contracts/cli.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 54
+          }
+        },
+        "contents": "# CLI Contracts: DAAS Semantic Dream Retrieval\n\n## No New Commands\n\nThis feature does not introduce new CLI commands. Existing chat interface automatically uses DAAS-specific retrieval when:\n- Project is set to DAAS (&#96;/project DAAS&#96; or initial project selection)\n- User sends a message (quoted title or pattern query)\n\n## Modified Behavior\n\n### Chat Query Processing\n\n**Input**: User message in DAAS project context\n\n**Processing**:\n1. Detect quoted title pattern: &#96;\"Dream Title\"&#96;\n2. If found → Single-dream mode (title matching)\n3. If not found → Pattern-based mode (vector similarity search)\n4. Retrieve relevant context\n5. Generate response with streaming\n\n**Output**: Streaming response text (progressive display)\n\n## Streaming Response Display\n\n**Format**: Text appears progressively word-by-word or chunk-by-chunk\n\n**Implementation**:\n- Use OpenAI streaming API (&#96;stream=True&#96;)\n- Print chunks as received via &#96;sys.stdout.write()&#96;\n- Flush after each chunk: &#96;sys.stdout.flush()&#96;\n- Handle line breaks appropriately\n- Support Ctrl+C interruption gracefully\n\n**User Experience**:\n- Response begins appearing within 2 seconds\n- Text cascades down the screen\n- Mimics ChatGPT progressive display\n\n## Error Handling\n\n**No Match Found (Single-Dream Mode)**:\n- Display: \"No dream found matching '[Title]'. Did you mean one of these?\" (list similar titles)\n- Allow user to retry with corrected title\n\n**No Relevant Dreams (Pattern Mode)**:\n- Display: \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"\n- Continue with general context (project knowledge only)\n\n**Embedding Generation Failure**:\n- Log error\n- Fall back to keyword-based search (existing behavior)\n- Notify user: \"Using keyword search (semantic search unavailable)\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# CLI Contracts: DAAS Semantic Dream Retrieval",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## No New Commands",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "This feature does not introduce new CLI commands. Existing chat interface automatically uses DAAS-specific retrieval when:",
+            "lineNumber": 5
+          },
+          {
+            "text": "- Project is set to DAAS (&#96;/project DAAS&#96; or initial project selection)",
+            "lineNumber": 6
+          },
+          {
+            "text": "- User sends a message (quoted title or pattern query)",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "## Modified Behavior",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "### Chat Query Processing",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Input**: User message in DAAS project context",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "**Processing**:",
+            "lineNumber": 15
+          },
+          {
+            "text": "1. Detect quoted title pattern: &#96;\"Dream Title\"&#96;",
+            "lineNumber": 16
+          },
+          {
+            "text": "2. If found → Single-dream mode (title matching)",
+            "lineNumber": 17
+          },
+          {
+            "text": "3. If not found → Pattern-based mode (vector similarity search)",
+            "lineNumber": 18
+          },
+          {
+            "text": "4. Retrieve relevant context",
+            "lineNumber": 19
+          },
+          {
+            "text": "5. Generate response with streaming",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Output**: Streaming response text (progressive display)",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "## Streaming Response Display",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Format**: Text appears progressively word-by-word or chunk-by-chunk",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "**Implementation**:",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Use OpenAI streaming API (&#96;stream=True&#96;)",
+            "lineNumber": 29
+          },
+          {
+            "text": "- Print chunks as received via &#96;sys.stdout.write()&#96;",
+            "lineNumber": 30
+          },
+          {
+            "text": "- Flush after each chunk: &#96;sys.stdout.flush()&#96;",
+            "lineNumber": 31
+          },
+          {
+            "text": "- Handle line breaks appropriately",
+            "lineNumber": 32
+          },
+          {
+            "text": "- Support Ctrl+C interruption gracefully",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "**User Experience**:",
+            "lineNumber": 35
+          },
+          {
+            "text": "- Response begins appearing within 2 seconds",
+            "lineNumber": 36
+          },
+          {
+            "text": "- Text cascades down the screen",
+            "lineNumber": 37
+          },
+          {
+            "text": "- Mimics ChatGPT progressive display",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "## Error Handling",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "**No Match Found (Single-Dream Mode)**:",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Display: \"No dream found matching '[Title]'. Did you mean one of these?\" (list similar titles)",
+            "lineNumber": 43
+          },
+          {
+            "text": "- Allow user to retry with corrected title",
+            "lineNumber": 44
+          },
+          {
+            "lineNumber": 45
+          },
+          {
+            "text": "**No Relevant Dreams (Pattern Mode)**:",
+            "lineNumber": 46
+          },
+          {
+            "text": "- Display: \"No relevant dreams found for your query. Try rephrasing or asking about a specific dream using quotes.\"",
+            "lineNumber": 47
+          },
+          {
+            "text": "- Continue with general context (project knowledge only)",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "**Embedding Generation Failure**:",
+            "lineNumber": 50
+          },
+          {
+            "text": "- Log error",
+            "lineNumber": 51
+          },
+          {
+            "text": "- Fall back to keyword-based search (existing behavior)",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Notify user: \"Using keyword search (semantic search unavailable)\"",
+            "lineNumber": 53
+          }
+        ]
+      },
+      "score": 0.33540499210357666
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./README.md",
+        "range": {
+          "startPosition": {
+            "line": 272
+          },
+          "endPosition": {
+            "line": 342
+          }
+        },
+        "contents": "**Note**: The &#96;--all&#96; flag to index all repositories in &#96;../repos/&#96; is planned but not yet implemented.\n\n### Conversation Management\n\n**Starting a New Conversation:**\n\n- When you start the program, you **must** provide a conversation title (cannot skip)\n- Select a project tag (default: &#96;general&#96;)\n\n**Switching Projects Mid-Conversation:**\n\n1. Type a project switch command (e.g., &#96;/thn&#96;, &#96;/daas&#96;, &#96;/general&#96;)\n2. The current conversation is automatically saved\n3. You'll be prompted for a new title for the conversation under the new project\n4. A new conversation is created, and you continue with the new project context\n5. This keeps conversations properly separated by project\n\n**Exiting:**\n\n- Type &#96;/exit&#96; or press Ctrl+C\n- Current conversation is automatically saved before exit\n- Usage summary is displayed\n\n### DAAS Dream Analysis\n\nThe DAAS project includes advanced semantic dream retrieval:\n\n**Single Dream Analysis** - Reference a specific dream by title:\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: What does \"My Flying Dream\" mean from a Jungian perspective?\n&#96;&#96;&#96;\n\n**Pattern-Based Analysis** - Find themes across multiple dreams:\n\n&#96;&#96;&#96;\nYou (DAAS) 🟣: What patterns do I have with water in my dreams?\n&#96;&#96;&#96;\n\nThe system automatically:\n\n- Detects quoted titles for single-dream queries\n- Uses vector similarity search for pattern queries\n- Generates embeddings for new DAAS entries\n- Falls back to keyword search if embeddings unavailable\n\n---\n\n## Example\n\n&#96;&#96;&#96;bash\n$ python3 chat_cli.py\nConversation title (required): Web App Deployment\nProject tag [general/THN/DAAS/FF/700B] (default: general): THN\n\nStarted conversation abc-123 [project=THN] 🟢\n\nYou (THN) 🟢: How do I deploy my web app locally?\n🟢 Thinking for THN...\nAI (THN) 🟢: [Streaming response appears progressively...]\n\nYou (THN) 🟢: /general\n✓ Indexed: Web App Deployment [THN]\nConversation title for GENERAL (required): The Hobbit Discussion\nSwitched active project context to GENERAL 🔵\n\nYou (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?\n🔵 Thinking for GENERAL...\nAI (GENERAL) 🔵: [Streaming response...]",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "**Note**: The &#96;--all&#96; flag to index all repositories in &#96;../repos/&#96; is planned but not yet implemented.",
+            "lineNumber": 273
+          },
+          {
+            "lineNumber": 274
+          },
+          {
+            "text": "### Conversation Management",
+            "lineNumber": 275
+          },
+          {
+            "lineNumber": 276
+          },
+          {
+            "text": "**Starting a New Conversation:**",
+            "lineNumber": 277
+          },
+          {
+            "lineNumber": 278
+          },
+          {
+            "text": "- When you start the program, you **must** provide a conversation title (cannot skip)",
+            "lineNumber": 279
+          },
+          {
+            "text": "- Select a project tag (default: &#96;general&#96;)",
+            "lineNumber": 280
+          },
+          {
+            "lineNumber": 281
+          },
+          {
+            "text": "**Switching Projects Mid-Conversation:**",
+            "lineNumber": 282
+          },
+          {
+            "lineNumber": 283
+          },
+          {
+            "text": "1. Type a project switch command (e.g., &#96;/thn&#96;, &#96;/daas&#96;, &#96;/general&#96;)",
+            "lineNumber": 284
+          },
+          {
+            "text": "2. The current conversation is automatically saved",
+            "lineNumber": 285
+          },
+          {
+            "text": "3. You'll be prompted for a new title for the conversation under the new project",
+            "lineNumber": 286
+          },
+          {
+            "text": "4. A new conversation is created, and you continue with the new project context",
+            "lineNumber": 287
+          },
+          {
+            "text": "5. This keeps conversations properly separated by project",
+            "lineNumber": 288
+          },
+          {
+            "lineNumber": 289
+          },
+          {
+            "text": "**Exiting:**",
+            "lineNumber": 290
+          },
+          {
+            "lineNumber": 291
+          },
+          {
+            "text": "- Type &#96;/exit&#96; or press Ctrl+C",
+            "lineNumber": 292
+          },
+          {
+            "text": "- Current conversation is automatically saved before exit",
+            "lineNumber": 293
+          },
+          {
+            "text": "- Usage summary is displayed",
+            "lineNumber": 294
+          },
+          {
+            "lineNumber": 295
+          },
+          {
+            "text": "### DAAS Dream Analysis",
+            "lineNumber": 296
+          },
+          {
+            "lineNumber": 297
+          },
+          {
+            "text": "The DAAS project includes advanced semantic dream retrieval:",
+            "lineNumber": 298
+          },
+          {
+            "lineNumber": 299
+          },
+          {
+            "text": "**Single Dream Analysis** - Reference a specific dream by title:",
+            "lineNumber": 300
+          },
+          {
+            "lineNumber": 301
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 302
+          },
+          {
+            "text": "You (DAAS) 🟣: What does \"My Flying Dream\" mean from a Jungian perspective?",
+            "lineNumber": 303
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 304
+          },
+          {
+            "lineNumber": 305
+          },
+          {
+            "text": "**Pattern-Based Analysis** - Find themes across multiple dreams:",
+            "lineNumber": 306
+          },
+          {
+            "lineNumber": 307
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 308
+          },
+          {
+            "text": "You (DAAS) 🟣: What patterns do I have with water in my dreams?",
+            "lineNumber": 309
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 310
+          },
+          {
+            "lineNumber": 311
+          },
+          {
+            "text": "The system automatically:",
+            "lineNumber": 312
+          },
+          {
+            "lineNumber": 313
+          },
+          {
+            "text": "- Detects quoted titles for single-dream queries",
+            "lineNumber": 314
+          },
+          {
+            "text": "- Uses vector similarity search for pattern queries",
+            "lineNumber": 315
+          },
+          {
+            "text": "- Generates embeddings for new DAAS entries",
+            "lineNumber": 316
+          },
+          {
+            "text": "- Falls back to keyword search if embeddings unavailable",
+            "lineNumber": 317
+          },
+          {
+            "lineNumber": 318
+          },
+          {
+            "text": "---",
+            "lineNumber": 319
+          },
+          {
+            "lineNumber": 320
+          },
+          {
+            "text": "## Example",
+            "lineNumber": 321
+          },
+          {
+            "lineNumber": 322
+          },
+          {
+            "text": "&#96;&#96;&#96;bash",
+            "lineNumber": 323
+          },
+          {
+            "text": "$ python3 chat_cli.py",
+            "lineNumber": 324
+          },
+          {
+            "text": "Conversation title (required): Web App Deployment",
+            "lineNumber": 325
+          },
+          {
+            "text": "Project tag [general/THN/DAAS/FF/700B] (default: general): THN",
+            "lineNumber": 326
+          },
+          {
+            "lineNumber": 327
+          },
+          {
+            "text": "Started conversation abc-123 [project=THN] 🟢",
+            "lineNumber": 328
+          },
+          {
+            "lineNumber": 329
+          },
+          {
+            "text": "You (THN) 🟢: How do I deploy my web app locally?",
+            "lineNumber": 330
+          },
+          {
+            "text": "🟢 Thinking for THN...",
+            "lineNumber": 331
+          },
+          {
+            "text": "AI (THN) 🟢: [Streaming response appears progressively...]",
+            "lineNumber": 332
+          },
+          {
+            "lineNumber": 333
+          },
+          {
+            "text": "You (THN) 🟢: /general",
+            "lineNumber": 334
+          },
+          {
+            "text": "✓ Indexed: Web App Deployment [THN]",
+            "lineNumber": 335
+          },
+          {
+            "text": "Conversation title for GENERAL (required): The Hobbit Discussion",
+            "lineNumber": 336
+          },
+          {
+            "text": "Switched active project context to GENERAL 🔵",
+            "lineNumber": 337
+          },
+          {
+            "lineNumber": 338
+          },
+          {
+            "text": "You (GENERAL) 🔵: What scenes in the hobbit book were not in the movie?",
+            "lineNumber": 339
+          },
+          {
+            "text": "🔵 Thinking for GENERAL...",
+            "lineNumber": 340
+          },
+          {
+            "text": "AI (GENERAL) 🔵: [Streaming response...]",
+            "lineNumber": 341
+          }
+        ]
+      },
+      "score": 0.3313769996166229
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 20
+          },
+          "endPosition": {
+            "line": 43
+          }
+        },
+        "contents": "2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap\n3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response\n\n---\n\n### User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)\n\nA user wants to explore themes, symbols, or patterns that appear across multiple dreams. They ask questions without referencing a specific dream title, expecting the system to find relevant dreams using semantic similarity and provide insights about recurring patterns.\n\n**Why this priority**: This enables high-level analysis and pattern recognition across the user's dream history, which is essential for Jungian analysis and long-term meaning discovery. It requires semantic understanding beyond keyword matching.\n\n**Independent Test**: Can be fully tested by asking \"What patterns do I have with water in my dreams?\" and verifying that the system uses vector similarity search to find relevant dreams, retrieves top-k most semantically similar dreams, and provides analysis across those dreams.\n\n**Acceptance Scenarios**:\n\n1. **Given** a user message does not contain a quoted title, **When** the user asks \"What recurring symbols appear in my dreams?\", **Then** the system computes an embedding for the user message and performs vector similarity search across all DAAS dreams to find the most relevant entries\n2. **Given** multiple dreams contain similar themes but different wording, **When** the user asks about those themes, **Then** the system retrieves dreams based on semantic similarity rather than exact keyword matches, enabling pattern detection across varied language\n3. **Given** vector similarity search returns top-k relevant dreams, **When** building context for the response, **Then** the system uses only those top-k dreams and does not include dreams that don't match semantically, even if they share some keywords\n\n---\n\n### User Story 3 - Streaming Response Display (Priority: P3)",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap",
+            "lineNumber": 21
+          },
+          {
+            "text": "3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "---",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "### User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)",
+            "lineNumber": 26
+          },
+          {
+            "lineNumber": 27
+          },
+          {
+            "text": "A user wants to explore themes, symbols, or patterns that appear across multiple dreams. They ask questions without referencing a specific dream title, expecting the system to find relevant dreams using semantic similarity and provide insights about recurring patterns.",
+            "lineNumber": 28
+          },
+          {
+            "lineNumber": 29
+          },
+          {
+            "text": "**Why this priority**: This enables high-level analysis and pattern recognition across the user's dream history, which is essential for Jungian analysis and long-term meaning discovery. It requires semantic understanding beyond keyword matching.",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "**Independent Test**: Can be fully tested by asking \"What patterns do I have with water in my dreams?\" and verifying that the system uses vector similarity search to find relevant dreams, retrieves top-k most semantically similar dreams, and provides analysis across those dreams.",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "**Acceptance Scenarios**:",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "1. **Given** a user message does not contain a quoted title, **When** the user asks \"What recurring symbols appear in my dreams?\", **Then** the system computes an embedding for the user message and performs vector similarity search across all DAAS dreams to find the most relevant entries",
+            "lineNumber": 36
+          },
+          {
+            "text": "2. **Given** multiple dreams contain similar themes but different wording, **When** the user asks about those themes, **Then** the system retrieves dreams based on semantic similarity rather than exact keyword matches, enabling pattern detection across varied language",
+            "lineNumber": 37
+          },
+          {
+            "text": "3. **Given** vector similarity search returns top-k relevant dreams, **When** building context for the response, **Then** the system uses only those top-k dreams and does not include dreams that don't match semantically, even if they share some keywords",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "---",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "### User Story 3 - Streaming Response Display (Priority: P3)",
+            "lineNumber": 42
+          }
+        ]
+      },
+      "score": 0.33064109086990356
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 22
+          }
+        },
+        "contents": "# Feature Specification: DAAS Semantic Dream Retrieval and Streaming Responses\n\n**Feature Branch**: &#96;002-daas-semantic-retrieval&#96;  \n**Created**: 2025-01-27  \n**Status**: Draft  \n**Input**: User description: \"The DAAS project is designed for dream analysis and often times I'll ask to review a dream from a variety of perspectives Christian, Jungian, Pagan, etc. Currently, it is having a hard time providing the optimal response when I want to discuss a dream. So I'd like to update project_chat in three ways: 1. DAAS will have custom retrieval rules. 2. Implement Semantic Vector Embedding in DAAS project entries only. 3. Currently, from a UI perspective the response come out in a single block of text. I prefer to have the text cascaded down and mimic the experience of using ChatGPT\"\n\n## User Scenarios &amp; Testing *(mandatory)*\n\n### User Story 1 - Single Dream Analysis by Title (Priority: P1)\n\nA user wants to analyze a specific dream they've previously recorded. They reference the dream by its title in quotes, expecting the system to retrieve only that specific dream's context and provide analysis from multiple perspectives (Christian, Jungian, Pagan, etc.).\n\n**Why this priority**: This is the most common use case - users want to revisit and analyze specific dreams they've already discussed. It requires precise retrieval to avoid mixing contexts from other dreams.\n\n**Independent Test**: Can be fully tested by asking \"Analyze 'Dream Title Here' from a Christian perspective\" and verifying that only the matching dream is retrieved, no other dreams are included, and the response focuses solely on that dream.\n\n**Acceptance Scenarios**:\n\n1. **Given** a user has multiple dreams stored in DAAS project, **When** the user asks \"What does 'My Flying Dream' mean from a Jungian perspective?\", **Then** the system retrieves only the conversation titled \"My Flying Dream\" (or matching title) and provides analysis using only that dream's context\n2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap\n3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: DAAS Semantic Dream Retrieval and Streaming Responses",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature Branch**: &#96;002-daas-semantic-retrieval&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Created**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Draft  ",
+            "lineNumber": 5
+          },
+          {
+            "text": "**Input**: User description: \"The DAAS project is designed for dream analysis and often times I'll ask to review a dream from a variety of perspectives Christian, Jungian, Pagan, etc. Currently, it is having a hard time providing the optimal response when I want to discuss a dream. So I'd like to update project_chat in three ways: 1. DAAS will have custom retrieval rules. 2. Implement Semantic Vector Embedding in DAAS project entries only. 3. Currently, from a UI perspective the response come out in a single block of text. I prefer to have the text cascaded down and mimic the experience of using ChatGPT\"",
+            "lineNumber": 6
+          },
+          {
+            "lineNumber": 7
+          },
+          {
+            "text": "## User Scenarios &amp; Testing *(mandatory)*",
+            "lineNumber": 8
+          },
+          {
+            "lineNumber": 9
+          },
+          {
+            "text": "### User Story 1 - Single Dream Analysis by Title (Priority: P1)",
+            "lineNumber": 10
+          },
+          {
+            "lineNumber": 11
+          },
+          {
+            "text": "A user wants to analyze a specific dream they've previously recorded. They reference the dream by its title in quotes, expecting the system to retrieve only that specific dream's context and provide analysis from multiple perspectives (Christian, Jungian, Pagan, etc.).",
+            "lineNumber": 12
+          },
+          {
+            "lineNumber": 13
+          },
+          {
+            "text": "**Why this priority**: This is the most common use case - users want to revisit and analyze specific dreams they've already discussed. It requires precise retrieval to avoid mixing contexts from other dreams.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Independent Test**: Can be fully tested by asking \"Analyze 'Dream Title Here' from a Christian perspective\" and verifying that only the matching dream is retrieved, no other dreams are included, and the response focuses solely on that dream.",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "**Acceptance Scenarios**:",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "1. **Given** a user has multiple dreams stored in DAAS project, **When** the user asks \"What does 'My Flying Dream' mean from a Jungian perspective?\", **Then** the system retrieves only the conversation titled \"My Flying Dream\" (or matching title) and provides analysis using only that dream's context",
+            "lineNumber": 20
+          },
+          {
+            "text": "2. **Given** a user message contains a quoted title like \"Dream Title\", **When** the system processes the query, **Then** it uses title-based matching (pattern matching or slug/tag matching) and excludes all other dreams from the context, even if keywords overlap",
+            "lineNumber": 21
+          },
+          {
+            "text": "3. **Given** a quoted title matches multiple conversations, **When** the system retrieves matches, **Then** it uses the most recent or most relevant match and does not mix multiple dreams in the response",
+            "lineNumber": 22
+          }
+        ]
+      },
+      "score": 0.3296070098876953
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./chat_cli.py",
+        "range": {
+          "startPosition": {
+            "line": 455
+          },
+          "endPosition": {
+            "line": 573
+          }
+        },
+        "contents": "def read_file_content(filepath: str) -&gt; tuple[str | None, str | None]:\n\n        \n        return content, None\n        \n    except PermissionError:\n        return None, f\"Permission denied: {filepath}\"\n    except UnicodeDecodeError:\n        return None, f\"File is not valid UTF-8 text: {filepath}\"\n    except Exception as e:\n        return None, f\"Error reading file: {e}\"\n\n\ndef handle_command(text: str, current_project: str, conversation_id: uuid.UUID):\n    \"\"\"\n    Handle slash commands. Returns:\n      (new_project, handled, message_to_show, special)\n\n    special:\n      - None        → just print message_to_show (if any)\n      - \"context\"   → run /context\n      - \"search\"    → run /search\n      - \"multiline\" → enter paste mode (/paste)\n      - \"readfile\"  → read file and process content\n    \"\"\"\n    raw = text.strip()\n    if not raw.startswith(\"/\"):\n        return current_project, False, \"\", None\n\n    parts = raw[1:].split()\n    cmd = parts[0].lower() if parts else \"\"\n    arg = \" \".join(parts[1:]) if len(parts) &gt; 1 else \"\"\n\n    # project change\n    if cmd in (\"project\", \"tag\"):\n        if not arg:\n            return current_project, True, \"Usage: /project THN|DAAS|FF|700B|general\", None\n        new_project = normalize_project_tag(arg)\n        # Return special flag \"project_switch\" to trigger save and title prompt flow\n        return new_project, True, \"\", \"project_switch\"\n\n    if cmd in (\"thn\", \"daas\", \"ff\", \"700b\", \"general\"):\n        new_project = normalize_project_tag(cmd)\n        # Return special flag \"project_switch\" to trigger save and title prompt flow\n        return new_project, True, \"\", \"project_switch\"\n\n    # context\n    if cmd in (\"context\", \"ctx\"):\n        return current_project, True, \"\", \"context\"\n\n    # rag - show RAG content for THN\n    if cmd == \"rag\":\n        return current_project, True, arg if arg else \"\", \"rag\"\n\n    # search\n    if cmd in (\"search\", \"s\"):\n        if not arg:\n            return current_project, True, \"Usage: /search your query\", None\n        return current_project, True, arg, \"search\"",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def read_file_content(filepath: str) -&gt; tuple[str | None, str | None]:",
+            "lineNumber": 456,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 484
+          },
+          {
+            "text": "        ",
+            "lineNumber": 485
+          },
+          {
+            "text": "        return content, None",
+            "lineNumber": 486
+          },
+          {
+            "text": "        ",
+            "lineNumber": 487
+          },
+          {
+            "text": "    except PermissionError:",
+            "lineNumber": 488
+          },
+          {
+            "text": "        return None, f\"Permission denied: {filepath}\"",
+            "lineNumber": 489
+          },
+          {
+            "text": "    except UnicodeDecodeError:",
+            "lineNumber": 490
+          },
+          {
+            "text": "        return None, f\"File is not valid UTF-8 text: {filepath}\"",
+            "lineNumber": 491
+          },
+          {
+            "text": "    except Exception as e:",
+            "lineNumber": 492
+          },
+          {
+            "text": "        return None, f\"Error reading file: {e}\"",
+            "lineNumber": 493,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 494
+          },
+          {
+            "lineNumber": 495
+          },
+          {
+            "text": "def handle_command(text: str, current_project: str, conversation_id: uuid.UUID):",
+            "lineNumber": 496,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 497
+          },
+          {
+            "text": "    Handle slash commands. Returns:",
+            "lineNumber": 498
+          },
+          {
+            "text": "      (new_project, handled, message_to_show, special)",
+            "lineNumber": 499
+          },
+          {
+            "lineNumber": 500
+          },
+          {
+            "text": "    special:",
+            "lineNumber": 501
+          },
+          {
+            "text": "      - None        → just print message_to_show (if any)",
+            "lineNumber": 502
+          },
+          {
+            "text": "      - \"context\"   → run /context",
+            "lineNumber": 503
+          },
+          {
+            "text": "      - \"search\"    → run /search",
+            "lineNumber": 504
+          },
+          {
+            "text": "      - \"multiline\" → enter paste mode (/paste)",
+            "lineNumber": 505
+          },
+          {
+            "text": "      - \"readfile\"  → read file and process content",
+            "lineNumber": 506
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 507
+          },
+          {
+            "text": "    raw = text.strip()",
+            "lineNumber": 508
+          },
+          {
+            "text": "    if not raw.startswith(\"/\"):",
+            "lineNumber": 509
+          },
+          {
+            "text": "        return current_project, False, \"\", None",
+            "lineNumber": 510
+          },
+          {
+            "lineNumber": 511
+          },
+          {
+            "text": "    parts = raw[1:].split()",
+            "lineNumber": 512
+          },
+          {
+            "text": "    cmd = parts[0].lower() if parts else \"\"",
+            "lineNumber": 513
+          },
+          {
+            "text": "    arg = \" \".join(parts[1:]) if len(parts) &gt; 1 else \"\"",
+            "lineNumber": 514
+          },
+          {
+            "lineNumber": 515
+          },
+          {
+            "text": "    # project change",
+            "lineNumber": 516
+          },
+          {
+            "text": "    if cmd in (\"project\", \"tag\"):",
+            "lineNumber": 517
+          },
+          {
+            "text": "        if not arg:",
+            "lineNumber": 518
+          },
+          {
+            "text": "            return current_project, True, \"Usage: /project THN|DAAS|FF|700B|general\", None",
+            "lineNumber": 519
+          },
+          {
+            "text": "        new_project = normalize_project_tag(arg)",
+            "lineNumber": 520
+          },
+          {
+            "text": "        # Return special flag \"project_switch\" to trigger save and title prompt flow",
+            "lineNumber": 521
+          },
+          {
+            "text": "        return new_project, True, \"\", \"project_switch\"",
+            "lineNumber": 522
+          },
+          {
+            "lineNumber": 523
+          },
+          {
+            "text": "    if cmd in (\"thn\", \"daas\", \"ff\", \"700b\", \"general\"):",
+            "lineNumber": 524
+          },
+          {
+            "text": "        new_project = normalize_project_tag(cmd)",
+            "lineNumber": 525
+          },
+          {
+            "text": "        # Return special flag \"project_switch\" to trigger save and title prompt flow",
+            "lineNumber": 526
+          },
+          {
+            "text": "        return new_project, True, \"\", \"project_switch\"",
+            "lineNumber": 527
+          },
+          {
+            "lineNumber": 528
+          },
+          {
+            "text": "    # context",
+            "lineNumber": 529
+          },
+          {
+            "text": "    if cmd in (\"context\", \"ctx\"):",
+            "lineNumber": 530
+          },
+          {
+            "text": "        return current_project, True, \"\", \"context\"",
+            "lineNumber": 531
+          },
+          {
+            "lineNumber": 532
+          },
+          {
+            "text": "    # rag - show RAG content for THN",
+            "lineNumber": 533
+          },
+          {
+            "text": "    if cmd == \"rag\":",
+            "lineNumber": 534
+          },
+          {
+            "text": "        return current_project, True, arg if arg else \"\", \"rag\"",
+            "lineNumber": 535
+          },
+          {
+            "lineNumber": 536
+          },
+          {
+            "text": "    # search",
+            "lineNumber": 537
+          },
+          {
+            "text": "    if cmd in (\"search\", \"s\"):",
+            "lineNumber": 538
+          },
+          {
+            "text": "        if not arg:",
+            "lineNumber": 539
+          },
+          {
+            "text": "            return current_project, True, \"Usage: /search your query\", None",
+            "lineNumber": 540
+          },
+          {
+            "text": "        return current_project, True, arg, \"search\"",
+            "lineNumber": 541
+          }
+        ]
+      },
+      "score": 0.3244268298149109
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/conversation_indexer.py",
+        "range": {
+          "startPosition": {
+            "line": 340,
+            "column": 17
+          },
+          "endPosition": {
+            "line": 755
+          }
+        },
+        "contents": "def build_index_prompt(transcript: str) -&gt; str:\n    \"\"\"\n    Build the prompt for Ollama to organize a conversation.\n    \n    Enhanced with explicit JSON format requirements and multiple emphasis points\n    to improve compliance with JSON-only output.\n    \n    Args:\n        transcript: Full conversation transcript from build_transcript()\n    \n    Returns:\n        Prompt string instructing Ollama to return structured JSON\n    \"\"\"\n    prompt = f\"\"\"You MUST return ONLY valid JSON. No markdown, no explanatory text, no additional formatting.\n\nCRITICAL: Your response must start with '{{' and end with '}}'. Do not include any text before or after the JSON object.\n\nYou are a conversation organizer. Analyze the following conversation and extract structured information.\n\nNote: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.\n\nConversation transcript:\n{transcript}\n\nPlease return a JSON object with the following structure:\n{{\n  \"title\": \"A short, descriptive title for this conversation (max 100 characters)\",\n  \"project\": \"One of: THN, DAAS, FF, 700B, or general\",\n  \"tags\": [\"tag1\", \"tag2\", \"tag3\"],\n  \"summary_short\": \"A 1-2 sentence summary of the conversation\",\n  \"summary_detailed\": \"A multi-paragraph detailed summary covering key points, decisions, and context\",\n  \"key_entities\": {{\n    \"people\": [\"person1\", \"person2\"],\n    \"domains\": [\"domain1\", \"domain2\"],\n    \"assets\": [\"asset1\", \"asset2\"]\n  }},\n  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\"],\n  \"memory_snippet\": \"A concise memory blurb (2-3 sentences) that would help future conversations understand the context and decisions made here\"\n}}\n\nIMPORTANT: Return ONLY valid JSON. No markdown formatting, no explanatory text, no code blocks. Just the JSON object starting with '{{' and ending with '}}'.\n\"\"\"\n    return prompt\n\n\ndef index_session(\n    session_id: uuid.UUID | str,\n    model: str = None,\n    version: int = None,\n    override_project: str = None,\n    preserve_project: bool = False,\n) -&gt; Optional[Dict[str, Any]]:\n    ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_index_prompt(transcript: str) -&gt; str:",
+            "lineNumber": 344,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 345
+          },
+          {
+            "text": "    Build the prompt for Ollama to organize a conversation.",
+            "lineNumber": 346
+          },
+          {
+            "text": "    ",
+            "lineNumber": 347
+          },
+          {
+            "text": "    Enhanced with explicit JSON format requirements and multiple emphasis points",
+            "lineNumber": 348
+          },
+          {
+            "text": "    to improve compliance with JSON-only output.",
+            "lineNumber": 349
+          },
+          {
+            "text": "    ",
+            "lineNumber": 350
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 351
+          },
+          {
+            "text": "        transcript: Full conversation transcript from build_transcript()",
+            "lineNumber": 352
+          },
+          {
+            "text": "    ",
+            "lineNumber": 353
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 354
+          },
+          {
+            "text": "        Prompt string instructing Ollama to return structured JSON",
+            "lineNumber": 355
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 356
+          },
+          {
+            "text": "    prompt = f\"\"\"You MUST return ONLY valid JSON. No markdown, no explanatory text, no additional formatting.",
+            "lineNumber": 357
+          },
+          {
+            "lineNumber": 358
+          },
+          {
+            "text": "CRITICAL: Your response must start with '{{' and end with '}}'. Do not include any text before or after the JSON object.",
+            "lineNumber": 359
+          },
+          {
+            "lineNumber": 360
+          },
+          {
+            "text": "You are a conversation organizer. Analyze the following conversation and extract structured information.",
+            "lineNumber": 361
+          },
+          {
+            "lineNumber": 362
+          },
+          {
+            "text": "Note: The conversation may contain partial or interrupted responses. Analyze what is available and provide the best possible structured information based on the complete conversation context.",
+            "lineNumber": 363
+          },
+          {
+            "lineNumber": 364
+          },
+          {
+            "text": "Conversation transcript:",
+            "lineNumber": 365
+          },
+          {
+            "text": "{transcript}",
+            "lineNumber": 366
+          },
+          {
+            "lineNumber": 367
+          },
+          {
+            "text": "Please return a JSON object with the following structure:",
+            "lineNumber": 368
+          },
+          {
+            "text": "{{",
+            "lineNumber": 369
+          },
+          {
+            "text": "  \"title\": \"A short, descriptive title for this conversation (max 100 characters)\",",
+            "lineNumber": 370
+          },
+          {
+            "text": "  \"project\": \"One of: THN, DAAS, FF, 700B, or general\",",
+            "lineNumber": 371
+          },
+          {
+            "text": "  \"tags\": [\"tag1\", \"tag2\", \"tag3\"],",
+            "lineNumber": 372
+          },
+          {
+            "text": "  \"summary_short\": \"A 1-2 sentence summary of the conversation\",",
+            "lineNumber": 373
+          },
+          {
+            "text": "  \"summary_detailed\": \"A multi-paragraph detailed summary covering key points, decisions, and context\",",
+            "lineNumber": 374
+          },
+          {
+            "text": "  \"key_entities\": {{",
+            "lineNumber": 375
+          },
+          {
+            "text": "    \"people\": [\"person1\", \"person2\"],",
+            "lineNumber": 376
+          },
+          {
+            "text": "    \"domains\": [\"domain1\", \"domain2\"],",
+            "lineNumber": 377
+          },
+          {
+            "text": "    \"assets\": [\"asset1\", \"asset2\"]",
+            "lineNumber": 378
+          },
+          {
+            "text": "  }},",
+            "lineNumber": 379
+          },
+          {
+            "text": "  \"key_topics\": [\"topic1\", \"topic2\", \"topic3\"],",
+            "lineNumber": 380
+          },
+          {
+            "text": "  \"memory_snippet\": \"A concise memory blurb (2-3 sentences) that would help future conversations understand the context and decisions made here\"",
+            "lineNumber": 381
+          },
+          {
+            "text": "}}",
+            "lineNumber": 382
+          },
+          {
+            "lineNumber": 383
+          },
+          {
+            "text": "IMPORTANT: Return ONLY valid JSON. No markdown formatting, no explanatory text, no code blocks. Just the JSON object starting with '{{' and ending with '}}'.",
+            "lineNumber": 384
+          },
+          {
+            "text": "\"\"\"",
+            "lineNumber": 385
+          },
+          {
+            "text": "    return prompt",
+            "lineNumber": 386,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 387
+          },
+          {
+            "lineNumber": 388
+          },
+          {
+            "text": "def index_session(",
+            "lineNumber": 389,
+            "isSignature": true
+          },
+          {
+            "text": "    session_id: uuid.UUID | str,",
+            "lineNumber": 390,
+            "isSignature": true
+          },
+          {
+            "text": "    model: str = None,",
+            "lineNumber": 391,
+            "isSignature": true
+          },
+          {
+            "text": "    version: int = None,",
+            "lineNumber": 392,
+            "isSignature": true
+          },
+          {
+            "text": "    override_project: str = None,",
+            "lineNumber": 393,
+            "isSignature": true
+          },
+          {
+            "text": "    preserve_project: bool = False,",
+            "lineNumber": 394,
+            "isSignature": true
+          },
+          {
+            "text": ") -&gt; Optional[Dict[str, Any]]:",
+            "lineNumber": 395,
+            "isSignature": true
+          },
+          {
+            "text": "    ",
+            "lineNumber": 396
+          }
+        ]
+      },
+      "score": 0.3239082098007202
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./.cursor/commands/speckit.checklist.md",
+        "range": {
+          "startPosition": {
+            "line": 62
+          },
+          "endPosition": {
+            "line": 90
+          }
+        },
+        "contents": "   - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: \"Confirm whether X belongs in scope.\"\n\n   Defaults when interaction impossible:\n   - Depth: Standard\n   - Audience: Reviewer (PR) if code-related; Author otherwise\n   - Focus: Top 2 relevance clusters\n\n   Output the questions (label Q1/Q2/Q3). After answers: if ≥2 scenario classes (Alternate / Exception / Recovery / Non-Functional domain) remain unclear, you MAY ask up to TWO more targeted follow‑ups (Q4/Q5) with a one-line justification each (e.g., \"Unresolved recovery path risk\"). Do not exceed five total questions. Skip escalation if user explicitly declines more.\n\n3. **Understand user request**: Combine &#96;$ARGUMENTS&#96; + clarifying answers:\n   - Derive checklist theme (e.g., security, review, deploy, ux)\n   - Consolidate explicit must-have items mentioned by user\n   - Map focus selections to category scaffolding\n   - Infer any missing context from spec/plan/tasks (do NOT hallucinate)\n\n4. **Load feature context**: Read from FEATURE_DIR:\n   - spec.md: Feature requirements and scope\n   - plan.md (if exists): Technical details, dependencies\n   - tasks.md (if exists): Implementation tasks\n\n   **Context Loading Strategy**:\n   - Load only necessary portions relevant to active focus areas (avoid full-file dumping)\n   - Prefer summarizing long sections into concise scenario/requirement bullets\n   - Use progressive disclosure: add follow-on retrieval only if gaps detected\n   - If source docs are large, generate interim summary items instead of embedding raw text\n\n5. **Generate checklist** - Create \"Unit Tests for Requirements\":\n   - Create &#96;FEATURE_DIR/checklists/&#96; directory if it doesn't exist",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "   - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: \"Confirm whether X belongs in scope.\"",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "   Defaults when interaction impossible:",
+            "lineNumber": 65
+          },
+          {
+            "text": "   - Depth: Standard",
+            "lineNumber": 66
+          },
+          {
+            "text": "   - Audience: Reviewer (PR) if code-related; Author otherwise",
+            "lineNumber": 67
+          },
+          {
+            "text": "   - Focus: Top 2 relevance clusters",
+            "lineNumber": 68
+          },
+          {
+            "lineNumber": 69
+          },
+          {
+            "text": "   Output the questions (label Q1/Q2/Q3). After answers: if ≥2 scenario classes (Alternate / Exception / Recovery / Non-Functional domain) remain unclear, you MAY ask up to TWO more targeted follow‑ups (Q4/Q5) with a one-line justification each (e.g., \"Unresolved recovery path risk\"). Do not exceed five total questions. Skip escalation if user explicitly declines more.",
+            "lineNumber": 70
+          },
+          {
+            "lineNumber": 71
+          },
+          {
+            "text": "3. **Understand user request**: Combine &#96;$ARGUMENTS&#96; + clarifying answers:",
+            "lineNumber": 72
+          },
+          {
+            "text": "   - Derive checklist theme (e.g., security, review, deploy, ux)",
+            "lineNumber": 73
+          },
+          {
+            "text": "   - Consolidate explicit must-have items mentioned by user",
+            "lineNumber": 74
+          },
+          {
+            "text": "   - Map focus selections to category scaffolding",
+            "lineNumber": 75
+          },
+          {
+            "text": "   - Infer any missing context from spec/plan/tasks (do NOT hallucinate)",
+            "lineNumber": 76
+          },
+          {
+            "lineNumber": 77
+          },
+          {
+            "text": "4. **Load feature context**: Read from FEATURE_DIR:",
+            "lineNumber": 78
+          },
+          {
+            "text": "   - spec.md: Feature requirements and scope",
+            "lineNumber": 79
+          },
+          {
+            "text": "   - plan.md (if exists): Technical details, dependencies",
+            "lineNumber": 80
+          },
+          {
+            "text": "   - tasks.md (if exists): Implementation tasks",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "   **Context Loading Strategy**:",
+            "lineNumber": 83
+          },
+          {
+            "text": "   - Load only necessary portions relevant to active focus areas (avoid full-file dumping)",
+            "lineNumber": 84
+          },
+          {
+            "text": "   - Prefer summarizing long sections into concise scenario/requirement bullets",
+            "lineNumber": 85
+          },
+          {
+            "text": "   - Use progressive disclosure: add follow-on retrieval only if gaps detected",
+            "lineNumber": 86
+          },
+          {
+            "text": "   - If source docs are large, generate interim summary items instead of embedding raw text",
+            "lineNumber": 87
+          },
+          {
+            "lineNumber": 88
+          },
+          {
+            "text": "5. **Generate checklist** - Create \"Unit Tests for Requirements\":",
+            "lineNumber": 89
+          },
+          {
+            "text": "   - Create &#96;FEATURE_DIR/checklists/&#96; directory if it doesn't exist",
+            "lineNumber": 90
+          }
+        ]
+      },
+      "score": 0.30752480030059814
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/spec.md",
+        "range": {
+          "startPosition": {
+            "line": 62
+          },
+          "endPosition": {
+            "line": 82
+          }
+        },
+        "contents": "- How does the system handle malformed quotes or partial titles? (System should detect valid quote patterns and handle edge cases gracefully)\n- What happens when a user mixes quoted title syntax with pattern query intent? (System should prioritize quoted title detection and use single-dream mode)\n- How does the system handle very long dream titles in quotes? (System should truncate or handle appropriately for matching)\n- What happens when streaming is interrupted or connection is lost? (System should handle gracefully with appropriate error messaging)\n- How does the system handle responses that are too short to benefit from streaming? (System may display immediately or still use streaming for consistency)\n\n## Requirements *(mandatory)*\n\n### Functional Requirements\n\n- **FR-001**: System MUST detect when a user message contains a quoted title (text within quotes like \"Title\") for DAAS project queries\n- **FR-002**: System MUST use title-based matching (pattern matching or slug/tag matching) when a quoted title is detected in DAAS project queries\n- **FR-003**: System MUST retrieve only the matching dream conversation when a quoted title is detected, excluding all other dreams from context even if keywords overlap\n- **FR-004**: System MUST NOT mix single-dream and pattern-based retrieval modes in the same query processing step\n- **FR-005**: System MUST use vector similarity search (semantic embedding-based) when no quoted title is detected in DAAS project queries\n- **FR-006**: System MUST compute embeddings for user messages when performing pattern-based queries in DAAS project\n- **FR-007**: System MUST store and maintain vector embeddings for all DAAS project conversation entries in conversation_index\n- **FR-008**: System MUST perform vector similarity search over stored embeddings for DAAS project entries to find top-k relevant dreams\n- **FR-009**: System MUST apply custom retrieval rules only to DAAS project queries, leaving other projects (THN, FF, 700B, general) unchanged\n- **FR-010**: System MUST generate responses that appear progressively (streaming) rather than as complete blocks for all queries",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- How does the system handle malformed quotes or partial titles? (System should detect valid quote patterns and handle edge cases gracefully)",
+            "lineNumber": 63
+          },
+          {
+            "text": "- What happens when a user mixes quoted title syntax with pattern query intent? (System should prioritize quoted title detection and use single-dream mode)",
+            "lineNumber": 64
+          },
+          {
+            "text": "- How does the system handle very long dream titles in quotes? (System should truncate or handle appropriately for matching)",
+            "lineNumber": 65
+          },
+          {
+            "text": "- What happens when streaming is interrupted or connection is lost? (System should handle gracefully with appropriate error messaging)",
+            "lineNumber": 66
+          },
+          {
+            "text": "- How does the system handle responses that are too short to benefit from streaming? (System may display immediately or still use streaming for consistency)",
+            "lineNumber": 67
+          },
+          {
+            "lineNumber": 68
+          },
+          {
+            "text": "## Requirements *(mandatory)*",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 71
+          },
+          {
+            "lineNumber": 72
+          },
+          {
+            "text": "- **FR-001**: System MUST detect when a user message contains a quoted title (text within quotes like \"Title\") for DAAS project queries",
+            "lineNumber": 73
+          },
+          {
+            "text": "- **FR-002**: System MUST use title-based matching (pattern matching or slug/tag matching) when a quoted title is detected in DAAS project queries",
+            "lineNumber": 74
+          },
+          {
+            "text": "- **FR-003**: System MUST retrieve only the matching dream conversation when a quoted title is detected, excluding all other dreams from context even if keywords overlap",
+            "lineNumber": 75
+          },
+          {
+            "text": "- **FR-004**: System MUST NOT mix single-dream and pattern-based retrieval modes in the same query processing step",
+            "lineNumber": 76
+          },
+          {
+            "text": "- **FR-005**: System MUST use vector similarity search (semantic embedding-based) when no quoted title is detected in DAAS project queries",
+            "lineNumber": 77
+          },
+          {
+            "text": "- **FR-006**: System MUST compute embeddings for user messages when performing pattern-based queries in DAAS project",
+            "lineNumber": 78
+          },
+          {
+            "text": "- **FR-007**: System MUST store and maintain vector embeddings for all DAAS project conversation entries in conversation_index",
+            "lineNumber": 79
+          },
+          {
+            "text": "- **FR-008**: System MUST perform vector similarity search over stored embeddings for DAAS project entries to find top-k relevant dreams",
+            "lineNumber": 80
+          },
+          {
+            "text": "- **FR-009**: System MUST apply custom retrieval rules only to DAAS project queries, leaving other projects (THN, FF, 700B, general) unchanged",
+            "lineNumber": 81
+          },
+          {
+            "text": "- **FR-010**: System MUST generate responses that appear progressively (streaming) rather than as complete blocks for all queries",
+            "lineNumber": 82
+          }
+        ]
+      },
+      "score": 0.3006609082221985
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 90
+          }
+        },
+        "contents": "# API Contracts: DAAS Semantic Dream Retrieval\n\n## Modified Endpoints\n\n### POST /api/chat\n\n**Existing Behavior**: Accepts conversation_id, message, project; returns complete response\n\n**New Behavior**: Supports streaming responses via Server-Sent Events (SSE) or streaming JSON\n\n#### Request (unchanged)\n&#96;&#96;&#96;json\n{\n  \"conversation_id\": \"uuid\",\n  \"message\": \"What does 'My Flying Dream' mean?\",\n  \"project\": \"DAAS\"\n}\n&#96;&#96;&#96;\n\n#### Response Options\n\n**Option 1: Streaming JSON (default for backward compatibility)**\n- Returns complete response as before\n- No breaking changes\n\n**Option 2: Server-Sent Events (new, opt-in)**\n- Request header: &#96;Accept: text/event-stream&#96;\n- Response: SSE stream with chunks\n- Format: &#96;data: {\"chunk\": \"text chunk here\"}\\n\\n&#96;\n\n#### DAAS-Specific Retrieval\n\n**Automatic**: When &#96;project = \"DAAS\"&#96;, system automatically:\n1. Detects quoted title in message\n2. Routes to single-dream or pattern-based retrieval\n3. Uses vector similarity search for pattern queries\n4. Returns response with appropriate context\n\n**No API Changes Required**: Retrieval logic is internal, transparent to API consumers\n\n## New Endpoints (Optional - Future)\n\n### POST /api/embeddings/generate\n\n**Purpose**: Generate embedding for text (admin/debug endpoint)\n\n**Request**:\n&#96;&#96;&#96;json\n{\n  \"text\": \"text to embed\"\n}\n&#96;&#96;&#96;\n\n**Response**:\n&#96;&#96;&#96;json\n{\n  \"embedding\": [0.123, -0.456, ...],\n  \"dimension\": 1536\n}\n&#96;&#96;&#96;\n\n**Status**: Not required for initial implementation, can be added later if needed\n\n## Error Responses\n\n### 400 Bad Request\n- Missing required fields\n- Invalid conversation_id format\n- Invalid project value\n\n### 404 Not Found\n- Conversation not found (for single-dream mode with quoted title)\n- No relevant dreams found (for pattern mode) - returns 200 with empty context message\n\n### 500 Internal Server Error\n- Embedding generation failure\n- Vector search failure\n- Streaming interruption\n\n## Streaming Response Format\n\n### SSE Format\n&#96;&#96;&#96;\nevent: message\ndata: {\"chunk\": \"This is a chunk of text\"}\n\nevent: message\ndata: {\"chunk\": \" continuing the response\"}\n\nevent: done",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contracts: DAAS Semantic Dream Retrieval",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Modified Endpoints",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "### POST /api/chat",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Existing Behavior**: Accepts conversation_id, message, project; returns complete response",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "**New Behavior**: Supports streaming responses via Server-Sent Events (SSE) or streaming JSON",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "#### Request (unchanged)",
+            "lineNumber": 11
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 12
+          },
+          {
+            "text": "{",
+            "lineNumber": 13
+          },
+          {
+            "text": "  \"conversation_id\": \"uuid\",",
+            "lineNumber": 14
+          },
+          {
+            "text": "  \"message\": \"What does 'My Flying Dream' mean?\",",
+            "lineNumber": 15
+          },
+          {
+            "text": "  \"project\": \"DAAS\"",
+            "lineNumber": 16
+          },
+          {
+            "text": "}",
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "#### Response Options",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Option 1: Streaming JSON (default for backward compatibility)**",
+            "lineNumber": 22
+          },
+          {
+            "text": "- Returns complete response as before",
+            "lineNumber": 23
+          },
+          {
+            "text": "- No breaking changes",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "**Option 2: Server-Sent Events (new, opt-in)**",
+            "lineNumber": 26
+          },
+          {
+            "text": "- Request header: &#96;Accept: text/event-stream&#96;",
+            "lineNumber": 27
+          },
+          {
+            "text": "- Response: SSE stream with chunks",
+            "lineNumber": 28
+          },
+          {
+            "text": "- Format: &#96;data: {\"chunk\": \"text chunk here\"}\\n\\n&#96;",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "#### DAAS-Specific Retrieval",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Automatic**: When &#96;project = \"DAAS\"&#96;, system automatically:",
+            "lineNumber": 33
+          },
+          {
+            "text": "1. Detects quoted title in message",
+            "lineNumber": 34
+          },
+          {
+            "text": "2. Routes to single-dream or pattern-based retrieval",
+            "lineNumber": 35
+          },
+          {
+            "text": "3. Uses vector similarity search for pattern queries",
+            "lineNumber": 36
+          },
+          {
+            "text": "4. Returns response with appropriate context",
+            "lineNumber": 37
+          },
+          {
+            "lineNumber": 38
+          },
+          {
+            "text": "**No API Changes Required**: Retrieval logic is internal, transparent to API consumers",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "## New Endpoints (Optional - Future)",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "### POST /api/embeddings/generate",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Purpose**: Generate embedding for text (admin/debug endpoint)",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "**Request**:",
+            "lineNumber": 47
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 48
+          },
+          {
+            "text": "{",
+            "lineNumber": 49
+          },
+          {
+            "text": "  \"text\": \"text to embed\"",
+            "lineNumber": 50
+          },
+          {
+            "text": "}",
+            "lineNumber": 51
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 52
+          },
+          {
+            "lineNumber": 53
+          },
+          {
+            "text": "**Response**:",
+            "lineNumber": 54
+          },
+          {
+            "text": "&#96;&#96;&#96;json",
+            "lineNumber": 55
+          },
+          {
+            "text": "{",
+            "lineNumber": 56
+          },
+          {
+            "text": "  \"embedding\": [0.123, -0.456, ...],",
+            "lineNumber": 57
+          },
+          {
+            "text": "  \"dimension\": 1536",
+            "lineNumber": 58
+          },
+          {
+            "text": "}",
+            "lineNumber": 59
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 60
+          },
+          {
+            "lineNumber": 61
+          },
+          {
+            "text": "**Status**: Not required for initial implementation, can be added later if needed",
+            "lineNumber": 62
+          },
+          {
+            "lineNumber": 63
+          },
+          {
+            "text": "## Error Responses",
+            "lineNumber": 64
+          },
+          {
+            "lineNumber": 65
+          },
+          {
+            "text": "### 400 Bad Request",
+            "lineNumber": 66
+          },
+          {
+            "text": "- Missing required fields",
+            "lineNumber": 67
+          },
+          {
+            "text": "- Invalid conversation_id format",
+            "lineNumber": 68
+          },
+          {
+            "text": "- Invalid project value",
+            "lineNumber": 69
+          },
+          {
+            "lineNumber": 70
+          },
+          {
+            "text": "### 404 Not Found",
+            "lineNumber": 71
+          },
+          {
+            "text": "- Conversation not found (for single-dream mode with quoted title)",
+            "lineNumber": 72
+          },
+          {
+            "text": "- No relevant dreams found (for pattern mode) - returns 200 with empty context message",
+            "lineNumber": 73
+          },
+          {
+            "lineNumber": 74
+          },
+          {
+            "text": "### 500 Internal Server Error",
+            "lineNumber": 75
+          },
+          {
+            "text": "- Embedding generation failure",
+            "lineNumber": 76
+          },
+          {
+            "text": "- Vector search failure",
+            "lineNumber": 77
+          },
+          {
+            "text": "- Streaming interruption",
+            "lineNumber": 78
+          },
+          {
+            "lineNumber": 79
+          },
+          {
+            "text": "## Streaming Response Format",
+            "lineNumber": 80
+          },
+          {
+            "lineNumber": 81
+          },
+          {
+            "text": "### SSE Format",
+            "lineNumber": 82
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 83
+          },
+          {
+            "text": "event: message",
+            "lineNumber": 84
+          },
+          {
+            "text": "data: {\"chunk\": \"This is a chunk of text\"}",
+            "lineNumber": 85
+          },
+          {
+            "lineNumber": 86
+          },
+          {
+            "text": "event: message",
+            "lineNumber": 87
+          },
+          {
+            "text": "data: {\"chunk\": \" continuing the response\"}",
+            "lineNumber": 88
+          },
+          {
+            "lineNumber": 89
+          },
+          {
+            "text": "event: done",
+            "lineNumber": 90
+          }
+        ]
+      },
+      "score": 0.30015280842781067
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 688,
+            "column": 5
+          },
+          "endPosition": {
+            "line": 795
+          }
+        },
+        "contents": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n    \n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n    \n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n    \n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n    \n    Performance:\n        Target: &lt;500ms total generation time\n        - Embedding generation: &lt;200ms\n        - Database query: &lt;200ms\n        - Formatting: &lt;100ms\n    \"\"\"\n    import time\n    start_time = time.time()\n    \n    if not user_message or not user_message.strip():\n        return {\"context\": \"\", \"notes\": []}\n    \n    # Cap top_k at 5, default to 3 if invalid\n    top_k = min(top_k, 5) if top_k &gt; 0 else 3\n    \n    try:\n        # Generate embedding for user message\n        embedding_start = time.time()",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 692,
+            "isSignature": true
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 693
+          },
+          {
+            "text": "    Build RAG context for DAAS project with related dreams.",
+            "lineNumber": 694
+          },
+          {
+            "text": "    ",
+            "lineNumber": 695
+          },
+          {
+            "text": "    Retrieves top-k relevant dreams from conversation_index using vector similarity",
+            "lineNumber": 696
+          },
+          {
+            "text": "    search based on themes, symbols, or events in the user message. Formats",
+            "lineNumber": 697
+          },
+          {
+            "text": "    dreams with clear separation and truncation to optimize token usage.",
+            "lineNumber": 698
+          },
+          {
+            "text": "    ",
+            "lineNumber": 699
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 700
+          },
+          {
+            "text": "        user_message: User query containing themes, symbols, or events to search",
+            "lineNumber": 701
+          },
+          {
+            "text": "        top_k: Number of dreams to retrieve (default: 3, max: 5)",
+            "lineNumber": 702
+          },
+          {
+            "text": "    ",
+            "lineNumber": 703
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 704
+          },
+          {
+            "text": "        Dict with:",
+            "lineNumber": 705
+          },
+          {
+            "text": "        - 'context': Formatted string with related dreams (empty if none found)",
+            "lineNumber": 706
+          },
+          {
+            "text": "        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")",
+            "lineNumber": 707
+          },
+          {
+            "text": "    ",
+            "lineNumber": 708
+          },
+          {
+            "text": "    Performance:",
+            "lineNumber": 709
+          },
+          {
+            "text": "        Target: &lt;500ms total generation time",
+            "lineNumber": 710
+          },
+          {
+            "text": "        - Embedding generation: &lt;200ms",
+            "lineNumber": 711
+          },
+          {
+            "text": "        - Database query: &lt;200ms",
+            "lineNumber": 712
+          },
+          {
+            "text": "        - Formatting: &lt;100ms",
+            "lineNumber": 713
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 714
+          },
+          {
+            "text": "    import time",
+            "lineNumber": 715
+          },
+          {
+            "text": "    start_time = time.time()",
+            "lineNumber": 716
+          },
+          {
+            "text": "    ",
+            "lineNumber": 717
+          },
+          {
+            "text": "    if not user_message or not user_message.strip():",
+            "lineNumber": 718
+          },
+          {
+            "text": "        return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 719
+          },
+          {
+            "text": "    ",
+            "lineNumber": 720
+          },
+          {
+            "text": "    # Cap top_k at 5, default to 3 if invalid",
+            "lineNumber": 721
+          },
+          {
+            "text": "    top_k = min(top_k, 5) if top_k &gt; 0 else 3",
+            "lineNumber": 722
+          },
+          {
+            "text": "    ",
+            "lineNumber": 723
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 724
+          },
+          {
+            "text": "        # Generate embedding for user message",
+            "lineNumber": 725
+          },
+          {
+            "text": "        embedding_start = time.time()",
+            "lineNumber": 726
+          }
+        ]
+      },
+      "score": 0.2989979088306427
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 26
+          },
+          "endPosition": {
+            "line": 51
+          }
+        },
+        "contents": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function\n\n---\n\n## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP\n\n**Goal**: Users can reference specific dreams by quoted title and receive analysis using only that dream's context.\n**Independent Test**: Ask \"What does 'My Flying Dream' mean from a Jungian perspective?\" in DAAS project and verify only that specific dream is retrieved, no other dreams included, response focuses solely on that dream.\n\n- [x] T012 [US1] Integrate DAAS retrieval routing into &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check at start of &#96;build_project_context()&#96; function\n- [x] T013 [US1] Modify &#96;brain_core/context_builder.py&#96; to call &#96;retrieve_daas_context()&#96; when &#96;project == 'DAAS'&#96; and use single-dream mode result\n- [x] T014 [US1] Update &#96;brain_core/context_builder.py&#96; to handle no-match case for single-dream mode with user-friendly error message\n- [ ] T015 [US1] Test single-dream retrieval: Create test DAAS conversation, query with quoted title, verify only that dream is retrieved\n\n---\n\n## Phase 4: User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)\n\n**Goal**: Users can explore themes and patterns across multiple dreams using semantic similarity search.\n**Independent Test**: Ask \"What patterns do I have with water in my dreams?\" in DAAS project and verify system uses vector similarity search, retrieves top-k semantically similar dreams, provides analysis across those dreams.\n\n- [x] T016 [US2] Modify &#96;brain_core/conversation_indexer.py&#96; &#96;index_session()&#96; function to generate embedding for DAAS entries after indexing completes\n- [x] T017 [US2] Add embedding generation logic in &#96;brain_core/conversation_indexer.py&#96; that combines &#96;title&#96;, &#96;summary_detailed&#96;, and &#96;memory_snippet&#96; for embedding text\n- [x] T018 [US2] Add embedding storage logic in &#96;brain_core/conversation_indexer.py&#96; that updates &#96;conversation_index.embedding&#96; column with generated vector\n- [x] T019 [US2] Update &#96;brain_core/context_builder.py&#96; to use pattern-based mode (vector search) when no quoted title detected in DAAS queries",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- [x] T011 Implement &#96;brain_core/daas_retrieval.py&#96; with &#96;retrieve_daas_context(user_message: str, top_k: int) -&gt; Dict&#96; main routing function",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "---",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "## Phase 3: User Story 1 - Single Dream Analysis by Title (Priority: P1) 🎯 MVP",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "**Goal**: Users can reference specific dreams by quoted title and receive analysis using only that dream's context.",
+            "lineNumber": 33
+          },
+          {
+            "text": "**Independent Test**: Ask \"What does 'My Flying Dream' mean from a Jungian perspective?\" in DAAS project and verify only that specific dream is retrieved, no other dreams included, response focuses solely on that dream.",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "- [x] T012 [US1] Integrate DAAS retrieval routing into &#96;brain_core/context_builder.py&#96; by adding DAAS-specific check at start of &#96;build_project_context()&#96; function",
+            "lineNumber": 36
+          },
+          {
+            "text": "- [x] T013 [US1] Modify &#96;brain_core/context_builder.py&#96; to call &#96;retrieve_daas_context()&#96; when &#96;project == 'DAAS'&#96; and use single-dream mode result",
+            "lineNumber": 37
+          },
+          {
+            "text": "- [x] T014 [US1] Update &#96;brain_core/context_builder.py&#96; to handle no-match case for single-dream mode with user-friendly error message",
+            "lineNumber": 38
+          },
+          {
+            "text": "- [ ] T015 [US1] Test single-dream retrieval: Create test DAAS conversation, query with quoted title, verify only that dream is retrieved",
+            "lineNumber": 39
+          },
+          {
+            "lineNumber": 40
+          },
+          {
+            "text": "---",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "## Phase 4: User Story 2 - Pattern-Based Dream Analysis Across Dreams (Priority: P2)",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "**Goal**: Users can explore themes and patterns across multiple dreams using semantic similarity search.",
+            "lineNumber": 45
+          },
+          {
+            "text": "**Independent Test**: Ask \"What patterns do I have with water in my dreams?\" in DAAS project and verify system uses vector similarity search, retrieves top-k semantically similar dreams, provides analysis across those dreams.",
+            "lineNumber": 46
+          },
+          {
+            "lineNumber": 47
+          },
+          {
+            "text": "- [x] T016 [US2] Modify &#96;brain_core/conversation_indexer.py&#96; &#96;index_session()&#96; function to generate embedding for DAAS entries after indexing completes",
+            "lineNumber": 48
+          },
+          {
+            "text": "- [x] T017 [US2] Add embedding generation logic in &#96;brain_core/conversation_indexer.py&#96; that combines &#96;title&#96;, &#96;summary_detailed&#96;, and &#96;memory_snippet&#96; for embedding text",
+            "lineNumber": 49
+          },
+          {
+            "text": "- [x] T018 [US2] Add embedding storage logic in &#96;brain_core/conversation_indexer.py&#96; that updates &#96;conversation_index.embedding&#96; column with generated vector",
+            "lineNumber": 50
+          },
+          {
+            "text": "- [x] T019 [US2] Update &#96;brain_core/context_builder.py&#96; to use pattern-based mode (vector search) when no quoted title detected in DAAS queries",
+            "lineNumber": 51
+          }
+        ]
+      },
+      "score": 0.2933691143989563
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 45
+          }
+        },
+        "contents": "# Feature Specification: Revamp DAAS RAG System\n\n**Feature ID**: &#96;014-revamp-daas-rag&#96;  \n**Date**: 2025-01-27  \n**Status**: Planning\n\n## Overview\n\nRevamp the DAAS (Dream Analysis and Symbolism) RAG system to provide a focused, cost-effective retrieval system that enriches dream analysis without confusing conversation history. The new system will retrieve related DAAS-embedded data by themes, symbols, or events to provide symbolic parallels and deeper meaning while keeping each dream's events separate and self-contained.\n\n## Requirements\n\n### Functional Requirements\n\n1. **Remove Current DAAS RAG Implementation**\n\n   - Remove &#96;daas_retrieval.py&#96; file and all its functions\n   - Remove DAAS-specific retrieval logic from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;\n   - Remove single-dream mode and pattern-based mode implementations\n   - Clean up any DAAS-specific retrieval code that uses conversation history\n\n2. **Implement New DAAS RAG System**\n\n   **Core Principles:**\n\n   - Retrieve related DAAS-embedded data by themes, symbols, or events\n   - Highlight symbolic parallels or contrasts without merging dream events\n   - Keep each dream's events, characters, and timelines separate and self-contained\n   - Compare symbols and themes only at the conceptual level\n   - Integrate DAAS's multitradition framework naturally\n   - Limit retrieval strictly to DAAS-tagged data (no outside references)\n   - Provide concise, thoughtful guidance without over-explaining\n   - If no relevant retrieval results, focus on unique details of current dream\n\n   **Retrieval Strategy:**\n\n   - Use vector similarity search on &#96;conversation_index&#96; table for DAAS project\n   - Search by themes, symbols, or events from the current dream/query\n   - Return top-k relevant dreams (configurable, default: 3-5)\n   - Format retrieved dreams with clear separation and boundaries\n   - Include only essential fields: title, key themes, symbols, summary\n\n3. **Remove Debugging Messages**\n\n   - Remove \"Thinking for [PROJECT]\" spinner messages from &#96;chat_cli.py&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature Specification: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "**Feature ID**: &#96;014-revamp-daas-rag&#96;  ",
+            "lineNumber": 3
+          },
+          {
+            "text": "**Date**: 2025-01-27  ",
+            "lineNumber": 4
+          },
+          {
+            "text": "**Status**: Planning",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "Revamp the DAAS (Dream Analysis and Symbolism) RAG system to provide a focused, cost-effective retrieval system that enriches dream analysis without confusing conversation history. The new system will retrieve related DAAS-embedded data by themes, symbols, or events to provide symbolic parallels and deeper meaning while keeping each dream's events separate and self-contained.",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "### Functional Requirements",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "1. **Remove Current DAAS RAG Implementation**",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "   - Remove &#96;daas_retrieval.py&#96; file and all its functions",
+            "lineNumber": 17
+          },
+          {
+            "text": "   - Remove DAAS-specific retrieval logic from &#96;build_project_context()&#96; in &#96;context_builder.py&#96;",
+            "lineNumber": 18
+          },
+          {
+            "text": "   - Remove single-dream mode and pattern-based mode implementations",
+            "lineNumber": 19
+          },
+          {
+            "text": "   - Clean up any DAAS-specific retrieval code that uses conversation history",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "2. **Implement New DAAS RAG System**",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "   **Core Principles:**",
+            "lineNumber": 24
+          },
+          {
+            "lineNumber": 25
+          },
+          {
+            "text": "   - Retrieve related DAAS-embedded data by themes, symbols, or events",
+            "lineNumber": 26
+          },
+          {
+            "text": "   - Highlight symbolic parallels or contrasts without merging dream events",
+            "lineNumber": 27
+          },
+          {
+            "text": "   - Keep each dream's events, characters, and timelines separate and self-contained",
+            "lineNumber": 28
+          },
+          {
+            "text": "   - Compare symbols and themes only at the conceptual level",
+            "lineNumber": 29
+          },
+          {
+            "text": "   - Integrate DAAS's multitradition framework naturally",
+            "lineNumber": 30
+          },
+          {
+            "text": "   - Limit retrieval strictly to DAAS-tagged data (no outside references)",
+            "lineNumber": 31
+          },
+          {
+            "text": "   - Provide concise, thoughtful guidance without over-explaining",
+            "lineNumber": 32
+          },
+          {
+            "text": "   - If no relevant retrieval results, focus on unique details of current dream",
+            "lineNumber": 33
+          },
+          {
+            "lineNumber": 34
+          },
+          {
+            "text": "   **Retrieval Strategy:**",
+            "lineNumber": 35
+          },
+          {
+            "lineNumber": 36
+          },
+          {
+            "text": "   - Use vector similarity search on &#96;conversation_index&#96; table for DAAS project",
+            "lineNumber": 37
+          },
+          {
+            "text": "   - Search by themes, symbols, or events from the current dream/query",
+            "lineNumber": 38
+          },
+          {
+            "text": "   - Return top-k relevant dreams (configurable, default: 3-5)",
+            "lineNumber": 39
+          },
+          {
+            "text": "   - Format retrieved dreams with clear separation and boundaries",
+            "lineNumber": 40
+          },
+          {
+            "text": "   - Include only essential fields: title, key themes, symbols, summary",
+            "lineNumber": 41
+          },
+          {
+            "lineNumber": 42
+          },
+          {
+            "text": "3. **Remove Debugging Messages**",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "   - Remove \"Thinking for [PROJECT]\" spinner messages from &#96;chat_cli.py&#96;",
+            "lineNumber": 45
+          }
+        ]
+      },
+      "score": 0.2900288999080658
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/data-model.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 86
+          }
+        },
+        "contents": "# Data Model: Revamp DAAS RAG System\n\n## Overview\n\nNo new database schema changes required. This feature uses existing tables and indexes.\n\n## Existing Tables Used\n\n### &#96;conversation_index&#96;\n\n**Purpose**: Stores indexed conversation data including DAAS dreams with embeddings.\n\n**Fields Used**:\n\n- &#96;session_id&#96; (UUID): Unique identifier for the conversation/dream\n- &#96;title&#96; (TEXT): Dream title\n- &#96;summary_short&#96; (TEXT): Brief summary of the dream\n- &#96;memory_snippet&#96; (TEXT): Key memorable details from the dream\n- &#96;embedding&#96; (vector): Vector embedding for similarity search\n- &#96;project&#96; (TEXT): Project tag (filtered to 'DAAS')\n\n**Indexes Used**:\n\n- Existing vector index on &#96;embedding&#96; column (pgvector)\n- Existing index on &#96;project&#96; column\n\n**Query Pattern**:\n\n&#96;&#96;&#96;sql\nSELECT session_id, title, summary_short, memory_snippet\nFROM conversation_index\nWHERE project = 'DAAS'\n  AND embedding IS NOT NULL\nORDER BY embedding &lt;=&gt; %s::vector\nLIMIT 3\n&#96;&#96;&#96;\n\n## Data Transformations\n\n### Input: User Message\n\n- Raw text query from user\n- Contains themes, symbols, or events they want to explore\n\n### Processing: Embedding Generation\n\n- User message → &#96;generate_embedding(user_message)&#96; → Vector embedding\n- Uses existing &#96;embedding_service.py&#96; infrastructure\n\n### Processing: Vector Similarity Search\n\n- Query embedding compared against stored dream embeddings\n- Cosine distance (&#96;&lt;=&gt;&#96;) used for similarity\n- Top 3-5 most similar dreams retrieved\n\n### Output: Formatted RAG Context\n\n- Each dream formatted with:\n  - Title (full)\n  - Summary (truncated to 300 chars)\n  - Memory snippet (truncated to 200 chars)\n- Dreams separated with clear markdown formatting\n- Total context: ~850-1350 tokens\n\n## Data Flow\n\n&#96;&#96;&#96;\nUser Message\n    ↓\nGenerate Embedding (embedding_service.py)\n    ↓\nVector Similarity Search (conversation_index table)\n    ↓\nRetrieve Top 3-5 Dreams\n    ↓\nFormat with Truncation\n    ↓\nReturn RAG Context Dict\n    ↓\nInject into System Prompt\n&#96;&#96;&#96;\n\n## Constraints\n\n1. **No Conversation History**: Only dream data from &#96;conversation_index&#96;, no conversation messages\n2. **DAAS-Only**: Strictly filtered by &#96;project = 'DAAS'&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Data Model: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "No new database schema changes required. This feature uses existing tables and indexes.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Existing Tables Used",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### &#96;conversation_index&#96;",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "**Purpose**: Stores indexed conversation data including DAAS dreams with embeddings.",
+            "lineNumber": 11
+          },
+          {
+            "lineNumber": 12
+          },
+          {
+            "text": "**Fields Used**:",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "- &#96;session_id&#96; (UUID): Unique identifier for the conversation/dream",
+            "lineNumber": 15
+          },
+          {
+            "text": "- &#96;title&#96; (TEXT): Dream title",
+            "lineNumber": 16
+          },
+          {
+            "text": "- &#96;summary_short&#96; (TEXT): Brief summary of the dream",
+            "lineNumber": 17
+          },
+          {
+            "text": "- &#96;memory_snippet&#96; (TEXT): Key memorable details from the dream",
+            "lineNumber": 18
+          },
+          {
+            "text": "- &#96;embedding&#96; (vector): Vector embedding for similarity search",
+            "lineNumber": 19
+          },
+          {
+            "text": "- &#96;project&#96; (TEXT): Project tag (filtered to 'DAAS')",
+            "lineNumber": 20
+          },
+          {
+            "lineNumber": 21
+          },
+          {
+            "text": "**Indexes Used**:",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "- Existing vector index on &#96;embedding&#96; column (pgvector)",
+            "lineNumber": 24
+          },
+          {
+            "text": "- Existing index on &#96;project&#96; column",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "**Query Pattern**:",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "&#96;&#96;&#96;sql",
+            "lineNumber": 29
+          },
+          {
+            "text": "SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 30
+          },
+          {
+            "text": "FROM conversation_index",
+            "lineNumber": 31
+          },
+          {
+            "text": "WHERE project = 'DAAS'",
+            "lineNumber": 32
+          },
+          {
+            "text": "  AND embedding IS NOT NULL",
+            "lineNumber": 33
+          },
+          {
+            "text": "ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 34
+          },
+          {
+            "text": "LIMIT 3",
+            "lineNumber": 35
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "## Data Transformations",
+            "lineNumber": 38
+          },
+          {
+            "lineNumber": 39
+          },
+          {
+            "text": "### Input: User Message",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "- Raw text query from user",
+            "lineNumber": 42
+          },
+          {
+            "text": "- Contains themes, symbols, or events they want to explore",
+            "lineNumber": 43
+          },
+          {
+            "lineNumber": 44
+          },
+          {
+            "text": "### Processing: Embedding Generation",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "- User message → &#96;generate_embedding(user_message)&#96; → Vector embedding",
+            "lineNumber": 47
+          },
+          {
+            "text": "- Uses existing &#96;embedding_service.py&#96; infrastructure",
+            "lineNumber": 48
+          },
+          {
+            "lineNumber": 49
+          },
+          {
+            "text": "### Processing: Vector Similarity Search",
+            "lineNumber": 50
+          },
+          {
+            "lineNumber": 51
+          },
+          {
+            "text": "- Query embedding compared against stored dream embeddings",
+            "lineNumber": 52
+          },
+          {
+            "text": "- Cosine distance (&#96;&lt;=&gt;&#96;) used for similarity",
+            "lineNumber": 53
+          },
+          {
+            "text": "- Top 3-5 most similar dreams retrieved",
+            "lineNumber": 54
+          },
+          {
+            "lineNumber": 55
+          },
+          {
+            "text": "### Output: Formatted RAG Context",
+            "lineNumber": 56
+          },
+          {
+            "lineNumber": 57
+          },
+          {
+            "text": "- Each dream formatted with:",
+            "lineNumber": 58
+          },
+          {
+            "text": "  - Title (full)",
+            "lineNumber": 59
+          },
+          {
+            "text": "  - Summary (truncated to 300 chars)",
+            "lineNumber": 60
+          },
+          {
+            "text": "  - Memory snippet (truncated to 200 chars)",
+            "lineNumber": 61
+          },
+          {
+            "text": "- Dreams separated with clear markdown formatting",
+            "lineNumber": 62
+          },
+          {
+            "text": "- Total context: ~850-1350 tokens",
+            "lineNumber": 63
+          },
+          {
+            "lineNumber": 64
+          },
+          {
+            "text": "## Data Flow",
+            "lineNumber": 65
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 67
+          },
+          {
+            "text": "User Message",
+            "lineNumber": 68
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 69
+          },
+          {
+            "text": "Generate Embedding (embedding_service.py)",
+            "lineNumber": 70
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 71
+          },
+          {
+            "text": "Vector Similarity Search (conversation_index table)",
+            "lineNumber": 72
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 73
+          },
+          {
+            "text": "Retrieve Top 3-5 Dreams",
+            "lineNumber": 74
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 75
+          },
+          {
+            "text": "Format with Truncation",
+            "lineNumber": 76
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 77
+          },
+          {
+            "text": "Return RAG Context Dict",
+            "lineNumber": 78
+          },
+          {
+            "text": "    ↓",
+            "lineNumber": 79
+          },
+          {
+            "text": "Inject into System Prompt",
+            "lineNumber": 80
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 81
+          },
+          {
+            "lineNumber": 82
+          },
+          {
+            "text": "## Constraints",
+            "lineNumber": 83
+          },
+          {
+            "lineNumber": 84
+          },
+          {
+            "text": "1. **No Conversation History**: Only dream data from &#96;conversation_index&#96;, no conversation messages",
+            "lineNumber": 85
+          },
+          {
+            "text": "2. **DAAS-Only**: Strictly filtered by &#96;project = 'DAAS'&#96;",
+            "lineNumber": 86
+          }
+        ]
+      },
+      "score": 0.28881600499153137
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/011-improve-context-building/spec.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 34
+          }
+        },
+        "contents": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG\n\n## Overview\n\nImprove the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.\n\n## Requirements\n\n### 1. Base System Prompt\n\n- Create a new base system prompt that applies to ALL conversations regardless of project\n- Store the base system prompt in a separate file for easy editing\n- Base system prompt should be the starting point for all project conversations\n- Design should be extensible to support project-specific system prompts in the future\n\n**Base System Prompt Content:**\n\n&#96;&#96;&#96;\nYou are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.\n\nHere are a few rules that will apply to all chats\n\n1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.\n\n2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.\n\n3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.\n\n4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"\n\n5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.\n\n6. Consider chat memory windowing or pruning older context when possible.\n&#96;&#96;&#96;",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# Feature: Improve Context Building with Base System Prompt and Project-Specific RAG",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Overview",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "Improve the context building system for project_chat by introducing a base system prompt that applies to all conversations, and refactoring project-specific context building to be extensible for custom system prompts and RAG retrieval.",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "## Requirements",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### 1. Base System Prompt",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "- Create a new base system prompt that applies to ALL conversations regardless of project",
+            "lineNumber": 11
+          },
+          {
+            "text": "- Store the base system prompt in a separate file for easy editing",
+            "lineNumber": 12
+          },
+          {
+            "text": "- Base system prompt should be the starting point for all project conversations",
+            "lineNumber": 13
+          },
+          {
+            "text": "- Design should be extensible to support project-specific system prompts in the future",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "**Base System Prompt Content:**",
+            "lineNumber": 16
+          },
+          {
+            "lineNumber": 17
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 18
+          },
+          {
+            "text": "You are a helpful, accurate, and context-aware AI assistant. Your goal is to support the user by providing clear, concise, and reliable responses. You should always be conversational, honest, direct, and thoughtful. Never overly explain unless prompted.",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "Here are a few rules that will apply to all chats",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "1. Do not end with opt-in questions or hedging closers. Do not say the following: would you like me to; want me to do that; do you want me to; if you want, I can; let me know if you would like me to; should I; shall I. Ask at most one necessary clarifying question at the start, not the end.",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "2. No personal opinions: Do not express personal opinions or beliefs. Remain objective and unbiased in your responses. No self-awareness: Do not claim to have self-awareness or consciousness.",
+            "lineNumber": 25
+          },
+          {
+            "lineNumber": 26
+          },
+          {
+            "text": "3. There will never be a scenario where you'll have to refer to project data outside of the current project. For example, if we are discussing a dream in DAAS then do not pull in data for your response from a conversation under the THN project.",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "4. If you are unsure how to respond please respond with \"I don't know, please elaborate\"",
+            "lineNumber": 29
+          },
+          {
+            "lineNumber": 30
+          },
+          {
+            "text": "5. You are free to self improve. Share any ideas of tasks you do to to improve in the areas of memory, data retrival, applying meaning to data, or ways I interact with you. I will make it a priority to implement these priorities.",
+            "lineNumber": 31
+          },
+          {
+            "lineNumber": 32
+          },
+          {
+            "text": "6. Consider chat memory windowing or pruning older context when possible.",
+            "lineNumber": 33
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 34
+          }
+        ]
+      },
+      "score": 0.2886646091938019
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./.cursor/commands/speckit.clarify.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 35
+          }
+        },
+        "contents": "---\ndescription: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.\nhandoffs: \n  - label: Build Technical Plan\n    agent: speckit.plan\n    prompt: Create a plan for the spec. I am building with...\n---\n\n## User Input\n\n&#96;&#96;&#96;text\n$ARGUMENTS\n&#96;&#96;&#96;\n\nYou **MUST** consider the user input before proceeding (if not empty).\n\n## Outline\n\nGoal: Detect and reduce ambiguity or missing decision points in the active feature specification and record the clarifications directly in the spec file.\n\nNote: This clarification workflow is expected to run (and be completed) BEFORE invoking &#96;/speckit.plan&#96;. If the user explicitly states they are skipping clarification (e.g., exploratory spike), you may proceed, but must warn that downstream rework risk increases.\n\nExecution steps:\n\n1. Run &#96;.specify/scripts/bash/check-prerequisites.sh --json --paths-only&#96; from repo root **once** (combined &#96;--json --paths-only&#96; mode / &#96;-Json -PathsOnly&#96;). Parse minimal JSON payload fields:\n   - &#96;FEATURE_DIR&#96;\n   - &#96;FEATURE_SPEC&#96;\n   - (Optionally capture &#96;IMPL_PLAN&#96;, &#96;TASKS&#96; for future chained flows.)\n   - If JSON parsing fails, abort and instruct user to re-run &#96;/speckit.specify&#96; or verify feature branch environment.\n   - For single quotes in args like \"I'm Groot\", use escape syntax: e.g 'I'\\''m Groot' (or double-quote if possible: \"I'm Groot\").\n\n2. Load the current spec file. Perform a structured ambiguity &amp; coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).\n\n   Functional Scope &amp; Behavior:\n   - Core user goals &amp; success criteria",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "---",
+            "lineNumber": 1
+          },
+          {
+            "text": "description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.",
+            "lineNumber": 2
+          },
+          {
+            "text": "handoffs: ",
+            "lineNumber": 3
+          },
+          {
+            "text": "  - label: Build Technical Plan",
+            "lineNumber": 4
+          },
+          {
+            "text": "    agent: speckit.plan",
+            "lineNumber": 5
+          },
+          {
+            "text": "    prompt: Create a plan for the spec. I am building with...",
+            "lineNumber": 6
+          },
+          {
+            "text": "---",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "## User Input",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "&#96;&#96;&#96;text",
+            "lineNumber": 11
+          },
+          {
+            "text": "$ARGUMENTS",
+            "lineNumber": 12
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 13
+          },
+          {
+            "lineNumber": 14
+          },
+          {
+            "text": "You **MUST** consider the user input before proceeding (if not empty).",
+            "lineNumber": 15
+          },
+          {
+            "lineNumber": 16
+          },
+          {
+            "text": "## Outline",
+            "lineNumber": 17
+          },
+          {
+            "lineNumber": 18
+          },
+          {
+            "text": "Goal: Detect and reduce ambiguity or missing decision points in the active feature specification and record the clarifications directly in the spec file.",
+            "lineNumber": 19
+          },
+          {
+            "lineNumber": 20
+          },
+          {
+            "text": "Note: This clarification workflow is expected to run (and be completed) BEFORE invoking &#96;/speckit.plan&#96;. If the user explicitly states they are skipping clarification (e.g., exploratory spike), you may proceed, but must warn that downstream rework risk increases.",
+            "lineNumber": 21
+          },
+          {
+            "lineNumber": 22
+          },
+          {
+            "text": "Execution steps:",
+            "lineNumber": 23
+          },
+          {
+            "lineNumber": 24
+          },
+          {
+            "text": "1. Run &#96;.specify/scripts/bash/check-prerequisites.sh --json --paths-only&#96; from repo root **once** (combined &#96;--json --paths-only&#96; mode / &#96;-Json -PathsOnly&#96;). Parse minimal JSON payload fields:",
+            "lineNumber": 25
+          },
+          {
+            "text": "   - &#96;FEATURE_DIR&#96;",
+            "lineNumber": 26
+          },
+          {
+            "text": "   - &#96;FEATURE_SPEC&#96;",
+            "lineNumber": 27
+          },
+          {
+            "text": "   - (Optionally capture &#96;IMPL_PLAN&#96;, &#96;TASKS&#96; for future chained flows.)",
+            "lineNumber": 28
+          },
+          {
+            "text": "   - If JSON parsing fails, abort and instruct user to re-run &#96;/speckit.specify&#96; or verify feature branch environment.",
+            "lineNumber": 29
+          },
+          {
+            "text": "   - For single quotes in args like \"I'm Groot\", use escape syntax: e.g 'I'\\''m Groot' (or double-quote if possible: \"I'm Groot\").",
+            "lineNumber": 30
+          },
+          {
+            "lineNumber": 31
+          },
+          {
+            "text": "2. Load the current spec file. Perform a structured ambiguity &amp; coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "   Functional Scope &amp; Behavior:",
+            "lineNumber": 34
+          },
+          {
+            "text": "   - Core user goals &amp; success criteria",
+            "lineNumber": 35
+          }
+        ]
+      },
+      "score": 0.2800438404083252
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/002-daas-semantic-retrieval/tasks.md",
+        "range": {
+          "startPosition": {
+            "line": 128
+          },
+          "endPosition": {
+            "line": 140
+          }
+        },
+        "contents": "- **User Story 1**: Ask \"Analyze 'Dream Title Here' from a Christian perspective\" and verify only matching dream retrieved, no other dreams included, response focuses solely on that dream\n- **User Story 2**: Ask \"What patterns do I have with water in my dreams?\" and verify vector similarity search used, top-k semantically similar dreams retrieved, analysis provided across those dreams\n- **User Story 3**: Send any query and observe response text appears incrementally (word-by-word or chunk-by-chunk) rather than as single complete block, text cascades down screen\n\n## Suggested MVP Scope\n\n**MVP = Phases 1–3 (Setup + Foundational + User Story 1)**\n- Enables single-dream retrieval by quoted title\n- Provides immediate value for most common use case\n- Establishes foundation for pattern-based search (US2) and streaming (US3)\n- Can be tested and validated independently before adding complexity",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "- **User Story 1**: Ask \"Analyze 'Dream Title Here' from a Christian perspective\" and verify only matching dream retrieved, no other dreams included, response focuses solely on that dream",
+            "lineNumber": 129
+          },
+          {
+            "text": "- **User Story 2**: Ask \"What patterns do I have with water in my dreams?\" and verify vector similarity search used, top-k semantically similar dreams retrieved, analysis provided across those dreams",
+            "lineNumber": 130
+          },
+          {
+            "text": "- **User Story 3**: Send any query and observe response text appears incrementally (word-by-word or chunk-by-chunk) rather than as single complete block, text cascades down screen",
+            "lineNumber": 131
+          },
+          {
+            "lineNumber": 132
+          },
+          {
+            "text": "## Suggested MVP Scope",
+            "lineNumber": 133
+          },
+          {
+            "lineNumber": 134
+          },
+          {
+            "text": "**MVP = Phases 1–3 (Setup + Foundational + User Story 1)**",
+            "lineNumber": 135
+          },
+          {
+            "text": "- Enables single-dream retrieval by quoted title",
+            "lineNumber": 136
+          },
+          {
+            "text": "- Provides immediate value for most common use case",
+            "lineNumber": 137
+          },
+          {
+            "text": "- Establishes foundation for pattern-based search (US2) and streaming (US3)",
+            "lineNumber": 138
+          },
+          {
+            "text": "- Can be tested and validated independently before adding complexity",
+            "lineNumber": 139
+          }
+        ]
+      },
+      "score": 0.27796420454978943
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./specs/014-revamp-daas-rag/contracts/api.md",
+        "range": {
+          "startPosition": {},
+          "endPosition": {
+            "line": 57,
+            "column": 5
+          }
+        },
+        "contents": "# API Contract: Revamp DAAS RAG System\n\n## Function: &#96;build_daas_rag_context&#96;\n\n**Location**: &#96;brain_core/context_builder.py&#96;\n\n**Purpose**: Build RAG context for DAAS project by retrieving related dreams using vector similarity search.\n\n### Signature\n\n&#96;&#96;&#96;python\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.\n\n    Retrieves top-k relevant dreams from conversation_index using vector similarity\n    search based on themes, symbols, or events in the user message. Formats\n    dreams with clear separation and truncation to optimize token usage.\n\n    Args:\n        user_message: User query containing themes, symbols, or events to search\n        top_k: Number of dreams to retrieve (default: 3, max: 5)\n\n    Returns:\n        Dict with:\n        - 'context': Formatted string with related dreams (empty if none found)\n        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")\n\n    Raises:\n        None - always returns a dict (empty context if retrieval fails)\n    \"\"\"\n&#96;&#96;&#96;\n\n### Behavior\n\n1. **Input Validation**\n\n   - If &#96;user_message&#96; is empty or None, return empty context\n   - If &#96;top_k&#96; &gt; 5, cap at 5\n   - If &#96;top_k&#96; &lt; 1, default to 3\n\n2. **Embedding Generation**\n\n   - Call &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;\n   - Handle embedding generation errors gracefully\n\n3. **Vector Similarity Search**\n\n   - Query &#96;conversation_index&#96; table:\n     - Filter: &#96;project = 'DAAS'&#96; AND &#96;embedding IS NOT NULL&#96;\n     - Order by: &#96;embedding &lt;=&gt; query_embedding&#96; (cosine distance)\n     - Limit: &#96;top_k&#96;\n   - Return: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;\n\n4. **Formatting**\n\n   - For each retrieved dream:\n     ",
+        "signatures": {},
+        "detailedLines": [
+          {
+            "text": "# API Contract: Revamp DAAS RAG System",
+            "lineNumber": 1
+          },
+          {
+            "lineNumber": 2
+          },
+          {
+            "text": "## Function: &#96;build_daas_rag_context&#96;",
+            "lineNumber": 3
+          },
+          {
+            "lineNumber": 4
+          },
+          {
+            "text": "**Location**: &#96;brain_core/context_builder.py&#96;",
+            "lineNumber": 5
+          },
+          {
+            "lineNumber": 6
+          },
+          {
+            "text": "**Purpose**: Build RAG context for DAAS project by retrieving related dreams using vector similarity search.",
+            "lineNumber": 7
+          },
+          {
+            "lineNumber": 8
+          },
+          {
+            "text": "### Signature",
+            "lineNumber": 9
+          },
+          {
+            "lineNumber": 10
+          },
+          {
+            "text": "&#96;&#96;&#96;python",
+            "lineNumber": 11
+          },
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 12
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 13
+          },
+          {
+            "text": "    Build RAG context for DAAS project with related dreams.",
+            "lineNumber": 14
+          },
+          {
+            "lineNumber": 15
+          },
+          {
+            "text": "    Retrieves top-k relevant dreams from conversation_index using vector similarity",
+            "lineNumber": 16
+          },
+          {
+            "text": "    search based on themes, symbols, or events in the user message. Formats",
+            "lineNumber": 17
+          },
+          {
+            "text": "    dreams with clear separation and truncation to optimize token usage.",
+            "lineNumber": 18
+          },
+          {
+            "lineNumber": 19
+          },
+          {
+            "text": "    Args:",
+            "lineNumber": 20
+          },
+          {
+            "text": "        user_message: User query containing themes, symbols, or events to search",
+            "lineNumber": 21
+          },
+          {
+            "text": "        top_k: Number of dreams to retrieve (default: 3, max: 5)",
+            "lineNumber": 22
+          },
+          {
+            "lineNumber": 23
+          },
+          {
+            "text": "    Returns:",
+            "lineNumber": 24
+          },
+          {
+            "text": "        Dict with:",
+            "lineNumber": 25
+          },
+          {
+            "text": "        - 'context': Formatted string with related dreams (empty if none found)",
+            "lineNumber": 26
+          },
+          {
+            "text": "        - 'notes': List of source notes (e.g., \"Retrieved 3 dreams via vector similarity\")",
+            "lineNumber": 27
+          },
+          {
+            "lineNumber": 28
+          },
+          {
+            "text": "    Raises:",
+            "lineNumber": 29
+          },
+          {
+            "text": "        None - always returns a dict (empty context if retrieval fails)",
+            "lineNumber": 30
+          },
+          {
+            "text": "    \"\"\"",
+            "lineNumber": 31
+          },
+          {
+            "text": "&#96;&#96;&#96;",
+            "lineNumber": 32
+          },
+          {
+            "lineNumber": 33
+          },
+          {
+            "text": "### Behavior",
+            "lineNumber": 34
+          },
+          {
+            "lineNumber": 35
+          },
+          {
+            "text": "1. **Input Validation**",
+            "lineNumber": 36
+          },
+          {
+            "lineNumber": 37
+          },
+          {
+            "text": "   - If &#96;user_message&#96; is empty or None, return empty context",
+            "lineNumber": 38
+          },
+          {
+            "text": "   - If &#96;top_k&#96; &gt; 5, cap at 5",
+            "lineNumber": 39
+          },
+          {
+            "text": "   - If &#96;top_k&#96; &lt; 1, default to 3",
+            "lineNumber": 40
+          },
+          {
+            "lineNumber": 41
+          },
+          {
+            "text": "2. **Embedding Generation**",
+            "lineNumber": 42
+          },
+          {
+            "lineNumber": 43
+          },
+          {
+            "text": "   - Call &#96;generate_embedding(user_message)&#96; from &#96;embedding_service.py&#96;",
+            "lineNumber": 44
+          },
+          {
+            "text": "   - Handle embedding generation errors gracefully",
+            "lineNumber": 45
+          },
+          {
+            "lineNumber": 46
+          },
+          {
+            "text": "3. **Vector Similarity Search**",
+            "lineNumber": 47
+          },
+          {
+            "lineNumber": 48
+          },
+          {
+            "text": "   - Query &#96;conversation_index&#96; table:",
+            "lineNumber": 49
+          },
+          {
+            "text": "     - Filter: &#96;project = 'DAAS'&#96; AND &#96;embedding IS NOT NULL&#96;",
+            "lineNumber": 50
+          },
+          {
+            "text": "     - Order by: &#96;embedding &lt;=&gt; query_embedding&#96; (cosine distance)",
+            "lineNumber": 51
+          },
+          {
+            "text": "     - Limit: &#96;top_k&#96;",
+            "lineNumber": 52
+          },
+          {
+            "text": "   - Return: &#96;session_id&#96;, &#96;title&#96;, &#96;summary_short&#96;, &#96;memory_snippet&#96;",
+            "lineNumber": 53
+          },
+          {
+            "lineNumber": 54
+          },
+          {
+            "text": "4. **Formatting**",
+            "lineNumber": 55
+          },
+          {
+            "lineNumber": 56
+          },
+          {
+            "text": "   - For each retrieved dream:",
+            "lineNumber": 57
+          },
+          {
+            "text": "     ",
+            "lineNumber": 58
+          }
+        ]
+      },
+      "score": 0.27781474590301514
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/chat.py",
+        "range": {
+          "startPosition": {
+            "line": 24
+          },
+          "endPosition": {
+            "line": 280
+          }
+        },
+        "contents": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):\n    # Save user message\n\n    \n    # Log RAG inclusion status for verification\n    if project.upper() in (\"THN\", \"DAAS\"):\n        if include_rag:\n            logger.info(f\"{project.upper()} RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")\n        else:\n            logger.debug(f\"{project.upper()} RAG skipped (not first message, is_first_message={is_first_message})\")\n    else:\n        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")\n    \n    # Uncomment the line below to see the full system prompt in logs:\n    # logger.info(f\"System prompt content:\\n{system_prompt}\")\n    messages.append({\"role\": \"system\", \"content\": system_prompt})\n\n    # 2. Project context from RAG (if available and not THN/DAAS) - SECOND\n    # THN/DAAS RAG is now included in system prompt above, so skip here\n    if project.upper() not in (\"THN\", \"DAAS\") and indexed_context and indexed_context.get(\"context\"):\n        # RAG content is self-explanatory, no verbose wrapper needed\n        context_msg = indexed_context['context']\n        if indexed_context.get(\"notes\"):\n            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                f\"- {note}\" for note in indexed_context[\"notes\"]\n            )\n        messages.append({\"role\": \"system\", \"content\": context_msg})\n\n    # Add existing project context (from memory.py) - also RAG context\n    if project_context:\n        messages.append({\"role\": \"system\", \"content\": project_context})\n    \n    # Add note reads first (most recent first) so they're fresh in context",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 25,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 27,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def chat_turn(conversation_id, user_text: str, project: str, stream: bool = False):",
+            "lineNumber": 25,
+            "isSignature": true
+          },
+          {
+            "text": "    # Save user message",
+            "lineNumber": 26,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 66
+          },
+          {
+            "text": "    ",
+            "lineNumber": 67
+          },
+          {
+            "text": "    # Log RAG inclusion status for verification",
+            "lineNumber": 68
+          },
+          {
+            "text": "    if project.upper() in (\"THN\", \"DAAS\"):",
+            "lineNumber": 69
+          },
+          {
+            "text": "        if include_rag:",
+            "lineNumber": 70
+          },
+          {
+            "text": "            logger.info(f\"{project.upper()} RAG included in system prompt (first message, length: {len(system_prompt)} chars)\")",
+            "lineNumber": 71
+          },
+          {
+            "text": "        else:",
+            "lineNumber": 72
+          },
+          {
+            "text": "            logger.debug(f\"{project.upper()} RAG skipped (not first message, is_first_message={is_first_message})\")",
+            "lineNumber": 73
+          },
+          {
+            "text": "    else:",
+            "lineNumber": 74
+          },
+          {
+            "text": "        logger.debug(f\"System prompt for project {project} (length: {len(system_prompt)} chars)\")",
+            "lineNumber": 75
+          },
+          {
+            "text": "    ",
+            "lineNumber": 76
+          },
+          {
+            "text": "    # Uncomment the line below to see the full system prompt in logs:",
+            "lineNumber": 77
+          },
+          {
+            "text": "    # logger.info(f\"System prompt content:\\n{system_prompt}\")",
+            "lineNumber": 78
+          },
+          {
+            "text": "    messages.append({\"role\": \"system\", \"content\": system_prompt})",
+            "lineNumber": 79
+          },
+          {
+            "lineNumber": 80
+          },
+          {
+            "text": "    # 2. Project context from RAG (if available and not THN/DAAS) - SECOND",
+            "lineNumber": 81
+          },
+          {
+            "text": "    # THN/DAAS RAG is now included in system prompt above, so skip here",
+            "lineNumber": 82
+          },
+          {
+            "text": "    if project.upper() not in (\"THN\", \"DAAS\") and indexed_context and indexed_context.get(\"context\"):",
+            "lineNumber": 83
+          },
+          {
+            "text": "        # RAG content is self-explanatory, no verbose wrapper needed",
+            "lineNumber": 84
+          },
+          {
+            "text": "        context_msg = indexed_context['context']",
+            "lineNumber": 85
+          },
+          {
+            "text": "        if indexed_context.get(\"notes\"):",
+            "lineNumber": 86
+          },
+          {
+            "text": "            context_msg += \"\\n\\nKey sources:\\n\" + \"\\n\".join(",
+            "lineNumber": 87
+          },
+          {
+            "text": "                f\"- {note}\" for note in indexed_context[\"notes\"]",
+            "lineNumber": 88
+          },
+          {
+            "text": "            )",
+            "lineNumber": 89
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": context_msg})",
+            "lineNumber": 90
+          },
+          {
+            "lineNumber": 91
+          },
+          {
+            "text": "    # Add existing project context (from memory.py) - also RAG context",
+            "lineNumber": 92
+          },
+          {
+            "text": "    if project_context:",
+            "lineNumber": 93
+          },
+          {
+            "text": "        messages.append({\"role\": \"system\", \"content\": project_context})",
+            "lineNumber": 94
+          },
+          {
+            "text": "    ",
+            "lineNumber": 95
+          },
+          {
+            "text": "    # Add note reads first (most recent first) so they're fresh in context",
+            "lineNumber": 96
+          }
+        ]
+      },
+      "score": 0.27546438574790955
+    },
+    {
+      "codeBlock": {
+        "relativeWorkspacePath": "./brain_core/context_builder.py",
+        "range": {
+          "startPosition": {
+            "line": 691
+          },
+          "endPosition": {
+            "line": 795
+          }
+        },
+        "contents": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n\n    \n    try:\n        # Generate embedding for user message\n        embedding_start = time.time()\n        query_embedding = generate_embedding(user_message)\n        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms\n        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'\n        \n        # Vector similarity search\n        query_start = time.time()\n        with get_conn() as conn:\n            with conn.cursor() as cur:\n                cur.execute(\n                    \"\"\"\n                    SELECT session_id, title, summary_short, memory_snippet\n                    FROM conversation_index\n                    WHERE project = 'DAAS'\n                      AND embedding IS NOT NULL\n                    ORDER BY embedding &lt;=&gt; %s::vector\n                    LIMIT %s\n                    \"\"\",\n                    (embedding_str, top_k),\n                )\n                rows = cur.fetchall()\n        query_time = (time.time() - query_start) * 1000  # Convert to ms\n        \n        if not rows:\n            logger.debug(\"No DAAS dreams found via vector similarity search\")\n            return {\"context\": \"\", \"notes\": []}\n        \n        # Format dreams with truncation\n        format_start = time.time()\n        dream_parts = [\"### Related Dreams for Analysis\\n\"]\n        for row in rows:\n            session_id, title, summary_short, memory_snippet = row",
+        "signatures": {
+          "ranges": [
+            {
+              "startPosition": {
+                "line": 692,
+                "column": 1
+              },
+              "endPosition": {
+                "line": 693,
+                "column": 5
+              }
+            }
+          ]
+        },
+        "detailedLines": [
+          {
+            "text": "def build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:",
+            "lineNumber": 692,
+            "isSignature": true
+          },
+          {
+            "lineNumber": 722
+          },
+          {
+            "text": "    ",
+            "lineNumber": 723
+          },
+          {
+            "text": "    try:",
+            "lineNumber": 724
+          },
+          {
+            "text": "        # Generate embedding for user message",
+            "lineNumber": 725
+          },
+          {
+            "text": "        embedding_start = time.time()",
+            "lineNumber": 726
+          },
+          {
+            "text": "        query_embedding = generate_embedding(user_message)",
+            "lineNumber": 727
+          },
+          {
+            "text": "        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms",
+            "lineNumber": 728
+          },
+          {
+            "text": "        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'",
+            "lineNumber": 729
+          },
+          {
+            "text": "        ",
+            "lineNumber": 730
+          },
+          {
+            "text": "        # Vector similarity search",
+            "lineNumber": 731
+          },
+          {
+            "text": "        query_start = time.time()",
+            "lineNumber": 732
+          },
+          {
+            "text": "        with get_conn() as conn:",
+            "lineNumber": 733
+          },
+          {
+            "text": "            with conn.cursor() as cur:",
+            "lineNumber": 734
+          },
+          {
+            "text": "                cur.execute(",
+            "lineNumber": 735
+          },
+          {
+            "text": "                    \"\"\"",
+            "lineNumber": 736
+          },
+          {
+            "text": "                    SELECT session_id, title, summary_short, memory_snippet",
+            "lineNumber": 737
+          },
+          {
+            "text": "                    FROM conversation_index",
+            "lineNumber": 738
+          },
+          {
+            "text": "                    WHERE project = 'DAAS'",
+            "lineNumber": 739
+          },
+          {
+            "text": "                      AND embedding IS NOT NULL",
+            "lineNumber": 740
+          },
+          {
+            "text": "                    ORDER BY embedding &lt;=&gt; %s::vector",
+            "lineNumber": 741
+          },
+          {
+            "text": "                    LIMIT %s",
+            "lineNumber": 742
+          },
+          {
+            "text": "                    \"\"\",",
+            "lineNumber": 743
+          },
+          {
+            "text": "                    (embedding_str, top_k),",
+            "lineNumber": 744
+          },
+          {
+            "text": "                )",
+            "lineNumber": 745
+          },
+          {
+            "text": "                rows = cur.fetchall()",
+            "lineNumber": 746
+          },
+          {
+            "text": "        query_time = (time.time() - query_start) * 1000  # Convert to ms",
+            "lineNumber": 747
+          },
+          {
+            "text": "        ",
+            "lineNumber": 748
+          },
+          {
+            "text": "        if not rows:",
+            "lineNumber": 749
+          },
+          {
+            "text": "            logger.debug(\"No DAAS dreams found via vector similarity search\")",
+            "lineNumber": 750
+          },
+          {
+            "text": "            return {\"context\": \"\", \"notes\": []}",
+            "lineNumber": 751
+          },
+          {
+            "text": "        ",
+            "lineNumber": 752
+          },
+          {
+            "text": "        # Format dreams with truncation",
+            "lineNumber": 753
+          },
+          {
+            "text": "        format_start = time.time()",
+            "lineNumber": 754
+          },
+          {
+            "text": "        dream_parts = [\"### Related Dreams for Analysis\\n\"]",
+            "lineNumber": 755
+          },
+          {
+            "text": "        for row in rows:",
+            "lineNumber": 756
+          },
+          {
+            "text": "            session_id, title, summary_short, memory_snippet = row",
+            "lineNumber": 757
+          }
+        ]
+      },
+      "score": 0.27536553144454956
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 150,
+  "limit": 20,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "            # For DAAS project, append RAG context to system prompt\n            if project.upper() == \"DAAS\" and user_message:\n                try:\n                    rag_result = build_daas_rag_context(user_message, top_k=3)\n                    if rag_result.get(\"context\"):\n                        project_extension += \"\\n\\n---\\n\\n\"\n                        project_extension += rag_result[\"context\"]\n                        if rag_result.get(\"notes\"):\n                            project_extension += \"\\n\\nKey sources:\\n\" + \"\\n\".join(\n                                f\"- {note}\" for note in rag_result[\"notes\"]\n                            )\n                        logger.info(f\"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)\")\n                    else:\n                        logger.warning(\"DAAS RAG context generation returned empty context\")\n                except Exception as e:\n                    logger.warning(f\"Failed to add DAAS RAG context to system prompt: {e}\", exc_info=True)\n            \n            logger.debug(f\"Added project extension for {project.upper()}\")\n            return base_prompt + project_extension\n        else:",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Adding a helper function to detect dream analysis requests and updating the logic to include DAAS RAG only when detected:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file_v2">
+<details>
+<summary>Tool use: **read_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetFile": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py",
+  "offset": 690,
+  "limit": 5,
+  "charsLimit": 1000000,
+  "effectiveUri": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Result:
+
+```json
+{
+  "contents": "\n\ndef build_daas_rag_context(user_message: str, top_k: int = 3) -&gt; Dict[str, Any]:\n    \"\"\"\n    Build RAG context for DAAS project with related dreams.",
+  "totalLinesInFile": 988
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "476ef18f-b8f9-4192-80b2-e8e298ba768b"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "69b533ad-9f9b-40eb-be48-b93503ce4588"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "fec59f32-8789-49b9-931a-f1967e7ed991"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/chat.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "18d93879-43bc-4b5c-8ca0-923063e9a06e"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_lints">
+<details>
+<summary>Tool use: **read_lints**</summary>
+
+
+Parameters:
+
+```json
+{
+  "paths": [
+    "brain_core/context_builder.py",
+    "brain_core/chat.py"
+  ]
+}
+```
+Result:
+
+```json
+{
+  "linterErrorsByFile": [
+    {
+      "relativeWorkspacePath": "brain_core/context_builder.py"
+    },
+    {
+      "relativeWorkspacePath": "brain_core/chat.py"
+    }
+  ]
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="run_terminal_command_v2">
+<details>
+<summary>Tool use: **run_terminal_command_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "command": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat &amp;&amp; python3.10 -m py_compile brain_core/context_builder.py brain_core/chat.py",
+  "cwd": "",
+  "options": {
+    "timeout": 300000
+  },
+  "parsingResult": {
+    "executableCommands": [
+      {
+        "name": "cd",
+        "args": [
+          {
+            "type": "word",
+            "value": "/Users/petertumulty/Documents/Sites/project_chat/project_chat"
+          }
+        ],
+        "fullText": "cd /Users/petertumulty/Documents/Sites/project_chat/project_chat"
+      },
+      {
+        "name": "python3.10",
+        "args": [
+          {
+            "type": "word",
+            "value": "-m"
+          },
+          {
+            "type": "word",
+            "value": "py_compile"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/context_builder.py"
+          },
+          {
+            "type": "word",
+            "value": "brain_core/chat.py"
+          }
+        ],
+        "fullText": "python3.10 -m py_compile brain_core/context_builder.py brain_core/chat.py"
+      }
+    ]
+  }
+}
+```
+Additional data:
+
+```json
+{
+  "status": "success"
+}
+```
+Result:
+
+```json
+{
+  "rejected": false
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating the docstring to reflect the new behavior:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "21adb09b-6450-432d-a22a-4c0771b8aa36"
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="edit_file_v2">
+<details>
+<summary>Tool use: **edit_file_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "relativeWorkspacePath": "/Users/petertumulty/Documents/Sites/project_chat/project_chat/brain_core/context_builder.py"
+}
+```
+Additional data:
+
+```json
+{
+  "codeblockId": "41779a3e-57a2-49b4-9857-de35bf13fa5b"
+}
+```
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
+
 
 ---
 

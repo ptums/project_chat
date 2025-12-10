@@ -2,9 +2,8 @@
 Project context builder for injecting conversation memory into chat prompts.
 Builds context directly from project_knowledge and conversation_index entries.
 
-For DAAS project, uses custom retrieval rules:
-- Single-dream mode: Quoted title detection and title-based matching
-- Pattern-based mode: Vector similarity search using embeddings
+For DAAS project, uses vector similarity search to retrieve related dreams by themes, symbols, or events.
+For THN project, uses RAG with conversation history and code snippets.
 """
 import logging
 import os
@@ -90,14 +89,19 @@ def build_project_system_prompt(project: str, user_message: str = "") -> str:
     
     Loads the base system prompt and appends project-specific extension if
     the project is not "general". The extension includes overview and rules
-    from project_knowledge table. For THN project, also includes RAG context
-    (History & Context and Relevant Code Snippets) only when user_message
-    is provided (typically on first message only to save tokens).
+    from project_knowledge table. For THN and DAAS projects, also includes RAG context
+    when conditions are met:
+    - THN: RAG included when user_message is provided (typically on first message only)
+    - DAAS: RAG included when user_message indicates analysis/interpretation intent
+    THN RAG includes History & Context and Relevant Code Snippets.
+    DAAS RAG includes Related Dreams for Analysis.
     
     Args:
         project: Project tag (THN, DAAS, FF, 700B, or "general")
-        user_message: Optional user message for THN RAG context generation.
-                     If empty, RAG context is not included (saves tokens).
+        user_message: Optional user message for THN/DAAS RAG context generation.
+                     For THN: RAG included if message provided (typically first message).
+                     For DAAS: RAG included if message indicates analysis intent.
+                     If empty or no intent detected, RAG context is not included (saves tokens).
         
     Returns:
         Composed system prompt string (base + project extension + RAG if applicable)
@@ -146,6 +150,26 @@ def build_project_system_prompt(project: str, user_message: str = "") -> str:
                         logger.warning("THN RAG context generation returned empty context")
                 except Exception as e:
                     logger.warning(f"Failed to add THN RAG context to system prompt: {e}", exc_info=True)
+            
+            # For DAAS project, append RAG context to system prompt only when analysis is requested
+            if project.upper() == "DAAS" and user_message:
+                if should_include_daas_rag(user_message):
+                    try:
+                        rag_result = build_daas_rag_context(user_message, top_k=3)
+                        if rag_result.get("context"):
+                            project_extension += "\n\n---\n\n"
+                            project_extension += rag_result["context"]
+                            if rag_result.get("notes"):
+                                project_extension += "\n\nKey sources:\n" + "\n".join(
+                                    f"- {note}" for note in rag_result["notes"]
+                                )
+                            logger.info(f"Added DAAS RAG context to system prompt ({len(rag_result.get('context', ''))} chars, {len(rag_result.get('notes', []))} sources)")
+                        else:
+                            logger.warning("DAAS RAG context generation returned empty context")
+                    except Exception as e:
+                        logger.warning(f"Failed to add DAAS RAG context to system prompt: {e}", exc_info=True)
+                else:
+                    logger.debug(f"DAAS RAG skipped - message does not indicate analysis request: {user_message[:100]}")
             
             logger.debug(f"Added project extension for {project.upper()}")
             return base_prompt + project_extension
@@ -672,6 +696,169 @@ def build_thn_rag_context(user_message: str) -> Dict[str, Any]:
     }
 
 
+def should_include_daas_rag(user_message: str) -> bool:
+    """
+    Determine if DAAS RAG should be included based on user message intent.
+    
+    Returns True if the message indicates the user wants dream analysis,
+    interpretation, or deep conversation about a dream. Returns False for
+    casual questions or non-analysis requests.
+    
+    Args:
+        user_message: User's message text
+        
+    Returns:
+        True if RAG should be included, False otherwise
+    """
+    if not user_message or not user_message.strip():
+        return False
+    
+    message_lower = user_message.lower()
+    
+    # Keywords that indicate analysis/interpretation intent
+    analysis_keywords = [
+        'analyze', 'analysis', 'interpret', 'interpretation', 'meaning',
+        'symbol', 'symbolism', 'symbolic', 'what does this mean',
+        'what does it mean', 'what does that mean', 'help me understand',
+        'explain this dream', 'explain the dream', 'tell me about this dream',
+        'tell me about the dream', 'discuss this dream', 'discuss the dream',
+        'deep conversation', 'deep dive', 'explore this dream', 'explore the dream',
+        'unpack', 'break down', 'what is the significance', 'what significance',
+        'what themes', 'what patterns', 'parallel', 'connection', 'relate',
+        'compare', 'similar', 'recurring', 'recurrence'
+    ]
+    
+    # Check for analysis keywords
+    for keyword in analysis_keywords:
+        if keyword in message_lower:
+            return True
+    
+    # Check for question patterns that suggest analysis
+    analysis_patterns = [
+        'what does', 'what is', 'what are', 'what were', 'what do',
+        'how does', 'how is', 'how are', 'why does', 'why is',
+        'can you analyze', 'can you interpret', 'can you explain',
+        'could you analyze', 'could you interpret', 'could you explain',
+        'would you analyze', 'would you interpret', 'would you explain'
+    ]
+    
+    for pattern in analysis_patterns:
+        if pattern in message_lower:
+            # Additional check: ensure it's about a dream or dream-related
+            if 'dream' in message_lower or len(message_lower) > 50:
+                # Longer messages are more likely to be analysis requests
+                return True
+    
+    return False
+
+
+def build_daas_rag_context(user_message: str, top_k: int = 3) -> Dict[str, Any]:
+    """
+    Build RAG context for DAAS project with related dreams.
+    
+    Retrieves top-k relevant dreams from conversation_index using vector similarity
+    search based on themes, symbols, or events in the user message. Formats
+    dreams with clear separation and truncation to optimize token usage.
+    
+    Args:
+        user_message: User query containing themes, symbols, or events to search
+        top_k: Number of dreams to retrieve (default: 3, max: 5)
+    
+    Returns:
+        Dict with:
+        - 'context': Formatted string with related dreams (empty if none found)
+        - 'notes': List of source notes (e.g., "Retrieved 3 dreams via vector similarity")
+    
+    Performance:
+        Target: <500ms total generation time
+        - Embedding generation: <200ms
+        - Database query: <200ms
+        - Formatting: <100ms
+    """
+    import time
+    start_time = time.time()
+    
+    if not user_message or not user_message.strip():
+        return {"context": "", "notes": []}
+    
+    # Cap top_k at 5, default to 3 if invalid
+    top_k = min(top_k, 5) if top_k > 0 else 3
+    
+    try:
+        # Generate embedding for user message
+        embedding_start = time.time()
+        query_embedding = generate_embedding(user_message)
+        embedding_time = (time.time() - embedding_start) * 1000  # Convert to ms
+        embedding_str = '[' + ','.join(str(x) for x in query_embedding) + ']'
+        
+        # Vector similarity search
+        query_start = time.time()
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT session_id, title, summary_short, memory_snippet
+                    FROM conversation_index
+                    WHERE project = 'DAAS'
+                      AND embedding IS NOT NULL
+                    ORDER BY embedding <=> %s::vector
+                    LIMIT %s
+                    """,
+                    (embedding_str, top_k),
+                )
+                rows = cur.fetchall()
+        query_time = (time.time() - query_start) * 1000  # Convert to ms
+        
+        if not rows:
+            logger.debug("No DAAS dreams found via vector similarity search")
+            return {"context": "", "notes": []}
+        
+        # Format dreams with truncation
+        format_start = time.time()
+        dream_parts = ["### Related Dreams for Analysis\n"]
+        for row in rows:
+            session_id, title, summary_short, memory_snippet = row
+            
+            dream_parts.append(f"**Dream: {title or 'Untitled'}**")
+            
+            if summary_short:
+                summary = summary_short[:300] + ("..." if len(summary_short) > 300 else "")
+                dream_parts.append(f"- **Summary**: {summary}")
+            
+            if memory_snippet:
+                memory = memory_snippet[:200] + ("..." if len(memory_snippet) > 200 else "")
+                dream_parts.append(f"- **Key Details**: {memory}")
+            
+            dream_parts.append("")  # Empty line
+            dream_parts.append("---")  # Separator
+            dream_parts.append("")  # Empty line
+        
+        # Remove last separator if present
+        if len(dream_parts) > 1 and dream_parts[-1] == "" and dream_parts[-2] == "---":
+            dream_parts = dream_parts[:-2]
+        
+        context = "\n".join(dream_parts)
+        format_time = (time.time() - format_start) * 1000  # Convert to ms
+        
+        total_time = (time.time() - start_time) * 1000  # Convert to ms
+        logger.debug(
+            f"Built DAAS RAG context with {len(rows)} dreams "
+            f"(embedding: {embedding_time:.1f}ms, query: {query_time:.1f}ms, format: {format_time:.1f}ms, total: {total_time:.1f}ms)"
+        )
+        
+        if total_time > 500:
+            logger.warning(f"DAAS RAG generation exceeded 500ms target: {total_time:.1f}ms")
+        
+        return {
+            "context": context,
+            "notes": [f"Retrieved {len(rows)} dreams via vector similarity search"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error building DAAS RAG context: {e}", exc_info=True)
+        return {"context": "", "notes": []}
+
+
 def build_project_context(
     project: str,
     user_message: str,
@@ -681,7 +868,8 @@ def build_project_context(
     """
     Build project-aware context from project_knowledge and conversation_index entries.
     
-    For DAAS project: Uses custom retrieval rules (single-dream or pattern-based).
+    For DAAS project: Uses vector similarity search to retrieve related dreams.
+    For THN project: Uses RAG with conversation history and code snippets.
     For other projects: Uses keyword-based relevance scoring.
     
     Fetches stable project overview from project_knowledge table, queries indexed
@@ -701,88 +889,12 @@ def build_project_context(
         Returns empty dict if no relevant data found
     """
     
-    # DAAS-specific retrieval: custom rules for dream analysis
+    # DAAS-specific retrieval: new RAG format
     if project == 'DAAS':
         try:
-            from .daas_retrieval import retrieve_daas_context
-            from .config import DAAS_VECTOR_TOP_K
-            
-            # Use configured top_k
-            top_k = DAAS_VECTOR_TOP_K
-            
-            daas_result = retrieve_daas_context(user_message, top_k=top_k)
-            
-            # Get project-scoped meditation notes for DAAS
-            mcp_notes_context = None
-            try:
-                from src.mcp.api import get_mcp_api
-                api = get_mcp_api()
-                project_notes = api.get_project_notes(project, user_message, limit=5)
-                if project_notes:
-                    notes_parts = []
-                    for note in project_notes:
-                        notes_parts.append(f"From {note['title']} ({note['uri']}):\n{note['content_snippet']}")
-                    if notes_parts:
-                        mcp_notes_context = "\n\n---\n\n".join(notes_parts)
-            except Exception as e:
-                logger.debug(f"MCP notes not available for DAAS: {e}")
-            
-            # If we have dreams from DAAS retrieval, use them
-            if daas_result.get('dreams'):
-                # Build context from DAAS retrieval result
-                context_parts = []
-                notes = []
-                
-                # Add MCP meditation notes if available
-                if mcp_notes_context:
-                    context_parts.append(f"Here are relevant meditation notes from this project:\n\n{mcp_notes_context}")
-                    notes.append("MCP notes: Retrieved relevant project-scoped meditation notes")
-                
-                # Add project knowledge if available
-                knowledge_summaries = fetch_project_knowledge(project)
-                if knowledge_summaries:
-                    project_summary = "\n\n".join(knowledge_summaries)
-                    context_parts.append(f"Here is a general summary of the DAAS project:\n{project_summary}")
-                    notes.extend([f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries])
-                
-                # Add DAAS retrieval context
-                if daas_result.get('context'):
-                    if daas_result['mode'] == 'single':
-                        context_parts.append(f"Here is the specific dream you asked about:\n\n{daas_result['context']}")
-                        notes.append(f"Single dream: {daas_result['dreams'][0].get('title', 'Unknown')}")
-                    else:
-                        context_parts.append(f"Here are relevant dreams from your dream history:\n\n{daas_result['context']}")
-                        notes.extend([f"Dream: {d.get('title', 'Unknown')}" for d in daas_result['dreams'][:5]])
-                
-                if context_parts:
-                    context = "\n\n".join(context_parts)
-                    context += "\n\nUse this information naturally in our conversation. Recall and reference "
-                    context += "relevant details from these notes and dreams as we discuss topics."
-                    
-                    logger.debug(f"Built DAAS context using {daas_result['mode']} mode with {len(daas_result['dreams'])} dreams")
-                    return {
-                        "context": context,
-                        "notes": notes[:10]
-                    }
-            else:
-                # No dreams found, but still include project knowledge if available
-                knowledge_summaries = fetch_project_knowledge(project)
-                if knowledge_summaries:
-                    project_summary = "\n\n".join(knowledge_summaries)
-                    context = f"Here is a general summary of the DAAS project:\n{project_summary}\n\n{daas_result.get('context', '')}"
-                    return {
-                        "context": context,
-                        "notes": [f"Project knowledge: {s[:100]}..." if len(s) > 100 else f"Project knowledge: {s}" for s in knowledge_summaries[:5]]
-                    }
-                else:
-                    # Return empty or error message
-                    return {
-                        "context": daas_result.get('context', ''),
-                        "notes": []
-                    }
-                    
+            return build_daas_rag_context(user_message, top_k=3)
         except Exception as e:
-            logger.error(f"DAAS retrieval failed, falling back to default keyword search: {e}")
+            logger.error(f"DAAS RAG generation failed: {e}")
             # Fall through to default behavior (keyword-based search)
     
     # THN-specific retrieval: new RAG format

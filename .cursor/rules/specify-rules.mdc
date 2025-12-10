@@ -49,9 +49,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.10+: Follow standard conventions
 
 ## Recent Changes
+- 013-enhance-thn-rag: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 013-enhance-thn-rag: Added Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv, pgvector extension)
 - 012-expand-project-extension: Added Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv)
-- 011-improve-context-building: Added Python 3.10+ (existing project standard) + Existing dependencies (psycopg2-binary, python-dotenv, openai, requests)
 
 
 <!-- MANUAL ADDITIONS START -->
